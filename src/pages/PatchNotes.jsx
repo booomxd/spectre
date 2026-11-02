@@ -1,6 +1,8 @@
-import { FiExternalLink } from 'react-icons/fi'
-import { Button, Card, Empty, ErrorState, Page, Skeleton } from '../ui'
+import { useState } from 'react'
+import { FiChevronDown, FiExternalLink } from 'react-icons/fi'
+import { Badge, Button, Card, Empty, ErrorState, Page, Skeleton, Tabs } from '../ui'
 import { openExternal, useInvoke } from '../lib/ipc'
+import logo from '../assets/spectre-logo.svg'
 
 const fmt = d => d ? new Date(d).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : ''
 
@@ -39,12 +41,97 @@ function NoteCard({ n, i }) {
   )
 }
 
+// Minimal Markdown for GitHub release notes: headings, bullet lists, paragraphs, **bold**, _italic_, `code`, [links](url).
+function inline(text) {
+  const out = []
+  const re = /(\*\*[^*]+\*\*|_[^_]+_|\*[^*]+\*|`[^`]+`|\[[^\]]+\]\([^)]+\))/g
+  let last = 0, m
+  while ((m = re.exec(text))) {
+    if (m.index > last) out.push(text.slice(last, m.index))
+    const t = m[0], k = out.length
+    if (t.startsWith('**')) out.push(<b key={k} className='text-text'>{t.slice(2, -2)}</b>)
+    else if (t.startsWith('`')) out.push(<code key={k} className='px-1 rounded bg-surface-2 text-[0.9em]'>{t.slice(1, -1)}</code>)
+    else if (t.startsWith('[')) {
+      const [, label, url] = /^\[([^\]]+)\]\(([^)]+)\)$/.exec(t)
+      out.push(<button key={k} className='text-accent hover:underline' onClick={() => openExternal(url)}>{label}</button>)
+    } else out.push(<i key={k}>{t.slice(1, -1)}</i>)
+    last = m.index + t.length
+  }
+  if (last < text.length) out.push(text.slice(last))
+  return out
+}
+function Markdown({ text }) {
+  const blocks = []
+  let list = null
+  const flush = () => { if (list) { blocks.push(<ul key={blocks.length} className='list-disc pl-5 space-y-1'>{list}</ul>); list = null } }
+  for (const raw of text.replace(/\r/g, '').split('\n')) {
+    const line = raw.trimEnd()
+    const item = /^\s*[-*]\s+(.*)$/.exec(line)
+    const head = /^(#{1,4})\s+(.*)$/.exec(line)
+    if (item) { (list = list || []).push(<li key={list?.length || 0}>{inline(item[1])}</li>); continue }
+    flush()
+    if (head) blocks.push(<div key={blocks.length} className={head[1].length <= 2 ? 'font-display text-lg font-bold mt-2' : 'text-[13px] font-bold text-text mt-2'}>{inline(head[2])}</div>)
+    else if (line.trim()) blocks.push(<p key={blocks.length}>{inline(line)}</p>)
+  }
+  flush()
+  return <div className='flex flex-col gap-2 text-[13px] text-muted leading-relaxed'>{blocks}</div>
+}
+
+// Spectre's own releases from GitHub, newest first; the newest is expanded.
+function SpectreNotes() {
+  const { data, error, loading, reload } = useInvoke('spectre:releases')
+  const status = useInvoke('update:status')
+  const [open, setOpen] = useState(null)
+  if (loading && !data) return <div className='grid gap-3'>{[0, 1, 2].map(i => <Skeleton key={i} className='h-28 rounded-xl' />)}</div>
+  if (error && !data) return <ErrorState error={error} onRetry={reload} />
+  if (!data?.length) return <Empty title='No Spectre releases yet' />
+  const current = status.data?.current
+  return (
+    <div className='grid gap-3 max-w-4xl stagger'>
+      {data.map((r, i) => {
+        const expanded = open === null ? i === 0 : open === r.version
+        return (
+          <Card key={r.version} className='anim-rise p-5' style={{ '--i': i }}>
+            <button className='w-full flex items-center gap-3 text-left' onClick={() => setOpen(expanded ? '' : r.version)}>
+              <img src={logo} alt='' className='w-9 h-9 shrink-0' draggable={false} />
+              <div className='min-w-0 flex-1'>
+                <div className='flex items-center gap-2'>
+                  <span className='font-display text-xl font-bold'>{r.name}</span>
+                  {i === 0 && <Badge tone='accent'>Latest</Badge>}
+                  {r.version === current && <Badge tone='good'>Installed</Badge>}
+                </div>
+                <div className='text-[11px] text-muted'>{fmt(r.date)}</div>
+              </div>
+              <FiChevronDown className={'text-muted transition-transform ' + (expanded ? 'rotate-180' : '')} />
+            </button>
+            {expanded && (
+              <div className='anim-fade mt-4 pt-4 border-t border-line'>
+                <Markdown text={r.notes} />
+                <Button size='sm' variant='ghost' icon={FiExternalLink} className='mt-4' onClick={() => openExternal(r.url)}>View on GitHub</Button>
+              </div>
+            )}
+          </Card>
+        )
+      })}
+    </div>
+  )
+}
+
 export default function PatchNotes() {
+  const [tab, setTab] = useState('spectre')
+  return (
+    <Page title='Patch Notes' subtitle={tab === 'spectre' ? "What's new in Spectre" : 'Recent VALORANT updates from the official site'}>
+      <Tabs className='mb-5' value={tab} onChange={setTab} tabs={[{ value: 'spectre', label: 'Spectre' }, { value: 'valorant', label: 'VALORANT' }]} />
+      {tab === 'spectre' ? <SpectreNotes /> : <ValorantNotes />}
+    </Page>
+  )
+}
+
+function ValorantNotes() {
   const { data, error, loading, reload } = useInvoke('patchnotes:list')
   const [first, ...rest] = data || []
   return (
-    <Page title='Patch Notes' subtitle='Recent VALORANT updates from the official site'
-      actions={<Button size='sm' onClick={() => reload()}>Refresh</Button>}>
+    <>
       {loading && !data ? (
         <div className='grid gap-4'>
           <Skeleton className='h-64 rounded-xl' />
@@ -60,6 +147,6 @@ export default function PatchNotes() {
               </div>
             </div>
           )}
-    </Page>
+    </>
   )
 }

@@ -1,5 +1,5 @@
 // Every page in the app. The sidebar renders these groups in order; `tab` picks which top tab owns it.
-import { FiActivity, FiAward, FiClock, FiCompass, FiEdit3, FiFileText, FiGrid, FiLayers, FiRadio, FiSearch, FiSettings, FiShoppingBag, FiTarget, FiTrendingUp, FiUsers, FiUser, FiZap } from 'react-icons/fi'
+import { FiActivity, FiAward, FiClock, FiCompass, FiEdit3, FiFileText, FiGrid, FiLayers, FiMessageSquare, FiRadio, FiSearch, FiSettings, FiShoppingBag, FiTarget, FiTrendingUp, FiUsers, FiUser, FiZap } from 'react-icons/fi'
 import { FaDiscord } from 'react-icons/fa'
 import { GiTrophy, GiPistolGun } from 'react-icons/gi'
 
@@ -21,6 +21,7 @@ import Customize from './pages/Customize'
 import Premier from './pages/Premier'
 import Status from './pages/Status'
 import PatchNotes from './pages/PatchNotes'
+import Suggestions from './pages/Suggestions'
 import Settings from './pages/Settings'
 import Strategies from './pages/Strategies'
 
@@ -61,6 +62,7 @@ export const GROUPS = [
   {
     label: 'System', pages: [
       { id: 'patchnotes', label: 'Patch Notes', icon: FiFileText, component: PatchNotes },
+      { id: 'suggestions', label: 'Suggestions', icon: FiMessageSquare, component: Suggestions },
       { id: 'settings', label: 'Settings', icon: FiSettings, component: Settings },
     ]
   },

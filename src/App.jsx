@@ -1,14 +1,52 @@
 import { useEffect, useState } from 'react'
-import { FiMinus, FiSquare, FiX } from 'react-icons/fi'
-import { GROUPS, PAGES, STRATEGIES } from './nav'
-import { invoke } from './lib/ipc'
+import { FiDownload, FiMinus, FiSquare, FiX } from 'react-icons/fi'
+import { GROUPS, PAGES, STRATEGIES, navigate } from './nav'
+import { invoke, openExternal, useEvent } from './lib/ipc'
 import { RiotProvider, useRiot } from './lib/riot'
 import { applySavedTheme } from './lib/theme'
 import logo from './assets/spectre-logo.svg'
-import { ToastHost } from './ui'
+import { Button, Modal, ToastHost, toast } from './ui'
 import Overlay from './pages/Overlay'
 
 const cx = (...c) => c.filter(Boolean).join(' ')
+
+// New-release prompt: a dialog once per version, then an Update button that stays in the title bar.
+// Installed copies update in place; portable copies open the release page to download.
+function UpdateButton() {
+  const [s, setS] = useState(null)
+  const [pct, setPct] = useState(null)
+  const [prompt, setPrompt] = useState(false)
+  useEffect(() => { invoke('update:status').then(setS).catch(() => { }) }, [])
+  useEvent('update:status', setS)
+  useEvent('update:progress', p => setPct(p.pct ?? 0))
+  useEffect(() => {
+    if (!s?.available) return
+    try { if (localStorage.getItem('spectre:update-seen') === s.latest) return; localStorage.setItem('spectre:update-seen', s.latest) } catch (e) { }
+    setPrompt(true)
+  }, [s?.available, s?.latest])
+  if (!s?.available) return null
+  const go = async () => {
+    setPrompt(false)
+    if (!s.canInstall) return openExternal(s.url)
+    setPct(0)
+    try { await invoke('update:install') } catch (e) { setPct(null); toast.error(e.message) }
+  }
+  return (
+    <>
+      <button onClick={go} disabled={pct != null} title={s.canInstall ? 'Download, install and restart' : 'Open the download page'}
+        className='h-7 mr-2 px-3 rounded-md text-xs font-semibold flex items-center gap-1.5 bg-accent text-bg hover:opacity-90 disabled:opacity-80 transition-opacity'>
+        <FiDownload size={13} />{pct != null ? `Updating ${pct}%` : `${s.canInstall ? 'Update' : 'Download'} ${s.latest}`}
+      </button>
+      <Modal open={prompt} onClose={() => setPrompt(false)} title={`Spectre ${s.latest} is here`} width={420}
+        footer={<><Button variant='ghost' onClick={() => setPrompt(false)}>Later</Button><Button variant='primary' icon={FiDownload} onClick={go}>{s.canInstall ? 'Update now' : 'Download'}</Button></>}>
+        <p className='text-[13px] text-muted'>
+          You're on {s.current}. {s.canInstall ? 'Spectre will download the update, install it and restart, which takes about a minute.' : 'Download the new version from the release page.'}
+        </p>
+        <button className='mt-3 text-[13px] font-semibold text-accent hover:underline' onClick={() => { setPrompt(false); navigate('patchnotes') }}>See what's new</button>
+      </Modal>
+    </>
+  )
+}
 
 function TitleBar({ tab, setTab }) {
   return (
@@ -22,7 +60,8 @@ function TitleBar({ tab, setTab }) {
           </button>
         ))}
       </div>
-      <div className='flex'>
+      <div className='flex items-center'>
+        <UpdateButton />
         {[['win:minimize', FiMinus, 'hover:bg-surface-2'], ['win:maximize', FiSquare, 'hover:bg-surface-2'], ['win:close', FiX, 'hover:bg-accent hover:text-bg']].map(([ch, Icon, hov]) => (
           <button key={ch} onClick={() => invoke(ch)} className={cx('w-11 h-9 flex items-center justify-center text-muted rounded-md transition-colors', hov)}>
             <Icon size={ch === 'win:maximize' ? 12 : 15} />

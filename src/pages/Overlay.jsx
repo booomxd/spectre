@@ -1,54 +1,83 @@
 import React, { useEffect, useState } from 'react'
-import { FiMove, FiX } from 'react-icons/fi'
-import { invoke, useInvoke } from '../lib/ipc'
+import { FiEyeOff, FiLock, FiUnlock, FiX } from 'react-icons/fi'
+import { invoke, useEvent, useInvoke } from '../lib/ipc'
 import { useRiot } from '../lib/riot'
+import { useTiers } from '../lib/content'
 import { AgentIcon, RankIcon } from './live/parts'
 import { displayName } from './live/PlayerRow'
 import { PARTY_COLORS, queueName } from './live/util'
+import logo from '../assets/spectre-logo.svg'
 
 const drag = { WebkitAppRegion: 'drag' }
 const noDrag = { WebkitAppRegion: 'no-drag' }
+const cx = (...c) => c.filter(Boolean).join(' ')
+const title = s => (s || '').toLowerCase().replace(/(^|\s)\S/g, c => c.toUpperCase())
 
-// Settings come from another module; tolerate it being absent or shaped differently.
+// Overlay settings, kept live: changes in the main window apply here right away.
 function useOverlaySettings() {
-  const [s, setS] = useState({ opacity: 0.92, scale: 1 })
-  useEffect(() => {
-    invoke('settings:get').then(all => {
-      const op = all?.['overlay.opacity'] ?? all?.overlay?.opacity
-      const sc = all?.['overlay.scale'] ?? all?.overlay?.scale
-      setS({ opacity: op >= 0.2 && op <= 1 ? +op : 0.92, scale: sc >= 0.6 && sc <= 2 ? +sc : 1 })
-    }).catch(() => { })
-  }, [])
-  return s
+  const [s, setS] = useState(null)
+  useEffect(() => { invoke('settings:get').then(setS).catch(() => { }) }, [])
+  useEvent('settings:changed', setS)
+  const o = s?.overlay || {}
+  return {
+    opacity: o.opacity >= 0.2 && o.opacity <= 1 ? +o.opacity : 0.9,
+    scale: o.scale >= 0.6 && o.scale <= 2 ? +o.scale : 1,
+    showPeak: o.showPeak !== false, locked: !!o.locked, hotkey: o.hotkey || '',
+  }
 }
 
-function Row({ p }) {
+function Row({ p, showPeak, tiers }) {
   const color = p.party != null ? PARTY_COLORS[p.party % PARTY_COLORS.length] : null
+  const t = tiers?.[p.rank]
+  const sub = [p.level != null && `Lv ${p.level}`, p.scouted && `${p.scouted.kd.toFixed(2)} KD`, p.scouted?.hs != null && `${p.scouted.hs}% HS`].filter(Boolean).join(' · ')
   return (
-    <div className='flex items-center gap-2 h-8 px-2 rounded-md bg-white/[0.04]'>
-      <span className='w-1 h-4 rounded-full shrink-0' style={{ background: color || 'transparent' }} />
-      <AgentIcon agent={p.agent} size={24} locked={p.locked} className='!rounded-md' />
-      <span className={`flex-1 truncate text-[12px] font-semibold ${p.self ? 'text-accent' : 'text-text'}`}>{displayName(p)}</span>
-      {p.ranked && p.rank > 0 && <span className='text-[10px] text-muted'>{p.rr}</span>}
-      {p.ranked && <RankIcon tier={p.rank} size={22} />}
+    <div className={cx('flex items-center gap-2 h-10 pl-1 pr-2 rounded-lg transition-colors', p.self ? 'bg-accent/10' : 'bg-white/[0.035]')}>
+      <span className='w-[3px] h-6 rounded-full shrink-0' style={{ background: color || 'transparent' }} title={color ? 'Your party' : undefined} />
+      <AgentIcon agent={p.agent} size={28} locked={p.locked} className='!rounded-md' />
+      <div className='flex-1 min-w-0 leading-tight'>
+        <div className={cx('flex items-center gap-1 text-[12px] font-semibold', p.self ? 'text-accent' : 'text-text')}>
+          <span className='truncate'>{displayName(p)}</span>
+          {p.hidden && <FiEyeOff className='shrink-0 text-muted' size={10} title='Name hidden by streamer mode' />}
+        </div>
+        {sub && <div className='text-[9.5px] text-muted truncate'>{sub}</div>}
+      </div>
+      {p.ranked && (<>
+        <div className='text-right leading-tight shrink-0'>
+          <div className='text-[10.5px] font-semibold' style={{ color: p.rank && t ? `#${t.color.slice(0, 6)}` : undefined }}>{p.rank ? title(t?.tierName) : 'Unranked'}</div>
+          {p.rank > 0 && <div className='text-[9.5px] text-muted'>{p.rr} RR</div>}
+        </div>
+        <RankIcon tier={p.rank} size={24} />
+        {showPeak && p.peak > p.rank && <RankIcon tier={p.peak} size={16} className='opacity-70 -ml-1' />}
+      </>)}
     </div>
   )
 }
 
-function Team({ label, players, tone }) {
+function Team({ label, players, tone, showPeak, tiers }) {
   if (!players.length) return null
+  const ranked = players.filter(p => p.ranked && p.rank > 0)
+  const avg = ranked.length ? Math.round(ranked.reduce((a, p) => a + p.rank, 0) / ranked.length) : 0
   return (
-    <div className='mb-2'>
-      <div className={`px-1 mb-1 text-[10px] font-bold tracking-[0.16em] uppercase ${tone}`}>{label}</div>
-      <div className='grid gap-1'>{players.map((p, i) => <Row key={p.puuid || i} p={p} />)}</div>
+    <div className='mb-2.5 last:mb-0'>
+      <div className='flex items-center gap-2 px-1 mb-1'>
+        <span className={cx('text-[10px] font-bold tracking-[0.16em] uppercase', tone)}>{label}</span>
+        <span className='text-[10px] text-muted'>{players.length}</span>
+        {avg > 0 && <span className='ml-auto flex items-center gap-1 text-[10px] text-muted'>avg <RankIcon tier={avg} size={14} /> {title(tiers?.[avg]?.tierName)}</span>}
+      </div>
+      <div className='grid gap-1'>{players.map((p, i) => <Row key={p.ref || i} p={p} showPeak={showPeak} tiers={tiers} />)}</div>
     </div>
   )
+}
+
+function Hint({ children }) {
+  return <div className='h-full flex flex-col items-center justify-center gap-1 px-6 text-center text-[11px] text-muted'>{children}</div>
 }
 
 export default function Overlay() {
   const { connected } = useRiot()
-  const { opacity, scale } = useOverlaySettings()
+  const { opacity, scale, showPeak, locked, hotkey } = useOverlaySettings()
   const live = useInvoke('live:state', [], { poll: 4000, skip: !connected })
+  const tiers = useTiers()
   const d = live.data
 
   useEffect(() => {
@@ -58,27 +87,40 @@ export default function Overlay() {
     return () => { document.documentElement.style.background = prev[0]; document.body.style.background = prev[1] }
   }, [])
 
-  const live_ = d && d.state !== 'menus'
+  const inMatch = d && d.state !== 'menus'
+  const ffa = d?.state === 'ingame' && d.queueId === 'deathmatch'
+  const key = hotkey && <kbd className='px-1 rounded border border-white/15 bg-white/5 font-sans'>{hotkey}</kbd>
+  let body
+  if (!connected) body = <Hint>Waiting for the Riot Client...</Hint>
+  else if (live.loading && !d) body = <div className='grid gap-1'>{Array.from({ length: 6 }, (_, i) => <div key={i} className='skeleton h-10 rounded-lg' />)}</div>
+  else if (live.error && !d) body = <Hint><span className='text-bad'>{live.error}</span></Hint>
+  else if (!inMatch) body = <Hint><span className='text-text font-semibold'>Waiting for a match</span>The overlay fills in at agent select.{key && <span className='mt-1'>{key} shows or hides it.</span>}</Hint>
+  else body = ffa
+    ? <Team label='Players' tone='text-accent' players={d.players} showPeak={showPeak} tiers={tiers} />
+    : <>
+      <Team label={d.state === 'pregame' ? 'Your team' : 'Allies'} tone='text-accent' players={d.players.filter(p => !p.enemy)} showPeak={showPeak} tiers={tiers} />
+      {d.state === 'pregame'
+        ? <div className='px-1 text-[10px] text-muted'>Enemies appear when the match starts.</div>
+        : <Team label='Enemies' tone='text-bad' players={d.players.filter(p => p.enemy)} showPeak={showPeak} tiers={tiers} />}
+    </>
+
   return (
-    <div className='h-screen w-screen overflow-hidden' style={{ zoom: scale }}>
-      <div className='h-full flex flex-col rounded-xl border border-white/10 bg-bg backdrop-blur-md anim-fade' style={{ background: `rgb(var(--bg) / ${opacity})` }}>
-        <div className='flex items-center gap-2 px-3 h-8 shrink-0 border-b border-white/10 cursor-move select-none' style={drag}>
-          <FiMove className='text-muted text-xs' />
-          <span className='flex-1 truncate text-[11px] font-bold tracking-[0.14em] uppercase text-muted'>
-            {live_ ? `${d.map?.name || 'Match'} · ${queueName(d.queueId)}` : 'Spectre'}
+    <div className='h-screen w-screen overflow-hidden p-1' style={{ zoom: scale }}>
+      <div className='h-full flex flex-col rounded-2xl border border-white/10 overflow-hidden anim-fade' style={{ background: `rgb(var(--bg) / ${opacity})` }}>
+        <div className={cx('flex items-center gap-2 pl-2.5 pr-2 h-9 shrink-0 border-b border-white/10 select-none', !locked && 'cursor-move')} style={drag}>
+          <img src={logo} alt='' className='w-4 h-4 shrink-0' draggable={false} />
+          <span className='flex-1 min-w-0 truncate text-[11px] font-bold tracking-[0.12em] uppercase text-text/90'>
+            {inMatch ? `${d.map?.name || 'Match'} · ${queueName(d.queueId)}` : 'Spectre'}
           </span>
-          <button className='text-muted hover:text-bad transition-colors' style={noDrag} onClick={() => invoke('overlay:close').catch(() => { })}><FiX /></button>
+          {inMatch && <span className={cx('flex items-center gap-1 text-[9.5px] font-bold uppercase tracking-wider', d.state === 'ingame' ? 'text-good' : 'text-warn')}>
+            <span className={cx('w-1.5 h-1.5 rounded-full anim-pulse', d.state === 'ingame' ? 'bg-good' : 'bg-warn')} />{d.state === 'ingame' ? 'Live' : 'Agent select'}
+          </span>}
+          <button className='w-6 h-6 rounded-md flex items-center justify-center text-muted hover:text-text hover:bg-white/10 transition-colors' style={noDrag}
+            title='Lock: clicks pass through to the game' onClick={() => invoke('overlay:lock', true).catch(() => { })}>{locked ? <FiLock size={12} /> : <FiUnlock size={12} />}</button>
+          <button className='w-6 h-6 rounded-md flex items-center justify-center text-muted hover:text-bad hover:bg-white/10 transition-colors' style={noDrag}
+            title={hotkey ? `Hide (${hotkey})` : 'Hide'} onClick={() => invoke('overlay:close').catch(() => { })}><FiX size={13} /></button>
         </div>
-        <div className='flex-1 overflow-y-auto p-2'>
-          {!connected ? <p className='p-3 text-center text-[11px] text-muted'>Waiting for the Riot Client...</p>
-            : live.loading && !d ? <div className='grid gap-1'>{Array.from({ length: 6 }, (_, i) => <div key={i} className='skeleton h-8 rounded-md' />)}</div>
-              : live.error && !d ? <p className='p-3 text-center text-[11px] text-bad'>{live.error}</p>
-                : !live_ ? <p className='p-6 text-center text-[11px] text-muted'>No live match. The overlay fills in at agent select.</p>
-                  : <>
-                    <Team label={d.state === 'pregame' ? 'Your team' : 'Allies'} tone='text-accent' players={d.players.filter(p => !p.enemy)} />
-                    <Team label='Enemies' tone='text-bad' players={d.players.filter(p => p.enemy)} />
-                  </>}
-        </div>
+        <div className='flex-1 min-h-0 overflow-y-auto p-1.5'>{body}</div>
       </div>
     </div>
   )
