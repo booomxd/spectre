@@ -1,8 +1,26 @@
 import React from 'react'
 import { useTiers } from '../../lib/content'
-import { cardIcon } from './util'
+import { GUN_ICON, cardIcon, queueName, useModeIcon } from './util'
 
 const cx = (...c) => c.filter(Boolean).join(' ')
+
+// A white valorant-api icon drawn in the current text color, so it follows the theme like the other icons.
+export function MaskIcon({ src, size = '1em', width, className, style, title }) {
+  const mask = { WebkitMaskImage: `url(${src})`, maskImage: `url(${src})`, WebkitMaskSize: 'contain', maskSize: 'contain', WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat', WebkitMaskPosition: 'center', maskPosition: 'center' }
+  return <span role='img' aria-label={title} title={title} className={cx('inline-block shrink-0 bg-current', className)} style={{ width: width ?? size, height: size, ...mask, ...style }} />
+}
+
+// Game mode icon for a queue id (nothing until valorant-api's mode list loads).
+export function ModeIcon({ queue, size = 16, className }) {
+  const src = useModeIcon(queue)
+  return src ? <MaskIcon src={src} size={size} className={className} title={queueName(queue)} /> : null
+}
+
+// Gun silhouette, drawn wider than its box so it lines up with square icons.
+export function GunIcon({ size = 16, className }) {
+  const n = typeof size === 'number' ? size : 16
+  return <MaskIcon src={GUN_ICON} size={n} width={n * 1.6} className={className} style={{ margin: `0 ${-n * 0.3}px` }} />
+}
 
 export function RankIcon({ tier, size = 28, className }) {
   const tiers = useTiers()

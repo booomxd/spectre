@@ -82,7 +82,8 @@ module.exports = ({ riot, handle }) => {
             return {
                 weapon: w.displayName,
                 skin: skin?.displayName || w.displayName,
-                image: ch?.c.fullRender || ch?.c.displayIcon || skin?.displayIcon || skin?.chromas?.[0]?.fullRender || w.displayIcon,
+                // Variant renders first: valorant-api's icons for most standard skins are an "X" placeholder.
+                image: ch?.c.fullRender || ch?.c.displayIcon || skin?.chromas?.[0]?.fullRender || skin?.displayIcon || w.displayIcon,
                 buddy: buddy ? { name: buddy.displayName, icon: buddy.displayIcon } : null,
             };
         }).filter(Boolean);

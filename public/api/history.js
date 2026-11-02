@@ -147,16 +147,18 @@ module.exports = ({ riot, handle }) => {
 
     handle('history:detail', async (matchId) => {
         const m = await getMatch(matchId);
-        const ok = await known.knownPuuids();
-        const fr = await known.friendPuuids();
-        const names = await resolveNames(m.players.map(p => p.puuid).filter(p => ok.has(p)));
+        const [ok, fr, live] = await Promise.all([known.knownPuuids(), known.friendPuuids(), known.liveHidden()]);
+        // Everyone is named like on any tracker, except streamer-mode players in your current match. If the current
+        // match can't be read, only you, friends and party are named.
+        const shown = p => p === riot.state.puuid || (live ? !live.has(p) : ok.has(p));
+        const names = await resolveNames(m.players.map(p => p.puuid).filter(shown));
         const myParty = m.players.find(p => p.puuid === riot.state.puuid)?.party;
-        // Only you, friends and party members are identified; everyone else is agent-only, with no puuid.
+        // Hidden players are agent-only, with no puuid.
         const players = m.players.map((p, i) => {
             const isKnown = ok.has(p.puuid);
-            const nm = p.puuid === riot.state.puuid ? { gameName: riot.state.gameName, tagLine: riot.state.tagLine } : isKnown ? names[p.puuid] : null;
-            const base = { key: isKnown ? p.puuid : 'x' + i, team: p.team, agent: p.agent, tier: p.tier, known: isKnown, name: nm || null, hidden: !nm, ...playerStats(m, p) };
-            return isKnown ? { ...base, puuid: p.puuid, friend: fr.has(p.puuid), party: !!myParty && p.party === myParty, level: p.level, card: p.card } : base;
+            const nm = p.puuid === riot.state.puuid ? { gameName: riot.state.gameName, tagLine: riot.state.tagLine } : shown(p.puuid) ? names[p.puuid] : null;
+            const base = { key: nm ? p.puuid : 'x' + i, team: p.team, agent: p.agent, tier: p.tier, known: isKnown, name: nm || null, hidden: !nm, ...playerStats(m, p) };
+            return nm ? { ...base, puuid: p.puuid, friend: fr.has(p.puuid), party: !!myParty && p.party === myParty, level: p.level, card: p.card } : base;
         });
         const rounds = m.rounds.map(r => {
             let kind = 'time';
@@ -168,7 +170,7 @@ module.exports = ({ riot, handle }) => {
         });
         return {
             matchId: m.id, mapId: m.mapId, queue: m.queue, mode: modeName(m.queue), start: m.start, length: m.length,
-            teams: m.teams, players, rounds,
+            teams: m.teams, players, rounds, namesLimited: !live,
         };
     });
 

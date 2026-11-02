@@ -14,7 +14,7 @@ const insecure = new https.Agent({ rejectUnauthorized: false });
 const state = {
     connected: false,
     port: null, password: null,
-    accessToken: null, entitlementsToken: null,
+    accessToken: null, entitlementsToken: null, tokenAt: 0,
     puuid: null, gameName: null, tagLine: null,
     shard: null, region: null, clientVersion: null,
 };
@@ -32,11 +32,27 @@ async function local(method, p, body) {
     return res.data;
 }
 
-async function refreshTokens() {
-    const t = await local('get', 'entitlements/v1/token');
-    state.accessToken = t.accessToken;
-    state.entitlementsToken = t.token;
-    state.puuid = t.subject;
+// The Riot Client answers 400 "Entitlements token is not ready yet" for a few seconds while it renews its own
+// session, so token reads are retried for a while. Concurrent refreshes share one request.
+let refreshing = null;
+function refreshTokens() {
+    if (!refreshing) refreshing = (async () => {
+        for (let i = 0; ; i++) {
+            try {
+                const t = await local('get', 'entitlements/v1/token');
+                state.accessToken = t.accessToken;
+                state.entitlementsToken = t.token;
+                state.puuid = t.subject;
+                state.tokenAt = Date.now();
+                return;
+            } catch (err) {
+                if (err.response?.status !== 400) throw err;
+                if (i >= 7) throw new Error("The Riot Client isn't ready yet. Try again in a moment, or restart the Riot Client if this keeps happening.");
+                await new Promise(r => setTimeout(r, 1500));
+            }
+        }
+    })().finally(() => { refreshing = null; });
+    return refreshing;
 }
 
 async function connect() {
@@ -87,9 +103,11 @@ function remoteHeaders() {
     };
 }
 
-// Tokens expire after about an hour; refresh once and retry on an auth failure.
+// Tokens expire after about an hour: they are renewed after 45 minutes, and once more on an auth failure.
+const TOKEN_TTL = 45 * 60 * 1000;
 async function remote(base, method, p, body, retried) {
     if (!state.connected) throw new Error('Not connected to the Riot Client');
+    if (Date.now() - state.tokenAt > TOKEN_TTL) await refreshTokens().catch(() => { });
     try {
         const res = await axios({ method, url: base + '/' + p.replace(/^\//, ''), data: body, headers: remoteHeaders(), timeout: 10000 });
         return res.data;

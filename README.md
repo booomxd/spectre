@@ -31,7 +31,7 @@ Live match ranks, scouting, skins, your party, Discord presence and more, all th
 | 👥 **Lobby & Party** | Invite friends, share invite codes, pick a mode, ready up and start matchmaking without opening the game. |
 | 🔫 **Skins** | See anyone's loadout in a match, and change your own skins right from agent select. |
 | 🎮 **Discord presence** | "Playing Spectre" with your mode, map art, score, rank and party, all fully customizable. |
-| 🕶️ **Streamer-safe** | Players who hide their name in VALORANT stay hidden. No names, IDs or cards, ever. |
+| 🕶️ **Streamer-safe** | Players who hide their name in your match stay hidden everywhere in Spectre. No names, IDs or cards. |
 | 🖥️ **In-game overlay** | Both teams' ranks over the game, toggled with a hotkey, with optional click-through and auto-show. |
 | ⬆️ **Auto updates** | New versions show up in the app and install in one click. |
 | 🎨 **Seven themes** | Midnight, Onyx, Ember, Glacier, Verdant, Amethyst and Gilded. |
@@ -87,7 +87,7 @@ Every page is explained in **[docs/FEATURES.md](docs/FEATURES.md)**.
 
 - 🔑 No Riot password and no accounts: Spectre uses the Riot Client session already on your PC.
 - 📡 No servers of its own, no analytics, no telemetry.
-- 👻 Streamer-mode players are never named or identified.
+- 👻 Streamer-mode players in your match are never named or identified.
 - 💾 Your settings and notes stay in `%APPDATA%\Spectre`.
 
 Details in **[docs/PRIVACY.md](docs/PRIVACY.md)**.

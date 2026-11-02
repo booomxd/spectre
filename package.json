@@ -4,7 +4,7 @@
   "description": "Spectre",
   "author": "shaur",
   "private": true,
-  "version": "2.2.0",
+  "version": "2.2.1",
   "main": "public/main.js",
   "homepage": "./",
   "build": {
@@ -13,6 +13,7 @@
     "compression": "maximum",
     "asar": true,
     "forceCodeSigning": false,
+    "afterPack": "scripts/afterPack.js",
     "nsis": {
       "oneClick": true,
       "perMachine": false,
@@ -22,7 +23,7 @@
       ]
     },
     "win": {
-      "icon": "public/icon.png",
+      "icon": "assets/icon.ico",
       "target": [
         {
           "target": "nsis",
@@ -85,6 +86,7 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.3.4",
     "postcss": "^8.4.23",
+    "rcedit": "^4.0.1",
     "tailwindcss": "^3.3.2",
     "vite": "^4.3.2",
     "wait-on": "^8.0.1"

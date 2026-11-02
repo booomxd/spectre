@@ -17,9 +17,9 @@ function Row({ p, me, agents, memo, onSearch, onMemo }) {
       <div className='flex items-center gap-2.5 min-w-0'>
         <AgentIcon id={p.agent} agents={agents} size={30} />
         <div className='min-w-0'>
-          <div title={p.hidden ? 'Hidden by VALORANT' : undefined} className={cx('truncate font-semibold leading-tight', p.hidden && 'text-muted')}>{playerLabel(p, agents)}</div>
+          <div title={p.hidden ? 'Name hidden by streamer mode' : undefined} className={cx('truncate font-semibold leading-tight', p.hidden && 'text-muted')}>{playerLabel(p, agents)}</div>
           <div className='flex items-center gap-1.5'>
-            {p.hidden && <span title='Hidden by VALORANT' className='text-[10px] uppercase tracking-wider text-muted'>Hidden</span>}
+            {p.hidden && <span title='Name hidden by streamer mode' className='text-[10px] uppercase tracking-wider text-muted'>Hidden</span>}
             {memo && <MemoBadge memo={memo} onClick={() => onMemo(p)} />}
           </div>
         </div>
@@ -32,7 +32,7 @@ function Row({ p, me, agents, memo, onSearch, onMemo }) {
       <span>{p.hs != null ? p.hs : '-'}</span>
       <span className='text-muted'>{p.fb}</span><span className='text-muted'>{p.fd}</span>
       <div className='flex justify-end gap-1'>
-        {p.known && !p.hidden && (
+        {p.puuid && !p.hidden && (
           <>
             <button title='View profile' onClick={() => onSearch(p)} className='w-6 h-6 rounded-md text-muted hover:text-accent hover:bg-surface-2 flex items-center justify-center transition-colors'><FiSearch /></button>
             <button title='Note' onClick={() => onMemo(p)} className='w-6 h-6 rounded-md text-muted hover:text-accent hover:bg-surface-2 flex items-center justify-center transition-colors'><FiEdit3 /></button>
@@ -135,7 +135,9 @@ export default function MatchDetail({ matchId, me, memos = {}, onSearch, onMemo 
       </div>
       {groups.map(g => <Scoreboard key={g.id} title={g.title} tone={g.tone} players={g.players} me={me} agents={agents} memos={memos} onSearch={onSearch} onMemo={onMemo} />)}
       {!ffa && data.rounds.length > 1 && <Timeline rounds={data.rounds} teams={data.teams} myTeam={myTeam} />}
-      {data.players.some(p => p.hidden) && <Badge className='self-start' title='VALORANT hides other players'>Only you, friends and party members are named; everyone else shows their agent</Badge>}
+      {data.players.some(p => p.hidden) && <Badge className='self-start' title='Hidden by streamer mode'>{data.namesLimited
+        ? "Couldn't check your current match, so only you, friends and party are named"
+        : 'Streamer-mode players in your current match show only their agent'}</Badge>}
     </div>
   )
 }

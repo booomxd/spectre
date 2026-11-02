@@ -44,7 +44,7 @@ Your equipped weapon skins, sprays, buddies, card and title, plus saved presets.
 Look up any player by Riot ID (`Name#Tag`): current and peak rank, act-by-act history and recent competitive form.
 
 ### 🕘 Match History
-Your recent matches with scores, K/D/A, ACS, ADR and headshot %. Open any match for the full scoreboard and round-by-round breakdown.
+Your recent matches with scores, K/D/A, ACS, ADR and headshot %. Open any match for the full scoreboard and round-by-round breakdown. Every player is named, with a link to their profile and notes, except streamer-mode players in your current match, who show only their agent.
 
 ### 📝 Notes
 Private notes, tags and a rating you attach to players. Notes show up next to those players in Live Match.
@@ -93,7 +93,7 @@ Two tabs: **Spectre** release notes straight from GitHub, and the latest officia
 Send ideas, bug reports or anything else straight to the developer by email. Only your message, an optional contact and your Spectre version are sent.
 
 ### ⬆️ Updates
-Spectre checks for new releases on launch and every few hours. When one is out, it offers a one-click update that downloads and verifies the installer, installs it and restarts. Portable copies get a link to the new download.
+Spectre checks for new releases on launch and every few hours. When one is out, it offers a one-click update that downloads and verifies the installer, installs it and restarts. Portable copies get a link to the new download. Check any time from **Settings → About**.
 
 ### 🎨 Settings
 Seven themes (Midnight, Onyx, Ember, Glacier, Verdant, Amethyst, Gilded), the start page, launch at login, minimize to tray, and overlay hotkeys, click-through, auto-show, opacity and size.

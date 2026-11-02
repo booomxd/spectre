@@ -2,7 +2,6 @@
 // Edits are kept as overrides (dotted path -> value). The game rewrites its presence on every party / queue /
 // match change, so while "keep applied" is on they are re-sent whenever the game resets them.
 const crypto = require('crypto');
-const loadout = require('./loadout');
 
 const getPath = (obj, p) => p.split('.').reduce((o, k) => o?.[k], obj);
 // Riot alternates between nested (playerPresenceData.x) and flat (x) payloads, so a nested
@@ -20,7 +19,6 @@ const pad = n => String(n).padStart(2, '0');
 // Presence timestamps look like 2026.11.01-21.40.05 (UTC); the friends list counts the queue timer from it.
 const queueTime = d => `${d.getUTCFullYear()}.${pad(d.getUTCMonth() + 1)}.${pad(d.getUTCDate())}-${pad(d.getUTCHours())}.${pad(d.getUTCMinutes())}.${pad(d.getUTCSeconds())}`;
 const int = (v, d = 0) => { const n = parseInt(v); return Number.isFinite(n) ? n : d; };
-const lc = s => (s || '').toLowerCase();
 
 module.exports = (ctx) => {
     const { riot, handle, emit, app } = ctx;
@@ -83,11 +81,8 @@ module.exports = (ctx) => {
         return set(o);
     });
 
-    // Account level / idle / card / title. Card and title must be owned.
+    // Account level / idle / card / title. Presence-only: nothing is equipped, so any card or title can be shown.
     handle('tools:profile', async ({ accountLevel, isIdle, playerCardId, playerTitleId } = {}) => {
-        const owned = (playerCardId || playerTitleId) ? await loadout.getOwned(riot) : null;
-        if (playerCardId && !owned.cards.some(c => lc(c) === lc(playerCardId))) throw new Error('You do not own that player card');
-        if (playerTitleId && !owned.titles.some(t => lc(t) === lc(playerTitleId))) throw new Error('You do not own that title');
         const o = {};
         if (accountLevel !== undefined) o['playerPresenceData.accountLevel'] = Math.max(int(accountLevel, 1), 1);
         if (isIdle !== undefined) o.isIdle = !!isIdle;

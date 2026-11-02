@@ -15,7 +15,8 @@ export const CATEGORIES = [
 export const NO_TITLE = '00000000-0000-0000-0000-000000000000'
 export const lc = s => (s || '').toLowerCase()
 export const catKey = w => (w.category || '').split('::').pop()
-export const skinImage = s => s?.displayIcon || s?.levels?.[0]?.displayIcon || s?.chromas?.[0]?.fullRender || null
+// The base variant's render first: valorant-api's skin and level icons for most standard skins are an "X" placeholder.
+export const skinImage = s => s?.chromas?.[0]?.fullRender || s?.chromas?.[0]?.displayIcon || s?.displayIcon || s?.levels?.[0]?.displayIcon || null
 export const isStandard = (w, s) => lc(s.uuid) === lc(w.defaultSkinUuid)
 // "EEquippableSkinLevelItem::VFX" -> "VFX", "FinisherAnimation" -> "Finisher Animation"
 export const levelItemLabel = l => (l?.levelItem || '').split('::').pop().replace(/([a-z])([A-Z])/g, '$1 $2')

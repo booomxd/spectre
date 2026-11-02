@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { FiExternalLink, FiFolder, FiMonitor, FiRefreshCw, FiTrash2 } from 'react-icons/fi'
+import { FiDownload, FiExternalLink, FiFolder, FiMonitor, FiRefreshCw, FiTrash2 } from 'react-icons/fi'
 import { Badge, Button, Card, Label, Modal, SectionTitle, Select, Skeleton, Toggle, withToast } from '../../ui'
 import { invoke, openExternal, useEvent, useInvoke } from '../../lib/ipc'
 import { useRiot } from '../../lib/riot'
@@ -199,6 +199,41 @@ const LINKS = [
   ['valorant-api.com', 'https://valorant-api.com'],
   ['VALORANT website', 'https://playvalorant.com'],
 ]
+
+// Manual update check. Spectre also checks on launch and every 6 hours; installing works like the title-bar button.
+function Updates() {
+  const [s, setS] = useState(null)
+  const [busy, setBusy] = useState(false)
+  const [pct, setPct] = useState(null)
+  useEffect(() => { invoke('update:status').then(setS).catch(() => { }) }, [])
+  useEvent('update:status', setS)
+  useEvent('update:progress', p => setPct(p.pct ?? 0))
+  const check = async () => {
+    setBusy(true)
+    const r = await withToast(invoke('update:check'))
+    if (r) setS(r)
+    setBusy(false)
+  }
+  const install = async () => {
+    if (!s.canInstall) return openExternal(s.url)
+    setPct(0)
+    if (!await withToast(invoke('update:install'))) setPct(null)
+  }
+  const text = pct != null ? `Updating... ${pct}%`
+    : !s ? 'Spectre checks for updates on launch and every 6 hours.'
+      : s.available ? `Spectre ${s.latest} is available. You're on ${s.current}.`
+        : `You're up to date (${s.current}).`
+  return (
+    <div className='mt-4 flex items-center gap-3 flex-wrap rounded-lg border border-line bg-surface-2/50 px-4 py-3'>
+      <div className='min-w-0 flex-1'>
+        <div className='text-[12px] font-semibold text-text'>Updates</div>
+        <div className={`text-[11px] mt-0.5 ${s?.available ? 'text-accent' : 'text-muted'}`}>{text}</div>
+      </div>
+      {s?.available && <Button size='sm' variant='primary' icon={FiDownload} loading={pct != null} onClick={install}>{s.canInstall ? 'Update now' : 'Download'}</Button>}
+      <Button size='sm' icon={FiRefreshCw} loading={busy} disabled={pct != null} onClick={check}>Check for updates</Button>
+    </div>
+  )
+}
 export function About() {
   const info = useInvoke('app:info')
   return (
@@ -216,6 +251,8 @@ export function About() {
             {LINKS.map(([l, u]) => <Button key={u} size='sm' icon={FiExternalLink} onClick={() => openExternal(u)}>{l}</Button>)}
           </div>
         </div>
+
+        <Updates />
 
         <p className='text-[13px] text-text/90 mt-4 leading-relaxed'>
           A desktop app for VALORANT players: store, friends, live match details, match history, progression, loadouts and tactics, in one place.

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getContent } from '../../lib/content'
+import { skinImage } from '../tools/gear'
 
 // Item type ids used by the store.
 export const TYPE = {
@@ -22,10 +23,10 @@ function load() {
         const tierMap = Object.fromEntries(tiers.map(t => [t.uuid, t]))
         for (const s of skins) {
           const tier = tierMap[s.contentTierUuid]
-          const icon = s.displayIcon || s.levels?.[0]?.displayIcon || s.chromas?.[0]?.fullRender
+          const icon = skinImage(s)
           const base = { name: s.displayName, icon, kind: 'skin', tier, skin: s }
           items.set(s.uuid, base)
-          for (const l of s.levels || []) items.set(l.uuid, { ...base, icon: l.displayIcon || icon })
+          for (const l of s.levels || []) items.set(l.uuid, base)
           for (const c of s.chromas || []) items.set(c.uuid, { ...base, name: c.displayName, icon: c.fullRender || c.displayIcon || icon })
         }
         for (const b of buddies) items.set(b.uuid, { name: b.displayName, icon: b.displayIcon, kind: 'buddy' })
