@@ -36,6 +36,27 @@ Live match ranks, scouting, skins, your party, Discord presence and more, all th
 | ⬆️ **Auto updates** | New versions show up in the app and install in one click. |
 | 🎨 **Seven themes** | Midnight, Onyx, Ember, Glacier, Verdant, Amethyst and Gilded. |
 
+## 📸 Preview
+
+<p align="center">
+  <a href="docs/screenshots/live-match.png"><img src="docs/screenshots/live-match.png" alt="Live Match: both teams with current rank, peak rank and Vandal / Phantom skins" /></a>
+</p>
+
+| 🔍 Scout any player | 🔫 See anyone's skins |
+| :---: | :---: |
+| [![Scout panel with rank history, recent performance and matches](docs/screenshots/scout.png)](docs/screenshots/scout.png) | [![Skins panel with card, sprays, weapon skins and buddies](docs/screenshots/skins.png)](docs/screenshots/skins.png) |
+
+<p align="center">
+  <a href="docs/screenshots/overlay.jpg"><img src="docs/screenshots/overlay.jpg" alt="In-game overlay with both teams' ranks" /></a>
+  <br><sub>🖥️ The in-game overlay, toggled with <code>Ctrl+Shift+O</code></sub>
+</p>
+
+| 👥 Lobby & Party | 🎮 Discord presence |
+| :---: | :---: |
+| [![Lobby and party controls](docs/screenshots/lobby.png)](docs/screenshots/lobby.png) | [![Discord Rich Presence settings and profile preview](docs/screenshots/discord.png)](docs/screenshots/discord.png) |
+
+<sub>Screenshots use sample data: the players, names and stats are made up. Streamer-mode players show only their agent, just like in a real match.</sub>
+
 ## ⬇️ Download
 
 Grab the latest version from **[Releases](https://github.com/booomxd/spectre/releases/latest)**:

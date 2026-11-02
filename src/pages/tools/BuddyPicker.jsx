@@ -48,7 +48,7 @@ export default function BuddyPicker({ owned, value, usedInstances, onChange }) {
             const free = g.instances.some(x => lc(x) === lc(value?.instance) || !usedInstances.has(lc(x)))
             return (
               <button key={g.level.uuid} disabled={!free && !on} onClick={() => choose(g)} title={g.buddy.displayName}
-                className={cx('lift relative h-[72px] rounded-xl border p-1.5 flex flex-col items-center justify-between', on ? 'border-accent bg-accent/10' : 'border-line bg-surface', !free && !on && 'opacity-35')}>
+                className={cx('lift relative h-[72px] rounded-xl border p-1.5 flex flex-col items-center justify-between', on ? 'border-accent bg-accent/10' : 'border-line bg-surface', !free && !on && 'opacity-[0.35]')}>
                 <img src={g.level.displayIcon} className='h-10 object-contain' loading='lazy' />
                 <span className='w-full truncate text-[9px] text-muted text-center'>{g.buddy.displayName}</span>
                 {g.instances.length > 1 && <span className='absolute top-1 right-1 text-[9px] font-bold text-muted'>x{g.instances.length}</span>}
