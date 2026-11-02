@@ -1,5 +1,5 @@
 // Every page in the app. The sidebar renders these groups in order; `tab` picks which top tab owns it.
-import { FiActivity, FiAward, FiClock, FiCompass, FiEdit3, FiFileText, FiGrid, FiLayers, FiMessageSquare, FiRadio, FiSearch, FiSettings, FiShoppingBag, FiTarget, FiTrendingUp, FiUsers, FiUser, FiZap } from 'react-icons/fi'
+import { FiActivity, FiAward, FiClock, FiCompass, FiEdit3, FiFileText, FiGrid, FiLayers, FiMessageSquare, FiRadio, FiSearch, FiSettings, FiShoppingBag, FiTarget, FiTrendingUp, FiUsers, FiUser, FiUserCheck, FiZap } from 'react-icons/fi'
 import { FaDiscord } from 'react-icons/fa'
 import { GiTrophy } from 'react-icons/gi'
 import { GunIcon } from './pages/live/parts'
@@ -13,6 +13,7 @@ import PlayerSearch from './pages/PlayerSearch'
 import MatchHistory from './pages/MatchHistory'
 import Memo from './pages/Memo'
 import Activity from './pages/Activity'
+import FriendActivity from './pages/FriendActivity'
 import Shop from './pages/Shop'
 import Discord from './pages/Discord'
 import Weapons from './pages/Weapons'
@@ -41,6 +42,7 @@ export const GROUPS = [
       { id: 'search', label: 'Player Search', icon: FiSearch, component: PlayerSearch },
       { id: 'history', label: 'Match History', icon: FiClock, component: MatchHistory },
       { id: 'memo', label: 'Notes', icon: FiEdit3, component: Memo },
+      { id: 'friendlog', label: 'Activity', icon: FiUserCheck, component: FriendActivity },
       { id: 'activity', label: 'Encounters', icon: FiActivity, component: Activity },
     ]
   },

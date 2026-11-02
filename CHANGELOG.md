@@ -1,5 +1,19 @@
 # 📜 Changelog
 
+## 2.4.0
+
+### 📝 Notes
+- Notes is now a notebook: sections with their own color and icon, each holding notes, crosshair codes, links and chat snippets
+- Everything saves as you type, and Reset notes starts over
+- Notes on players still open from Live Match, Friends and scoreboards
+
+### 👤 Activity
+- New page: a timeline of friends who added you, removed you or changed their name, with filters, search and Copy ID
+
+### 🛠️ Fixes
+- Short player names no longer get cut off in Live Match rows
+- The in-game overlay stays fully see-through around its rounded corners
+
 ## 2.3.0
 
 ### ✨ A cleaner UI

@@ -47,7 +47,16 @@ Look up any player by Riot ID (`Name#Tag`): current and peak rank, act-by-act hi
 Your recent matches with scores, K/D/A, ACS, ADR and headshot %. Open any match for the full scoreboard and round-by-round breakdown. Every player is named, with a link to their profile and notes, except streamer-mode players in your current match, who show only their agent.
 
 ### 📝 Notes
-Private notes, tags and a rating you attach to players. Notes show up next to those players in Live Match.
+A notebook saved on your PC. Make sections (say, one per map), give each a color and icon, and keep in each:
+- **Notes:** lineups, setups and strats (up to 3,000 characters, saved as you type)
+- **Crosshairs:** named crosshair codes with one-click copy
+- **Links:** guides and lineup videos that open in your browser
+- **Chat snippets:** messages you send often, with one-click copy
+
+Notes on players still work: add one from Live Match, Friends or a scoreboard, and it shows next to that player in Live Match.
+
+### 👤 Activity
+A timeline of your friends list: who added you, who removed you and who changed their name. Spectre checks every couple of minutes while it's open and catches anything that changed while it was closed. Filter by type, search by name, copy a Riot ID, or scan right away.
 
 ### 🤝 Encounters
 Friends and party members you played with in your last 20 matches, sorted by how often. Other players stay hidden.
