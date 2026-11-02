@@ -2,7 +2,10 @@
 const DEFAULTS = {
     launchAtLogin: false,
     minimizeToTray: false,
-    overlay: { opacity: 0.9, scale: 1 },
+    overlay: {
+        opacity: 0.9, scale: 1, autoShow: false, locked: false, showPeak: true,
+        hotkey: 'Ctrl+Shift+O', lockHotkey: 'Ctrl+Shift+L',
+    },
     discord: {
         enabled: false, showMode: true, showMap: true, showAgent: false, agentImage: false, showRank: true, showPeak: false,
         showLevel: false, showParty: true, showScore: true, showElapsed: true, showLobby: true,
@@ -21,17 +24,25 @@ function load(riot) {
     };
 }
 
+// Other backend modules (e.g. the overlay's hotkeys) can react to saved changes.
+const listeners = new Set();
+function update(riot, patch = {}) {
+    const cur = load(riot);
+    const next = {
+        ...cur, ...patch,
+        overlay: { ...cur.overlay, ...patch.overlay },
+        discord: { ...cur.discord, ...patch.discord },
+    };
+    riot.writeStore('settings', next);
+    listeners.forEach(fn => { try { fn(next, patch); } catch (e) { } });
+    return next;
+}
+
 module.exports = ({ riot, handle, emit, app }) => {
     handle('settings:get', () => load(riot));
 
     handle('settings:set', (patch = {}) => {
-        const cur = load(riot);
-        const next = {
-            ...cur, ...patch,
-            overlay: { ...cur.overlay, ...patch.overlay },
-            discord: { ...cur.discord, ...patch.discord },
-        };
-        riot.writeStore('settings', next);
+        const next = update(riot, patch);
         if ('launchAtLogin' in patch) {
             try { app.setLoginItemSettings({ openAtLogin: !!next.launchAtLogin }); } catch (e) { }
         }
@@ -60,4 +71,6 @@ module.exports = ({ riot, handle, emit, app }) => {
     });
 };
 module.exports.load = load;
+module.exports.update = update;
+module.exports.onChange = fn => listeners.add(fn);
 module.exports.DEFAULTS = DEFAULTS;
