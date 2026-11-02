@@ -4,7 +4,7 @@
   "description": "Spectre",
   "author": "shaur",
   "private": true,
-  "version": "2.2.1",
+  "version": "2.3.0",
   "main": "public/main.js",
   "homepage": "./",
   "build": {
