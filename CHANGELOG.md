@@ -1,5 +1,27 @@
 # 📜 Changelog
 
+## 2.2.0
+
+### ⬆️ In-app updates
+- Spectre checks for new releases and offers a one-click update that downloads, verifies, installs and restarts
+- Portable copies get a link to the new download
+
+### 🖥️ Overlay
+- Global hotkeys: show / hide (default `Ctrl+Shift+O`) and lock / unlock (default `Ctrl+Shift+L`)
+- Click-through mode, so the game gets every click
+- Optional auto-show during agent select and matches
+- No longer steals focus from the game; settings apply instantly
+- Refined rows: colored rank with RR, peak icon, KD for scouted players, team average rank, Deathmatch as one list
+
+### 📜 Patch Notes
+- Separate tabs for Spectre and VALORANT notes
+
+### 💡 Suggestions
+- New page to send ideas and bug reports straight to the developer
+
+### 🎨 App
+- Settings → About shows the real version
+
 ## 2.1.0
 
 ### 🎯 Live Match
