@@ -119,7 +119,7 @@ function MatchRow({ m, agents, maps, i }) {
   const [text, tone, edge] = RESULTS[m.result] || RESULTS.loss
   return (
     <div className={cx('anim-rise relative overflow-hidden flex items-center gap-3 rounded-xl border border-line border-l-2 bg-surface px-3 py-2.5', edge)} style={{ '--i': Math.min(i, 12) }}>
-      {map?.listViewIcon && <img src={map.listViewIcon} alt='' className='absolute inset-0 w-full h-full object-cover opacity-15' draggable={false} loading='lazy' />}
+      {map?.listViewIcon && <img src={map.listViewIcon} alt='' className='absolute inset-0 w-full h-full object-cover opacity-[0.15]' draggable={false} loading='lazy' />}
       <div className='relative flex items-center gap-3 w-full min-w-0'>
         {ag ? <img src={ag.displayIcon} alt={ag.displayName} title={ag.displayName} className='w-10 h-10 rounded-lg object-cover shrink-0' draggable={false} /> : <div className='w-10 h-10 rounded-lg bg-surface-2 shrink-0' />}
         <div className='min-w-0 flex-1 leading-tight'>
