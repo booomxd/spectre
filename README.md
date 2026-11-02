@@ -32,6 +32,8 @@ Live match ranks, scouting, skins, your party, Discord presence and more, all th
 | 🔫 **Skins** | See anyone's loadout in a match, and change your own skins right from agent select. |
 | 🎮 **Discord presence** | "Playing Spectre" with your mode, map art, score, rank and party, all fully customizable. |
 | 🕶️ **Streamer-safe** | Players who hide their name in VALORANT stay hidden. No names, IDs or cards, ever. |
+| 🖥️ **In-game overlay** | Both teams' ranks over the game, toggled with a hotkey, with optional click-through and auto-show. |
+| ⬆️ **Auto updates** | New versions show up in the app and install in one click. |
 | 🎨 **Seven themes** | Midnight, Onyx, Ember, Glacier, Verdant, Amethyst and Gilded. |
 
 ## ⬇️ Download

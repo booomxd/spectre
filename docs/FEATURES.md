@@ -28,7 +28,7 @@ Two tabs that follow the game: **Lobby & Party** in menus, **Live Match** from a
 - **Scout** (any player) opens a side panel: current rank and career peak, recent performance (win rate, KDA, combat score, headshot %, KAST, damage per round, first bloods), rank history by act, top agents, and the last 10 competitive matches with RR changes.
 - **👁 Skins** (any player) shows their card and title, sprays, and every weapon skin with its gun buddy.
 - Deathmatch splits everyone across both columns.
-- An always-on-top **overlay** with both rosters. Set its opacity and size in Settings.
+- An always-on-top **overlay** with both rosters, ranks, RR, peaks and team average rank. Show or hide it with a global hotkey (default `Ctrl+Shift+O`), lock it so clicks pass through to the game (`Ctrl+Shift+L`), or let it open automatically during matches. It never steals focus from the game. Works over VALORANT in Windowed fullscreen.
 
 **Streamer mode:** players who hide their name are shown only by their agent. Their name, Riot ID, account level, card and title never appear, in rows or panels.
 
@@ -87,7 +87,13 @@ A whiteboard for planning rounds. Pick a map, place agents and abilities, and dr
 ## ⚙️ System
 
 ### 📰 Patch Notes
-The latest official VALORANT patch notes.
+Two tabs: **Spectre** release notes straight from GitHub, and the latest official **VALORANT** patch notes.
+
+### 💡 Suggestions
+Send ideas, bug reports or anything else straight to the developer by email. Only your message, an optional contact and your Spectre version are sent.
+
+### ⬆️ Updates
+Spectre checks for new releases on launch and every few hours. When one is out, it offers a one-click update that downloads and verifies the installer, installs it and restarts. Portable copies get a link to the new download.
 
 ### 🎨 Settings
-Seven themes (Midnight, Onyx, Ember, Glacier, Verdant, Amethyst, Gilded), the start page, launch at login, minimize to tray, and overlay opacity and size.
+Seven themes (Midnight, Onyx, Ember, Glacier, Verdant, Amethyst, Gilded), the start page, launch at login, minimize to tray, and overlay hotkeys, click-through, auto-show, opacity and size.
