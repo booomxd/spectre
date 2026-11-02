@@ -1,5 +1,27 @@
 # 📜 Changelog
 
+## 2.2.1
+
+### 🕘 Match history
+- Every player in a match is named, with profile and note buttons, like other trackers
+- Streamer-mode players in your current match stay hidden everywhere, match histories included
+
+### 🎭 LARP
+- Customize no longer refuses cards and titles you don't own (they're presence-only)
+
+### 🔫 Images
+- Default skins show the real gun instead of valorant-api's "X" placeholder
+- Game modes show their VALORANT icons in Lobby & Party and Live Match
+- The Weapons icon is the in-game kill-feed silhouette
+
+### ⬆️ Updates
+- **Check for updates** button in Settings → About
+
+### 🛠️ Fixes
+- No more "Entitlements token is not ready yet": Spectre waits for the Riot Client and renews its tokens before they expire
+- The taskbar, desktop shortcut and Task Manager show Spectre's ghost and name instead of Electron's
+- Scout's recent matches and unavailable buddies in Loadout are dimmed as intended
+
 ## 2.2.0
 
 ### ⬆️ In-app updates

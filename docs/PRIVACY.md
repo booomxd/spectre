@@ -22,9 +22,10 @@ Settings, player notes, loadout presets and playbooks are saved as JSON files in
 
 ## Other players
 
-- **Streamer mode is respected.** If a player hides their name in VALORANT, Spectre never shows their name, Riot ID, account level or player card. It never even asks Riot's name service about them. They're shown only by their agent.
+- **Streamer mode is respected in your matches.** If a player in your current agent select or match hides their name, Spectre never shows their name, Riot ID, account level or player card anywhere in the app, match histories included. It never even asks Riot's name service about them. They're shown only by their agent.
+- **Match history** names the players of past matches, like other trackers do. Riot doesn't record who had streamer mode on in a past match, so hiding follows your current match.
 - **Scouting a hidden player** shows only their rank and recent competitive form. The app's interface refers to them by a random code that changes every match, so no identifying data reaches the screen.
-- **Agent select:** ranks are shown only for you, your friends and your party. No one else is looked up before the match starts.
+- **Agent select:** ranks are shown for your own team only. Opponents aren't looked up until the match starts.
 - Player notes are private and never leave your PC.
 
 ## Disclaimer

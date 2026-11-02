@@ -9,21 +9,22 @@ import ScoutPanel from './live/ScoutPanel'
 import SkinsPanel from './live/SkinsPanel'
 import Lobby from './live/Lobby'
 import Loadout from './Loadout'
-import { GiCrossedSwords } from 'react-icons/gi'
 import { FiX } from 'react-icons/fi'
-import { PlayerCard, RankIcon } from './live/parts'
+import { GunIcon, ModeIcon, PlayerCard, RankIcon } from './live/parts'
 import { queueName, useMemos } from './live/util'
+
+const SkinsIcon = () => <GunIcon size={14} />
 
 function Banner({ m, onChangeSkins }) {
   return (
     <Card className='relative overflow-hidden mb-5 anim-fade h-32'>
       {m.map?.splash && <img src={m.map.splash} alt='' className='absolute inset-0 w-full h-full object-cover opacity-50' />}
       <div className='absolute inset-0 bg-gradient-to-r from-bg via-bg/70 to-transparent' />
-      {m.state === 'pregame' && <Button className='absolute top-1/2 -translate-y-1/2 right-5' icon={GiCrossedSwords} onClick={onChangeSkins}>Change skins</Button>}
+      {m.state === 'pregame' && <Button className='absolute top-1/2 -translate-y-1/2 right-5' icon={SkinsIcon} onClick={onChangeSkins}>Change skins</Button>}
       <div className='relative h-full flex flex-col justify-end p-5'>
         <div className='flex items-center gap-2 mb-1'>
           <Badge tone={m.state === 'ingame' ? 'good' : 'warn'}>{m.state === 'ingame' ? 'In match' : 'Agent select'}</Badge>
-          <Badge>{queueName(m.queueId)}</Badge>
+          <Badge><ModeIcon queue={m.queueId} size={11} />{queueName(m.queueId)}</Badge>
           {m.server && <Badge className='capitalize'>{m.server}</Badge>}
         </div>
         <h2 className='font-display text-3xl font-bold uppercase leading-none'>{m.map?.name || 'Unknown map'}</h2>

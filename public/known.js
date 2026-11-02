@@ -1,4 +1,5 @@
-// Puuids the VALORANT client itself lets the user see: self, friends and current party members.
+// Puuids the VALORANT client itself lets the user see: self, friends and current party members, plus the
+// streamer-mode players of the user's current match.
 // One shared instance (and cache) for every module.
 let instance = null;
 
@@ -23,10 +24,33 @@ function create(riot) {
         cache = { at: Date.now(), all, party, friends };
         return cache;
     }
+
+    // Streamer-mode players in your current agent select or match. They stay hidden everywhere, match histories
+    // included, so other data can't unmask who you're playing with or against. null when the game can't be read.
+    let live = { at: 0, hidden: null };
+    const notIn = e => { if (e.response?.status === 404) return null; throw e; };
+    async function liveHidden() {
+        if (Date.now() - live.at < 15000) return live.hidden;
+        const me = riot.state.puuid;
+        let hidden = new Set();
+        try {
+            for (const [base, players] of [['core-game', m => m.Players], ['pregame', m => m.AllyTeam?.Players]]) {
+                const p = await riot.glz('get', `${base}/v1/players/${me}`).catch(notIn);
+                if (!p?.MatchID) continue;
+                const m = await riot.glz('get', `${base}/v1/matches/${p.MatchID}`);
+                for (const x of players(m) || []) if (x.Subject !== me && x.PlayerIdentity?.Incognito) hidden.add(x.Subject);
+                break;
+            }
+        } catch (e) { hidden = null; }
+        live = { at: Date.now(), hidden };
+        return hidden;
+    }
+
     return {
         knownPuuids: async () => (await load()).all,
         friendPuuids: async () => (await load()).friends, // self + friends only
         partyPuuids: async () => (await load()).party,
+        liveHidden,
     };
 }
 

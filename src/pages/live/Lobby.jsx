@@ -3,7 +3,7 @@ import { FiCheck, FiKey, FiLock, FiPlay, FiSquare, FiUnlock, FiUserPlus, FiUsers
 import { FaCrown } from 'react-icons/fa'
 import { Badge, Button, Card, Empty, Input, Skeleton, toast, withToast } from '../../ui'
 import { invoke, useInvoke } from '../../lib/ipc'
-import { PlayerCard, RankIcon } from './parts'
+import { ModeIcon, PlayerCard, RankIcon } from './parts'
 import { queueName } from './util'
 
 const cx = (...c) => c.filter(Boolean).join(' ')
@@ -100,7 +100,8 @@ export default function Lobby({ active, matchState }) {
                 onClick={() => act('queue', () => invoke('social:queue', q))}
                 className={cx('flex items-center justify-between h-11 px-3 rounded-lg border text-[13px] font-semibold transition-colors disabled:opacity-60 disabled:cursor-not-allowed',
                   p.queueId === q ? 'border-accent/60 bg-accent/10 text-text' : 'border-line bg-surface-2/40 text-muted hover:text-text hover:border-accent/30')}>
-                {queueName(q)}{p.queueId === q && <FiCheck className='text-accent' />}
+                <span className='flex items-center gap-2 min-w-0'><ModeIcon queue={q} size={16} /><span className='truncate'>{queueName(q)}</span></span>
+                {p.queueId === q && <FiCheck className='text-accent shrink-0' />}
               </button>
             ))}
           </div>
