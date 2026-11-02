@@ -55,9 +55,9 @@ export default function PlayerRow({ p, i, memo, onScout, onSkins }) {
         <div className='min-w-0 flex-1'>
           <div className='flex items-center gap-1.5 min-w-0'>
             {!p.puuid
-              ? <span className='text-[14px] font-semibold tracking-tight text-text truncate'>{displayName(p)}</span>
-              : <button className='text-[14px] font-semibold tracking-tight text-text truncate hover:text-accent transition-colors text-left' onClick={open} title='Open profile'>{displayName(p)}</button>}
-            {!p.hidden && p.tagLine && <span className='text-[11px] text-muted shrink-0'>#{p.tagLine}</span>}
+              ? <span className='text-[14px] font-semibold tracking-tight text-text truncate shrink-0 max-w-[65%]'>{displayName(p)}</span>
+              : <button className='text-[14px] font-semibold tracking-tight text-text truncate shrink-0 max-w-[65%] hover:text-accent transition-colors text-left' onClick={open} title='Open profile'>{displayName(p)}</button>}
+            {!p.hidden && p.tagLine && <span className='text-[11px] text-muted truncate'>#{p.tagLine}</span>}
             {!p.hidden && p.tagLine && <button className='text-muted hover:text-text transition-colors shrink-0' onClick={copy} title='Copy Riot ID'><FiCopy size={11} /></button>}
             {p.hidden && <span className='text-muted shrink-0' title='Name hidden by streamer mode'><FiEyeOff size={12} /></span>}
             {p.self && <Badge tone='accent'>You</Badge>}

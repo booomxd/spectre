@@ -81,10 +81,13 @@ export default function Overlay() {
   const d = live.data
 
   useEffect(() => {
-    const prev = [document.documentElement.style.background, document.body.style.background]
-    document.documentElement.style.background = 'transparent'
+    // color-scheme: normal too, so the dark theme's color-scheme never paints an opaque page behind the panel.
+    const root = document.documentElement.style
+    const prev = [root.background, root.colorScheme, document.body.style.background]
+    root.background = 'transparent'
+    root.colorScheme = 'normal'
     document.body.style.background = 'transparent'
-    return () => { document.documentElement.style.background = prev[0]; document.body.style.background = prev[1] }
+    return () => { root.background = prev[0]; root.colorScheme = prev[1]; document.body.style.background = prev[2] }
   }, [])
 
   const inMatch = d && d.state !== 'menus'

@@ -9,7 +9,7 @@ const store = {
   set: (k, v) => { try { localStorage.setItem(k, v) } catch {} },
 }
 
-// Themes: the same seven as the app. The page defaults to Amethyst to match the ghost logo.
+// Themes: the same twelve as the app. The page defaults to Amethyst to match the ghost logo.
 const THEMES = {
   midnight: ['Midnight', '255 70 85', '255 140 120'],
   onyx: ['Onyx', '235 235 235', '160 160 160'],
@@ -18,6 +18,11 @@ const THEMES = {
   verdant: ['Verdant', '62 220 140', '160 240 190'],
   amethyst: ['Amethyst', '176 120 255', '230 160 255'],
   gilded: ['Gilded', '232 190 90', '255 225 150'],
+  aurora: ['Aurora', '45 212 191', '167 139 250'],
+  sakura: ['Sakura', '255 121 176', '255 190 215'],
+  abyss: ['Abyss', '92 132 255', '120 220 255'],
+  sunset: ['Sunset', '255 94 140', '255 176 92'],
+  pearl: ['Pearl', '99 91 255', '214 92 255'],
 }
 function setTheme(key, save) {
   const t = THEMES[key]
