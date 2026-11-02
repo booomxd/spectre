@@ -1,60 +1,116 @@
+<div align="center">
+
+<img src="src/assets/spectre-logo.svg" width="128" alt="Spectre logo" />
+
 # Spectre
 
-A desktop companion for VALORANT on Windows. Spectre shows your store, friends and party, live match rosters with ranks, match history, progression and loadouts, and includes a tactics board and profile tools.
+**👻 A sleek desktop companion for VALORANT on Windows**
 
-It connects through the Riot Client you're already signed in to, so there's no Riot login inside the app and no password to give it.
+Live match ranks, scouting, skins, your party, Discord presence and more, all through the Riot Client you're already signed in to.
 
+[![Latest release](https://img.shields.io/github/v/release/booomxd/spectre?style=for-the-badge&color=8b5cf6&label=release)](https://github.com/booomxd/spectre/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/booomxd/spectre/total?style=for-the-badge&color=6d28d9)](https://github.com/booomxd/spectre/releases)
+![Windows](https://img.shields.io/badge/Windows-10%20%7C%2011-2a1458?style=for-the-badge&logo=windows&logoColor=white)
+![Electron](https://img.shields.io/badge/Electron-33-2a1458?style=for-the-badge&logo=electron&logoColor=white)
+![React](https://img.shields.io/badge/React-18-2a1458?style=for-the-badge&logo=react&logoColor=white)
+
+**[⬇️ Download](https://github.com/booomxd/spectre/releases/latest)** · **[✨ Features](docs/FEATURES.md)** · **[🔒 Privacy](docs/PRIVACY.md)** · **[🛠️ Development](docs/DEVELOPMENT.md)** · **[📜 Changelog](CHANGELOG.md)**
+
+</div>
+
+---
+
+> [!NOTE]
 > Spectre is a fan-made project. It isn't endorsed by Riot Games, and using third-party tools is at your own risk.
 
-## Download
+## ✨ Highlights
 
-Builds are published on the **[Spectre releases page](https://github.com/booomxd/spectre-releases/releases)**. Each release has:
-
-- `Spectre.Setup.x.y.z.exe`: one-click installer, adds a desktop shortcut
-- `Spectre-x.y.z-win.zip`: portable build, unzip and run `Spectre.exe`
-
-Requirements: Windows 10 or 11 (64-bit), VALORANT installed, and the Riot Client open and signed in.
-
-## Features
-
-| Area | Pages |
+| | |
 | --- | --- |
-| **Live** | Dashboard, Friends (requests, party, chat), Live Match with an always-on-top overlay |
-| **Stats** | Progression, Loadout, Player Search, Match History, Notes, Encounters |
-| **Explore** | Shop (bundles, daily offers, Night Market), Discord Rich Presence, Weapons, Leaderboard |
-| **LARP** | Rank Editor, Customize, Premier, Status |
-| **Tactics** | Strategy board with maps, agents, abilities and drawing tools, plus saved playbooks |
+| 🎯 **Live Match** | Every player's current-act rank, RR and peak, their skins, and a one-click **Scout** with rank history, recent form and matches. |
+| 👥 **Lobby & Party** | Invite friends, share invite codes, pick a mode, ready up and start matchmaking without opening the game. |
+| 🔫 **Skins** | See anyone's loadout in a match, and change your own skins right from agent select. |
+| 🎮 **Discord presence** | "Playing Spectre" with your mode, map art, score, rank and party, all fully customizable. |
+| 🕶️ **Streamer-safe** | Players who hide their name in VALORANT stay hidden. No names, IDs or cards, ever. |
+| 🎨 **Seven themes** | Midnight, Onyx, Ember, Glacier, Verdant, Amethyst and Gilded. |
 
-See [docs/FEATURES.md](docs/FEATURES.md) for what each page does.
+## ⬇️ Download
 
-## Privacy
+Grab the latest version from **[Releases](https://github.com/booomxd/spectre/releases/latest)**:
 
-Spectre has no servers or accounts of its own and sends no telemetry. It only talks to the Riot Client on your PC, Riot's game services, and public content sites for images and patch notes. Streamer-mode players are never named. Details are in [docs/PRIVACY.md](docs/PRIVACY.md).
+| File | What it is |
+| --- | --- |
+| 📦 `Spectre.Setup.x.y.z.exe` | Installer. One click, installs for your user only, adds a desktop shortcut. |
+| 🗜️ `Spectre-x.y.z-win.zip` | Portable. Unzip anywhere and run `Spectre.exe`. |
 
-## Running from source
+**Requirements:** Windows 10 or 11 (64-bit), VALORANT installed, and the Riot Client open and signed in.
 
-```
+> [!TIP]
+> Spectre isn't code-signed, so Windows SmartScreen may warn on first launch. Click **More info**, then **Run anyway**.
+
+## 🧭 What's inside
+
+| Section | Pages |
+| --- | --- |
+| 🔴 **Live** | Dashboard · Friends & chat · Live Match (with Lobby & Party and an always-on-top overlay) |
+| 📊 **Stats** | Progression · Loadout · Player Search · Match History · Notes · Encounters |
+| 🧭 **Explore** | Shop & Night Market · Discord · Weapons · Leaderboard |
+| 🎭 **LARP** | Rank Editor · Customize (any card or title) · Premier · Status |
+| 🗺️ **Tactics** | Strategy board with maps, agents, abilities and saved playbooks |
+
+Every page is explained in **[docs/FEATURES.md](docs/FEATURES.md)**.
+
+## 🔒 Privacy
+
+- 🔑 No Riot password and no accounts: Spectre uses the Riot Client session already on your PC.
+- 📡 No servers of its own, no analytics, no telemetry.
+- 👻 Streamer-mode players are never named or identified.
+- 💾 Your settings and notes stay in `%APPDATA%\Spectre`.
+
+Details in **[docs/PRIVACY.md](docs/PRIVACY.md)**.
+
+## 🛠️ Build from source
+
+```bash
 npm install
-npm run electron:dev
+npm run electron:dev      # run with hot reload
+npm run electron:build    # installer + portable zip in release/
 ```
 
-Requires Node.js 18 or newer. See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for the architecture, the backend test helper and the release process.
+Requires Node.js 18+. Architecture, the backend test helper and the release process are in **[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)**.
 
-## Building
+## ❓ FAQ
 
-```
-npm run electron:build
-```
+<details>
+<summary><b>Spectre says it's waiting for the Riot Client</b></summary>
 
-Writes `Spectre Setup x.y.z.exe` and `Spectre-x.y.z-win.zip` to `release/`.
+Open the Riot Client and sign in. Spectre connects on its own within a few seconds.
+</details>
 
-## Documentation
+<details>
+<summary><b>Live Match is empty</b></summary>
 
-- [Features](docs/FEATURES.md)
-- [Privacy and data](docs/PRIVACY.md)
-- [Development](docs/DEVELOPMENT.md)
-- [Changelog](CHANGELOG.md)
+It fills in once agent select starts. Before that, the Lobby & Party tab shows your party.
+</details>
 
-## Legal
+<details>
+<summary><b>My LARP edits disappeared</b></summary>
+
+VALORANT resets your presence when your party, queue or match changes. Turn on <b>Keep applied</b> and Spectre re-sends your edits automatically.
+</details>
+
+<details>
+<summary><b>How do I uninstall?</b></summary>
+
+Windows Settings → Apps → Installed apps → Spectre. For the portable version, delete its folder. To remove saved data too, delete <code>%APPDATA%\Spectre</code>.
+</details>
+
+## ⚖️ Legal
 
 Spectre was created under Riot Games' "Legal Jibber Jabber" policy using assets owned by Riot Games. Riot Games does not endorse or sponsor this project. VALORANT and Riot Games are trademarks or registered trademarks of Riot Games, Inc.
+
+<div align="center">
+
+Made with 👻 by <a href="https://github.com/booomxd">booomxd</a>
+
+</div>
