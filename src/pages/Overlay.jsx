@@ -31,9 +31,9 @@ function Row({ p, showPeak, tiers }) {
   const t = tiers?.[p.rank]
   const sub = [p.level != null && `Lv ${p.level}`, p.scouted && `${p.scouted.kd.toFixed(2)} KD`, p.scouted?.hs != null && `${p.scouted.hs}% HS`].filter(Boolean).join(' · ')
   return (
-    <div className={cx('flex items-center gap-2 h-10 pl-1 pr-2 rounded-lg transition-colors', p.self ? 'bg-accent/10' : 'bg-white/[0.035]')}>
+    <div className={cx('flex items-center gap-2 h-10 pl-1 pr-2 rounded-lg transition-colors', p.self ? 'accent-soft' : 'bg-surface-2/70 border border-line/60')}>
       <span className='w-[3px] h-6 rounded-full shrink-0' style={{ background: color || 'transparent' }} title={color ? 'Your party' : undefined} />
-      <AgentIcon agent={p.agent} size={28} locked={p.locked} className='!rounded-md' />
+      <AgentIcon agent={p.agent} size={28} locked={p.locked} className='!rounded-lg' />
       <div className='flex-1 min-w-0 leading-tight'>
         <div className={cx('flex items-center gap-1 text-[12px] font-semibold', p.self ? 'text-accent' : 'text-text')}>
           <span className='truncate'>{displayName(p)}</span>
@@ -44,7 +44,7 @@ function Row({ p, showPeak, tiers }) {
       {p.ranked && (<>
         <div className='text-right leading-tight shrink-0'>
           <div className='text-[10.5px] font-semibold' style={{ color: p.rank && t ? `#${t.color.slice(0, 6)}` : undefined }}>{p.rank ? title(t?.tierName) : 'Unranked'}</div>
-          {p.rank > 0 && <div className='text-[9.5px] text-muted'>{p.rr} RR</div>}
+          {p.rank > 0 && <div className='text-[9.5px] text-muted tabular-nums'>{p.rr} RR</div>}
         </div>
         <RankIcon tier={p.rank} size={24} />
         {showPeak && p.peak > p.rank && <RankIcon tier={p.peak} size={16} className='opacity-70 -ml-1' />}
@@ -59,9 +59,9 @@ function Team({ label, players, tone, showPeak, tiers }) {
   const avg = ranked.length ? Math.round(ranked.reduce((a, p) => a + p.rank, 0) / ranked.length) : 0
   return (
     <div className='mb-2.5 last:mb-0'>
-      <div className='flex items-center gap-2 px-1 mb-1'>
-        <span className={cx('text-[10px] font-bold tracking-[0.16em] uppercase', tone)}>{label}</span>
-        <span className='text-[10px] text-muted'>{players.length}</span>
+      <div className='flex items-center gap-2 px-1 mb-1.5'>
+        <span className={cx('text-[10.5px] font-semibold tracking-[0.12em] uppercase', tone)}>{label}</span>
+        <span className='px-1.5 rounded-full bg-surface-2 border border-line/60 text-[10px] text-muted tabular-nums'>{players.length}</span>
         {avg > 0 && <span className='ml-auto flex items-center gap-1 text-[10px] text-muted'>avg <RankIcon tier={avg} size={14} /> {title(tiers?.[avg]?.tierName)}</span>}
       </div>
       <div className='grid gap-1'>{players.map((p, i) => <Row key={p.ref || i} p={p} showPeak={showPeak} tiers={tiers} />)}</div>
@@ -89,7 +89,7 @@ export default function Overlay() {
 
   const inMatch = d && d.state !== 'menus'
   const ffa = d?.state === 'ingame' && d.queueId === 'deathmatch'
-  const key = hotkey && <kbd className='px-1 rounded border border-white/15 bg-white/5 font-sans'>{hotkey}</kbd>
+  const key = hotkey && <kbd className='px-1.5 rounded-md border border-line bg-surface-2 text-text font-sans'>{hotkey}</kbd>
   let body
   if (!connected) body = <Hint>Waiting for the Riot Client...</Hint>
   else if (live.loading && !d) body = <div className='grid gap-1'>{Array.from({ length: 6 }, (_, i) => <div key={i} className='skeleton h-10 rounded-lg' />)}</div>
@@ -106,18 +106,19 @@ export default function Overlay() {
 
   return (
     <div className='h-screen w-screen overflow-hidden p-1' style={{ zoom: scale }}>
-      <div className='h-full flex flex-col rounded-2xl border border-white/10 overflow-hidden anim-fade' style={{ background: `rgb(var(--bg) / ${opacity})` }}>
-        <div className={cx('flex items-center gap-2 pl-2.5 pr-2 h-9 shrink-0 border-b border-white/10 select-none', !locked && 'cursor-move')} style={drag}>
+      <div className='h-full flex flex-col rounded-2xl border border-line overflow-hidden anim-fade shadow-[inset_0_1px_0_rgb(255_255_255/0.07)]'
+        style={{ background: `linear-gradient(180deg, rgb(var(--panel) / ${opacity}), rgb(var(--bg) / ${opacity}))` }}>
+        <div className={cx('flex items-center gap-2 pl-2.5 pr-2 h-9 shrink-0 border-b border-line select-none', !locked && 'cursor-move')} style={drag}>
           <img src={logo} alt='' className='w-4 h-4 shrink-0' draggable={false} />
-          <span className='flex-1 min-w-0 truncate text-[11px] font-bold tracking-[0.12em] uppercase text-text/90'>
+          <span className='flex-1 min-w-0 truncate font-display text-[12px] font-semibold tracking-tight text-text'>
             {inMatch ? `${d.map?.name || 'Match'} · ${queueName(d.queueId)}` : 'Spectre'}
           </span>
-          {inMatch && <span className={cx('flex items-center gap-1 text-[9.5px] font-bold uppercase tracking-wider', d.state === 'ingame' ? 'text-good' : 'text-warn')}>
+          {inMatch && <span className={cx('flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-semibold', d.state === 'ingame' ? 'bg-good/[0.15] text-good border-good/30' : 'bg-warn/[0.15] text-warn border-warn/30')}>
             <span className={cx('w-1.5 h-1.5 rounded-full anim-pulse', d.state === 'ingame' ? 'bg-good' : 'bg-warn')} />{d.state === 'ingame' ? 'Live' : 'Agent select'}
           </span>}
-          <button className='w-6 h-6 rounded-md flex items-center justify-center text-muted hover:text-text hover:bg-white/10 transition-colors' style={noDrag}
+          <button className='w-6 h-6 rounded-full flex items-center justify-center text-muted hover:text-text hover:bg-surface-2 transition-colors' style={noDrag}
             title='Lock: clicks pass through to the game' onClick={() => invoke('overlay:lock', true).catch(() => { })}>{locked ? <FiLock size={12} /> : <FiUnlock size={12} />}</button>
-          <button className='w-6 h-6 rounded-md flex items-center justify-center text-muted hover:text-bad hover:bg-white/10 transition-colors' style={noDrag}
+          <button className='w-6 h-6 rounded-full flex items-center justify-center text-muted hover:text-bad hover:bg-bad/[0.15] transition-colors' style={noDrag}
             title={hotkey ? `Hide (${hotkey})` : 'Hide'} onClick={() => invoke('overlay:close').catch(() => { })}><FiX size={13} /></button>
         </div>
         <div className='flex-1 min-h-0 overflow-y-auto p-1.5'>{body}</div>

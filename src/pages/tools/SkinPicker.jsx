@@ -28,12 +28,12 @@ export default function SkinPicker({ weapon, owned, value, onChange, maxHeight =
   return (
     <div className='flex flex-col gap-4'>
       {skin && (
-        <div className='flex gap-4 rounded-xl border border-line bg-bg/60 p-3 anim-fade'>
-          <div className='w-56 h-28 shrink-0 flex items-center justify-center rounded-lg bg-surface-2'>
+        <div className='glass flex gap-5 rounded-xl p-4 anim-fade'>
+          <div className='w-56 h-28 shrink-0 flex items-center justify-center rounded-lg bg-surface-2 border border-line'>
             <img key={selectionImage(skin, value.chromaId)} src={selectionImage(skin, value.chromaId)} className='anim-pop max-h-full max-w-full object-contain p-2' />
           </div>
-          <div className='min-w-0 flex-1 space-y-2.5'>
-            <div className='font-display text-lg font-bold uppercase truncate'>{skin.displayName}</div>
+          <div className='min-w-0 flex-1 space-y-3'>
+            <div className='font-display text-xl font-bold tracking-tight truncate'>{skin.displayName}</div>
             {skin.levels.length > 1 && (
               <div>
                 <Label>Level</Label>
@@ -44,7 +44,7 @@ export default function SkinPicker({ weapon, owned, value, onChange, maxHeight =
                     return (
                       <button key={l.uuid} disabled={!ok} onClick={() => onChange({ ...value, levelId: l.uuid })}
                         title={levelItemLabel(l) || `Level ${i + 1}`}
-                        className={cx('h-7 px-2.5 rounded-md border text-[11px] font-semibold transition-all', on ? 'border-accent bg-accent/15 text-accent' : 'border-line text-muted hover:text-text', !ok && 'opacity-30 cursor-not-allowed')}>
+                        className={cx('h-7 px-3 rounded-full border text-[11px] font-semibold transition-all', on ? 'accent-soft border-transparent text-accent' : 'border-line bg-surface-2/60 text-muted hover:text-text hover:bg-surface-2', !ok && 'opacity-30 cursor-not-allowed')}>
                         {i + 1}{levelItemLabel(l) && <span className='ml-1 font-normal opacity-70'>{levelItemLabel(l)}</span>}
                       </button>
                     )
@@ -62,7 +62,7 @@ export default function SkinPicker({ weapon, owned, value, onChange, maxHeight =
                     const on = lc(c.uuid) === lc(value.chromaId)
                     return (
                       <button key={c.uuid} onClick={() => onChange({ ...value, chromaId: c.uuid })} title={c.displayName}
-                        className={cx('w-9 h-9 rounded-lg border flex items-center justify-center bg-surface-2 transition-all hover:-translate-y-0.5', on ? 'border-accent ring-1 ring-accent/50' : 'border-line')}>
+                        className={cx('w-9 h-9 rounded-xl border flex items-center justify-center transition-all hover:-translate-y-0.5', on ? 'accent-soft border-transparent' : 'border-line bg-surface-2')}>
                         {(c.swatch || c.fullRender) ? <img src={c.swatch || c.fullRender} className='w-6 h-6 object-contain' /> : <span className='text-[10px] text-muted'>{i + 1}</span>}
                       </button>
                     )
@@ -80,14 +80,14 @@ export default function SkinPicker({ weapon, owned, value, onChange, maxHeight =
           <Input value={q} onChange={e => setQ(e.target.value)} placeholder={`Search your ${weapon.displayName} skins`} className='pl-9' />
         </div>
         {shown.length === 0 ? <Empty title='No owned skins match' hint='Only skins you own can be equipped.' className='py-8' /> : (
-          <div className='grid grid-cols-3 gap-2.5 overflow-y-auto pr-1 stagger' style={{ maxHeight }}>
+          <div className='grid grid-cols-3 gap-3 overflow-y-auto pr-1 stagger' style={{ maxHeight }}>
             {shown.map((s, i) => {
               const on = lc(s.uuid) === lc(value.skinId)
               const tier = tiers[lc(s.contentTierUuid)]
               return (
                 <button key={s.uuid} style={{ '--i': Math.min(i, 12) }} onClick={() => pick(s)}
-                  className={cx('lift anim-rise relative rounded-xl border bg-surface p-2 text-left', on ? 'border-accent bg-accent/10' : 'border-line')}>
-                  {on && <span className='absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-accent text-bg flex items-center justify-center text-[10px]'><FiCheck /></span>}
+                  className={cx('lift anim-rise relative rounded-xl p-2.5 text-left', on ? 'accent-soft border border-transparent' : 'glass')}>
+                  {on && <span className='accent-fill absolute top-2 right-2 w-4 h-4 rounded-full text-bg flex items-center justify-center text-[10px]'><FiCheck /></span>}
                   <div className='h-14 flex items-center justify-center'>
                     <img src={skinImage(s)} className='max-h-full max-w-full object-contain' loading='lazy' />
                   </div>

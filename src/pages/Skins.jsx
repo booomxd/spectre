@@ -43,24 +43,24 @@ function SkinsView({ active }) {
       actions={weapon && <Button variant='primary' icon={FiCheck} disabled={!dirty} loading={busy} onClick={equip}>Equip</Button>}>
       {error && !loadout ? <ErrorState error={error} onRetry={reload} /> : (
         <div className='grid grid-cols-[230px_1fr] gap-5 items-start'>
-          <div className='space-y-4'>
-            {!weapons ? Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className='h-12 mb-2 rounded-lg' />) : CATEGORIES.map(cat => {
+          <div className='space-y-5'>
+            {!weapons ? Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className='h-12 mb-2 rounded-xl' />) : CATEGORIES.map(cat => {
               const list = weapons.filter(w => catKey(w) === cat.key)
               if (!list.length) return null
               return (
                 <div key={cat.key}>
                   <SectionTitle>{cat.label}</SectionTitle>
-                  <div className='space-y-1.5 stagger'>
+                  <div className='space-y-2 stagger'>
                     {list.map((w, i) => {
                       const g = loadout?.Guns.find(x => lc(x.ID) === lc(w.uuid))
                       const sk = w.skins.find(s => lc(s.uuid) === lc(g?.SkinID))
                       const on = weapon && lc(w.uuid) === lc(weapon.uuid)
                       return (
                         <button key={w.uuid} style={{ '--i': i }} onClick={() => setWid(w.uuid)}
-                          className={cx('anim-rise w-full flex items-center gap-2.5 rounded-lg border px-2.5 py-1.5 text-left transition-all', on ? 'border-accent bg-accent/10' : 'border-line bg-surface hover:border-accent/40')}>
+                          className={cx('anim-rise w-full flex items-center gap-3 rounded-xl px-3 py-2 text-left transition-all', on ? 'accent-soft border border-transparent' : 'glass hover:bg-surface-2 hover:border-accent/40')}>
                           <img src={selectionImage(sk, g?.ChromaID) || w.displayIcon} className='w-12 h-8 object-contain shrink-0' loading='lazy' />
                           <span className='min-w-0'>
-                            <span className='block text-[12px] font-semibold uppercase tracking-wide'>{w.displayName}</span>
+                            <span className='block text-[13px] font-semibold text-text'>{w.displayName}</span>
                             <span className='block text-[11px] text-muted truncate'>{sk?.displayName || '...'}</span>
                           </span>
                         </button>
@@ -75,8 +75,8 @@ function SkinsView({ active }) {
           <Card className='p-5 min-w-0' key={weapon?.uuid}>
             {!weapon || !value || !owned ? <div className='space-y-3'><Skeleton className='h-32 rounded-xl' /><Skeleton className='h-40 rounded-xl' /></div> : (
               <div className='anim-fade'>
-                <div className='flex items-center justify-between mb-4'>
-                  <h2 className='font-display text-xl font-bold uppercase'>{weapon.displayName}</h2>
+                <div className='flex items-center justify-between mb-5'>
+                  <h2 className='font-display text-2xl font-bold tracking-tight'>{weapon.displayName}</h2>
                   {dirty ? <Badge tone='warn'>Not equipped yet</Badge> : <Badge tone='good'>Equipped</Badge>}
                 </div>
                 <SkinPicker weapon={weapon} owned={owned} value={value} onChange={setSel} maxHeight={340} />

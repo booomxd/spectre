@@ -116,14 +116,14 @@ function LoadoutView({ active }) {
         <div className='grid grid-cols-[1fr_320px] gap-5 items-start'>
           <div className='space-y-6 min-w-0'>
             {!ready || loading && !loadout ? (
-              <div className='grid grid-cols-3 gap-3'>{Array.from({ length: 9 }).map((_, i) => <Skeleton key={i} className='h-40 rounded-xl' />)}</div>
+              <div className='grid grid-cols-3 gap-4'>{Array.from({ length: 9 }).map((_, i) => <Skeleton key={i} className='h-40 rounded-xl' />)}</div>
             ) : CATEGORIES.map(cat => {
               const list = guns.map(g => ({ g, w: weaponById[lc(g.ID)] })).filter(x => x.w && catKey(x.w) === cat.key)
               if (!list.length) return null
               return (
                 <section key={cat.key}>
                   <SectionTitle>{cat.label}</SectionTitle>
-                  <div className='grid grid-cols-3 gap-3 stagger'>
+                  <div className='grid grid-cols-3 gap-4 stagger'>
                     {list.map(({ g, w }, i) => {
                       const x = eff(g)
                       const skin = w.skins.find(s => lc(s.uuid) === lc(x.SkinID))
@@ -134,12 +134,12 @@ function LoadoutView({ active }) {
                       const pending = !!edits[lc(g.ID)]
                       return (
                         <Card key={g.ID} hover style={{ '--i': i }} onClick={() => open(w)}
-                          className={cx('anim-rise relative p-3 overflow-hidden', pending && 'border-warn/60')}>
+                          className={cx('anim-rise relative p-4 overflow-hidden', pending && '!border-warn/60')}>
                           <div className='flex items-center justify-between'>
-                            <span className='text-[10px] font-semibold tracking-[0.16em] uppercase text-muted'>{w.displayName}</span>
+                            <span className='text-[12px] font-semibold text-muted'>{w.displayName}</span>
                             {pending && <Badge tone='warn'>Pending</Badge>}
                           </div>
-                          <div className='h-20 my-1.5 flex items-center justify-center'>
+                          <div className='h-20 my-2 flex items-center justify-center'>
                             <img src={selectionImage(skin, x.ChromaID) || w.displayIcon} className='max-h-full max-w-full object-contain drop-shadow-lg transition-transform duration-300' loading='lazy' />
                           </div>
                           <div className='flex items-end justify-between gap-2'>
@@ -148,7 +148,7 @@ function LoadoutView({ active }) {
                                 {tier && <img src={tier.displayIcon} className='w-3.5 h-3.5' />}
                                 <span className='text-[13px] font-semibold truncate' style={{ color: tierColor(tier) }}>{skin?.displayName || 'Standard'}</span>
                               </div>
-                              <div className='flex items-center gap-1.5 mt-1 flex-wrap'>
+                              <div className='flex items-center gap-1.5 mt-1.5 flex-wrap'>
                                 {skin && skin.levels.length > 1 && <Badge>Lv {li + 1}/{skin.levels.length}</Badge>}
                                 {ci > 0 && chroma && <Badge tone='accent'>Variant {ci + 1}</Badge>}
                                 {skin && isStandard(w, skin) && <Badge>Standard</Badge>}
@@ -165,16 +165,16 @@ function LoadoutView({ active }) {
             })}
           </div>
 
-          <div className='space-y-4 sticky top-0'>
+          <div className='space-y-5 sticky top-0'>
             <Card className='overflow-hidden anim-rise'>
-              <div className='h-24 bg-surface-2 relative'>
+              <div className='h-28 bg-surface-2 relative'>
                 {card?.wideArt && <img src={card.wideArt} className='w-full h-full object-cover' />}
-                <div className='absolute inset-0 bg-gradient-to-t from-surface to-transparent' />
+                <div className='absolute inset-0 bg-gradient-to-t from-bg/80 via-bg/20 to-transparent' />
               </div>
-              <div className='px-4 pb-4 -mt-5 relative'>
+              <div className='px-5 pb-5 -mt-5 relative'>
                 <SectionTitle right={<Button size='sm' variant='ghost' icon={FiUser} onClick={() => navigate('customize')}>Edit</Button>}>Identity</SectionTitle>
                 {!identity ? <Skeleton className='h-10' /> : (
-                  <div className='space-y-1.5 text-[13px]'>
+                  <div className='space-y-2 text-[13px]'>
                     <div><span className='text-muted'>Card </span>{card?.displayName || 'Default'}</div>
                     <div><span className='text-muted'>Title </span>{lc(identity.PlayerTitleID) === NO_TITLE ? 'No title' : (title?.titleText || title?.displayName || 'Unknown')}</div>
                     <div><span className='text-muted'>Level </span>{identity.HideAccountLevel ? 'Hidden' : 'Visible'}</div>
@@ -183,14 +183,14 @@ function LoadoutView({ active }) {
               </div>
             </Card>
 
-            <Card className='p-4 anim-rise' style={{ animationDelay: '60ms' }}>
+            <Card className='p-5 anim-rise' style={{ animationDelay: '60ms' }}>
               <SectionTitle>Sprays and expressions</SectionTitle>
               {!loadout ? <Skeleton className='h-14' /> : (
                 <div className='grid grid-cols-4 gap-2'>
                   {loadout.ActiveExpressions.map((e, i) => {
                     const sp = sprays?.find(s => lc(s.uuid) === lc(e.AssetID))
                     return (
-                      <div key={i} className='aspect-square rounded-lg bg-surface-2 border border-line flex items-center justify-center p-1.5' title={sp?.displayName || 'Expression'}>
+                      <div key={i} className='aspect-square rounded-xl bg-surface-2 border border-line flex items-center justify-center p-2' title={sp?.displayName || 'Expression'}>
                         {sp ? <img src={sp.fullTransparentIcon || sp.displayIcon} className='max-h-full max-w-full object-contain' /> : <span className='text-[10px] text-muted'>Flex</span>}
                       </div>
                     )
@@ -199,7 +199,7 @@ function LoadoutView({ active }) {
               )}
             </Card>
 
-            <Card className='p-4 anim-rise' style={{ animationDelay: '120ms' }}>
+            <Card className='p-5 anim-rise' style={{ animationDelay: '120ms' }}>
               <SectionTitle>Presets</SectionTitle>
               <div className='flex gap-2 mb-3'>
                 <Input value={presetName} onChange={e => setPresetName(e.target.value)} placeholder='Name this loadout' onKeyDown={e => e.key === 'Enter' && savePreset()} />
@@ -210,7 +210,7 @@ function LoadoutView({ active }) {
               ) : (
                 <div className='space-y-2 stagger'>
                   {presets.data.map((p, i) => (
-                    <div key={p.id} style={{ '--i': i }} className='anim-rise rounded-lg border border-line bg-bg/50 p-2.5'>
+                    <div key={p.id} style={{ '--i': i }} className='anim-rise rounded-xl border border-line bg-surface-2/60 hover:bg-surface-2 transition-colors p-3'>
                       <div className='flex items-center justify-between gap-2'>
                         <span className='text-[13px] font-semibold truncate'>{p.name}</span>
                         <div className='flex items-center gap-1 shrink-0'>

@@ -8,7 +8,7 @@ export const PRESET_TAGS = ['Good teammate', 'Toxic', 'Smurf', 'Thrower', 'Shotc
 
 const RATINGS = [
   { value: -1, icon: FiThumbsDown, active: 'border-bad/50 bg-bad/15 text-bad' },
-  { value: 0, icon: FiMinus, active: 'border-line bg-surface-2 text-text' },
+  { value: 0, icon: FiMinus, active: 'accent-soft border-transparent text-text' },
   { value: 1, icon: FiThumbsUp, active: 'border-good/50 bg-good/15 text-good' },
 ]
 
@@ -23,7 +23,7 @@ export function MemoBadge({ memo, onClick }) {
   if (!memo) return null
   return (
     <button onClick={onClick} title={memo.text || memo.tags.join(', ') || 'Note'}
-      className='inline-flex items-center gap-1 h-5 px-1.5 rounded-md border border-accent/30 bg-accent/15 text-accent text-[10px] font-bold uppercase tracking-wider hover:brightness-125 transition'>
+      className='inline-flex items-center gap-1 h-6 px-2.5 rounded-full border border-accent/30 bg-accent/[0.12] text-accent text-[11px] font-semibold hover:bg-accent/20 transition-colors'>
       <FiEdit3 className='text-[10px]' />{memo.tags[0] || 'Note'}<RatingIcon rating={memo.rating} className='text-[10px]' />
     </button>
   )
@@ -32,8 +32,8 @@ export function MemoBadge({ memo, onClick }) {
 export function TagChip({ label, active, onClick }) {
   return (
     <button onClick={onClick}
-      className={cx('h-7 px-3 rounded-full border text-xs font-semibold transition-all active:scale-95',
-        active ? 'border-accent/50 bg-accent/15 text-accent' : 'border-line bg-surface-2 text-muted hover:text-text hover:border-accent/30')}>
+      className={cx('h-8 px-3.5 rounded-full border text-xs font-semibold transition-all duration-200 active:scale-95',
+        active ? 'accent-soft border-transparent text-accent' : 'glass text-muted hover:text-text hover:border-accent/30 hover:bg-surface-2')}>
       {label}
     </button>
   )
@@ -82,7 +82,7 @@ export function MemoForm({ target, memo, onSaved, onDeleted, onCancel, allTags =
 
   const needsId = !target?.puuid
   return (
-    <div className='flex flex-col gap-4'>
+    <div className='flex flex-col gap-5'>
       {needsId && (
         <div>
           <Label hint='Looked up when you save'>Riot ID</Label>
@@ -94,8 +94,8 @@ export function MemoForm({ target, memo, onSaved, onDeleted, onCancel, allTags =
         <div className='flex gap-2'>
           {RATINGS.map(r => (
             <button key={r.value} onClick={() => setRating(r.value)}
-              className={cx('h-9 w-12 rounded-lg border flex items-center justify-center transition-all active:scale-95',
-                rating === r.value ? r.active : 'border-line bg-surface-2 text-muted hover:text-text')}>
+              className={cx('h-9 w-14 rounded-full border flex items-center justify-center transition-all duration-200 active:scale-95',
+                rating === r.value ? r.active : 'glass text-muted hover:text-text hover:bg-surface-2')}>
               <r.icon />
             </button>
           ))}
@@ -103,10 +103,10 @@ export function MemoForm({ target, memo, onSaved, onDeleted, onCancel, allTags =
       </div>
       <div>
         <Label>Tags</Label>
-        <div className='flex flex-wrap gap-1.5'>
+        <div className='flex flex-wrap gap-2'>
           {options.map(t => <TagChip key={t} label={t} active={tags.includes(t)} onClick={() => toggle(t)} />)}
         </div>
-        <div className='flex gap-2 mt-2'>
+        <div className='flex gap-2 mt-3'>
           <Input value={custom} onChange={e => setCustom(e.target.value)} onKeyDown={e => e.key === 'Enter' && addCustom()} placeholder='Custom tag' />
           <Button icon={FiPlus} onClick={addCustom} disabled={!custom.trim()}>Add</Button>
         </div>
@@ -115,7 +115,7 @@ export function MemoForm({ target, memo, onSaved, onDeleted, onCancel, allTags =
         <Label>Notes</Label>
         <Textarea rows={4} value={text} onChange={e => setText(e.target.value)} placeholder='Plays entry well, calls mid-round...' />
       </div>
-      <div className='flex items-center justify-between'>
+      <div className='flex items-center justify-between pt-1'>
         <div>{memo && <Button variant='danger' icon={FiTrash2} onClick={remove}>Delete</Button>}</div>
         <div className='flex gap-2'>
           {onCancel && <Button variant='ghost' onClick={onCancel}>Cancel</Button>}

@@ -20,28 +20,28 @@ export function timeLabel(ms, short) {
 export function Conversations({ convs, friends, selected, onOpen }) {
   if (!convs?.length) return null
   return (
-    <section className='mb-6'>
-      <SectionTitle right={<span className='text-[11px] text-muted'>{convs.length}</span>}>Recent conversations</SectionTitle>
-      <div className='grid gap-1.5 stagger'>
+    <section className='mb-7'>
+      <SectionTitle right={<span className='text-[11px] text-muted tabular-nums'>{convs.length}</span>}>Recent conversations</SectionTitle>
+      <div className='grid gap-2 stagger'>
         {convs.map((c, i) => {
           const f = friends[c.puuid]
           const name = f?.gameName || c.last?.gameName || 'Unknown'
           return (
             <button key={c.cid} onClick={() => onOpen(c.cid, c.puuid)} style={{ '--i': i }}
-              className={cx('anim-rise flex items-center gap-3 rounded-xl border px-3 py-2 text-left transition-colors',
-                selected === c.cid ? 'border-accent/50 bg-surface-2' : 'border-line bg-surface hover:border-accent/40 hover:bg-surface-2/60')}>
+              className={cx('anim-rise flex items-center gap-3.5 rounded-xl border px-3.5 py-2.5 text-left transition-all duration-200',
+                selected === c.cid ? 'accent-soft border-transparent' : 'glass hover:border-accent/40 hover:bg-surface-2')}>
               <div className='relative'>
                 <PlayerCard id={f?.status?.card} name={name} size={36} />
                 {f?.online && <StatusDot state={f.status.state} className='absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5' />}
               </div>
               <div className='min-w-0 flex-1'>
                 <div className='flex items-center justify-between gap-2'>
-                  <span className='text-[13px] font-semibold truncate'>{name}</span>
-                  <span className='text-[10px] text-muted shrink-0'>{timeLabel(c.last?.time, true)}</span>
+                  <span className='text-[13px] font-semibold tracking-tight text-text truncate'>{name}</span>
+                  <span className='text-[11px] text-muted shrink-0 tabular-nums'>{timeLabel(c.last?.time, true)}</span>
                 </div>
-                <div className='flex items-center justify-between gap-2'>
+                <div className='flex items-center justify-between gap-2 mt-0.5'>
                   <span className={cx('text-[12px] truncate', c.unread ? 'text-text' : 'text-muted')}>{c.last ? (c.last.fromMe ? 'You: ' : '') + c.last.body : 'No messages yet'}</span>
-                  {c.unread > 0 && <span className='anim-pop shrink-0 min-w-[18px] h-[18px] px-1 rounded-full bg-accent text-bg text-[10px] font-bold flex items-center justify-center'>{c.unread}</span>}
+                  {c.unread > 0 && <span className='anim-pop shrink-0 min-w-[18px] h-[18px] px-1 rounded-full accent-fill text-bg text-[10px] font-bold tabular-nums flex items-center justify-center'>{c.unread}</span>}
                 </div>
               </div>
             </button>
@@ -87,31 +87,31 @@ export function ChatPanel({ cid, friend, statusLine, active, onClose, onSent }) 
   const name = friend?.gameName || list.find(m => !m.fromMe)?.gameName || 'Chat'
   return (
     <Card className='anim-rise flex flex-col overflow-hidden h-[calc(100vh-190px)] min-h-[420px]'>
-      <div className='flex items-center gap-3 px-4 py-3 border-b border-line'>
+      <div className='flex items-center gap-3 px-5 py-4 border-b border-line'>
         <div className='relative'>
           <PlayerCard id={friend?.status?.card} name={name} size={38} />
           {friend?.online && <StatusDot state={friend.status.state} className='absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5' />}
         </div>
         <div className='min-w-0 flex-1'>
-          <div className='text-[14px] font-semibold truncate'>{name}{friend?.tagLine && <span className='text-[11px] text-muted font-normal'> #{friend.tagLine}</span>}{friend?.spectre && <Badge tone='accent' className='!h-4 !px-1.5 !text-[9px] ml-1.5 align-middle'>Spectre</Badge>}</div>
-          <div className='text-[11px] text-muted truncate'>{friend ? statusLine(friend) : ''}</div>
+          <div className='font-display text-[16px] font-bold tracking-tight text-text truncate'>{name}{friend?.tagLine && <span className='font-sans text-[11px] text-muted font-normal tracking-normal'> #{friend.tagLine}</span>}{friend?.spectre && <Badge tone='accent' className='!h-4 !px-1.5 !text-[9px] ml-1.5 align-middle'>Spectre</Badge>}</div>
+          <div className='text-[12px] text-muted truncate mt-0.5'>{friend ? statusLine(friend) : ''}</div>
         </div>
         <Button variant='ghost' size='sm' className='!px-2' title='Close chat' onClick={onClose}><FiX /></Button>
       </div>
 
-      <div ref={scroller} className='flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-1.5'>
+      <div ref={scroller} className='flex-1 overflow-y-auto px-5 py-5 flex flex-col gap-1.5'>
         {msgs.loading && !msgs.data ? (
-          Array.from({ length: 5 }, (_, i) => <Skeleton key={i} className={cx('h-9 w-2/5 rounded-xl', i % 2 && 'self-end')} />)
+          Array.from({ length: 5 }, (_, i) => <Skeleton key={i} className={cx('h-10 w-2/5 rounded-2xl', i % 2 && 'self-end')} />)
         ) : !list.length ? (
           <Empty icon={FiMessageSquare} title={`Say hi to ${name}`} hint='Messages go through your Riot chat, same as in-game.' />
         ) : list.map((m, i) => {
           const prev = list[i - 1]
           const gap = !prev || prev.fromMe !== m.fromMe || m.time - prev.time > 5 * 60000
           return (
-            <div key={m.id} className={cx('anim-rise flex flex-col max-w-[78%]', m.fromMe ? 'self-end items-end' : 'self-start items-start', gap && i > 0 && 'mt-2.5')}>
-              {gap && <span className='text-[10px] text-muted mb-1 px-1'>{m.fromMe ? 'You' : name} · {timeLabel(m.time)}</span>}
-              <div className={cx('rounded-2xl px-3.5 py-2 text-[13px] leading-snug whitespace-pre-wrap break-words select-text',
-                m.fromMe ? 'bg-accent/15 border border-accent/30 text-text rounded-br-md' : 'bg-surface-2 border border-line text-text rounded-bl-md',
+            <div key={m.id} className={cx('anim-rise flex flex-col max-w-[78%]', m.fromMe ? 'self-end items-end' : 'self-start items-start', gap && i > 0 && 'mt-3')}>
+              {gap && <span className='text-[11px] font-medium text-muted mb-1 px-1.5'>{m.fromMe ? 'You' : name} · {timeLabel(m.time)}</span>}
+              <div className={cx('rounded-2xl px-4 py-2.5 text-[13px] leading-snug text-text whitespace-pre-wrap break-words select-text',
+                m.fromMe ? 'accent-soft rounded-br-md' : 'glass rounded-bl-md',
                 m.pending && 'opacity-60')}>
                 {m.body}
               </div>
@@ -120,9 +120,9 @@ export function ChatPanel({ cid, friend, statusLine, active, onClose, onSent }) 
         })}
       </div>
 
-      <form onSubmit={send} className='flex items-center gap-2 px-3 py-3 border-t border-line'>
-        <Input ref={input} value={text} onChange={e => setText(e.target.value)} placeholder={`Message ${name}`} maxLength={500} />
-        <Button type='submit' variant='primary' className='!px-3' disabled={!text.trim()} loading={sending} title='Send'><FiSend /></Button>
+      <form onSubmit={send} className='flex items-center gap-2.5 px-4 py-3.5 border-t border-line'>
+        <Input ref={input} value={text} onChange={e => setText(e.target.value)} placeholder={`Message ${name}`} maxLength={500} className='!h-10 !rounded-full !px-4' />
+        <Button type='submit' variant='primary' className='!w-10 !h-10 !px-0 shrink-0' disabled={!text.trim()} loading={sending} title='Send'><FiSend /></Button>
       </form>
     </Card>
   )

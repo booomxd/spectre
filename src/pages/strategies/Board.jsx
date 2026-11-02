@@ -273,7 +273,7 @@ const Board = forwardRef(function Board({ items, map, side, active, locked, onLi
 
   return (
     <div ref={wrap} className='relative h-full w-full overflow-hidden select-none'
-      style={{ background: 'radial-gradient(circle at 50% 40%, rgb(var(--surface-2)) 0%, rgb(var(--bg)) 80%)' }}
+      style={{ background: 'radial-gradient(circle at 50% 40%, rgb(var(--surface-2) / var(--surface-2-a)) 0%, transparent 75%)' }}
       onDragOver={e => e.preventDefault()} onDrop={onDrop}>
       <svg ref={svg} className='absolute inset-0 w-full h-full touch-none' style={{ cursor }}
         onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp} onDoubleClick={onDoubleClick}
@@ -300,50 +300,50 @@ const Board = forwardRef(function Board({ items, map, side, active, locked, onLi
         <input autoFocus value={edit.value} onChange={e => setEdit({ ...edit, value: e.target.value })}
           onKeyDown={e => { e.stopPropagation(); if (e.key === 'Enter') finishEdit(true); if (e.key === 'Escape') finishEdit(false) }}
           onBlur={() => finishEdit(true)} placeholder='Label'
-          className='absolute z-20 bg-bg/80 border border-accent/60 rounded px-1.5 outline-none text-text font-bold'
+          className='glass-strong absolute z-20 !border-accent/60 rounded-lg px-2 outline-none text-text font-bold'
           style={{ left: view.x + edit.bx * view.k, top: view.y + edit.by * view.k - (18 + width * 3) * view.k, fontSize: Math.max(13, (18 + width * 3) * view.k), minWidth: 90 }} />
       )}
 
       {/* tool rail */}
-      <div className='absolute left-3 top-3 z-10 flex flex-col gap-1 p-1 rounded-xl border border-line bg-surface/90 backdrop-blur anim-fade'>
+      <div className='glass-strong absolute left-4 top-4 z-10 flex flex-col gap-1 p-1.5 rounded-2xl anim-fade'>
         {TOOLS.map(t => (
           <button key={t.id} title={t.label} onClick={() => setTool(t.id)} disabled={locked}
-            className={`h-9 w-9 rounded-lg grid place-items-center text-[17px] transition-all duration-150 active:scale-90 disabled:opacity-40 ${tool === t.id ? 'bg-accent text-bg shadow-lg' : 'text-muted hover:text-text hover:bg-surface-2'}`}>
+            className={`h-9 w-9 rounded-xl grid place-items-center text-[17px] transition-all duration-150 active:scale-90 disabled:opacity-40 ${tool === t.id ? 'accent-fill text-bg' : 'text-muted hover:text-text hover:bg-surface-2'}`}>
             <t.icon />
           </button>
         ))}
       </div>
 
       {/* style pill */}
-      <div className='absolute left-1/2 -translate-x-1/2 top-3 z-10 flex items-center gap-3 px-3 h-11 rounded-xl border border-line bg-surface/90 backdrop-blur anim-fade'>
+      <div className='glass-strong absolute left-1/2 -translate-x-1/2 top-4 z-10 flex items-center gap-3 pl-4 pr-1.5 h-11 rounded-full anim-fade'>
         <div className='flex items-center gap-1.5'>
           {COLORS.map(c => (
             <button key={c} onClick={() => setColor(c)} title={c}
-              className={`h-5 w-5 rounded-full transition-transform duration-150 hover:scale-110 ${color === c ? 'ring-2 ring-offset-2 ring-offset-surface ring-white scale-110' : ''}`} style={{ background: c }} />
+              className={`h-5 w-5 rounded-full transition-transform duration-150 hover:scale-110 ${color === c ? 'ring-2 ring-offset-2 ring-offset-panel ring-text/80 scale-110' : 'shadow-[inset_0_0_0_1px_rgb(0_0_0/0.15)]'}`} style={{ background: c }} />
           ))}
         </div>
-        <span className='w-px h-5 bg-line' />
+        <span className='w-px h-5 bg-line/60' />
         <div className='flex items-center gap-1'>
           {WIDTHS.map(w => (
             <button key={w} onClick={() => setWidth(w)} title={`Stroke ${w}`}
-              className={`h-7 w-7 rounded-md grid place-items-center transition-colors ${width === w ? 'bg-surface-2' : 'hover:bg-surface-2'}`}>
+              className={`h-8 w-8 rounded-full grid place-items-center transition-colors ${width === w ? 'accent-soft' : 'hover:bg-surface-2'}`}>
               <span className='rounded-full bg-text' style={{ width: w + 3, height: w + 3 }} />
             </button>
           ))}
         </div>
-        <span className='w-px h-5 bg-line' />
+        <span className='w-px h-5 bg-line/60' />
         <button onClick={() => setSnap(s => !s)} title='Snap tokens to grid'
-          className={`h-7 px-2 rounded-md flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider transition-colors ${snap ? 'bg-accent/15 text-accent' : 'text-muted hover:text-text'}`}><FiGrid />Snap</button>
+          className={`h-8 px-3 rounded-full flex items-center gap-1.5 text-[12px] font-semibold transition-colors ${snap ? 'accent-soft text-accent' : 'text-muted hover:text-text hover:bg-surface-2'}`}><FiGrid />Snap</button>
       </div>
 
       {/* zoom */}
-      <div className='absolute right-3 bottom-3 z-10 flex items-center gap-0.5 p-1 rounded-xl border border-line bg-surface/90 backdrop-blur'>
-        <button className='h-8 w-8 grid place-items-center rounded-lg text-muted hover:text-text hover:bg-surface-2' onClick={() => zoomBy(1 / 1.25)} title='Zoom out'><FiMinus /></button>
+      <div className='glass-strong absolute right-4 bottom-4 z-10 flex items-center gap-0.5 p-1 rounded-full'>
+        <button className='h-8 w-8 grid place-items-center rounded-full text-muted hover:text-text hover:bg-surface-2 transition-colors' onClick={() => zoomBy(1 / 1.25)} title='Zoom out'><FiMinus /></button>
         <span className='w-11 text-center text-[11px] tabular-nums text-muted'>{zoomPct}%</span>
-        <button className='h-8 w-8 grid place-items-center rounded-lg text-muted hover:text-text hover:bg-surface-2' onClick={() => zoomBy(1.25)} title='Zoom in'><FiPlus /></button>
-        <button className='h-8 w-8 grid place-items-center rounded-lg text-muted hover:text-text hover:bg-surface-2' onClick={fit} title='Fit to view'><FiMaximize /></button>
+        <button className='h-8 w-8 grid place-items-center rounded-full text-muted hover:text-text hover:bg-surface-2 transition-colors' onClick={() => zoomBy(1.25)} title='Zoom in'><FiPlus /></button>
+        <button className='h-8 w-8 grid place-items-center rounded-full text-muted hover:text-text hover:bg-surface-2 transition-colors' onClick={fit} title='Fit to view'><FiMaximize /></button>
       </div>
-      <div className='absolute left-3 bottom-3 z-10 text-[11px] text-muted/70 pointer-events-none'>Wheel zoom · Space or middle-drag to pan · Shift snaps lines</div>
+      <div className='absolute left-4 bottom-4 z-10 text-[11px] text-muted/80 pointer-events-none'>Wheel zoom · Space or middle-drag to pan · Shift snaps lines</div>
     </div>
   )
 })

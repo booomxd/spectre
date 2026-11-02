@@ -51,21 +51,21 @@ export default function Suggestions() {
   return (
     <Page title='Suggestions' subtitle='Ideas, bugs or anything else: it goes straight to the developer.'>
       <div className='grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px] items-start max-w-5xl'>
-        <Card className='anim-rise p-5'>
+        <Card className='anim-rise p-6 rounded-2xl'>
           {sent ? (
-            <div className='anim-fade flex flex-col items-center text-center gap-2 py-10'>
-              <img src={logo} alt='' className='w-14 h-14' draggable={false} />
-              <div className='font-display text-xl font-bold'>Thanks, got it 👻</div>
-              <p className='text-[13px] text-muted max-w-sm'>Your {label.toLowerCase()} was sent. If you left a contact, you may hear back.</p>
+            <div className='anim-fade flex flex-col items-center text-center gap-2.5 py-12'>
+              <span className='accent-soft w-20 h-20 rounded-2xl flex items-center justify-center mb-1'><img src={logo} alt='' className='w-12 h-12' draggable={false} /></span>
+              <div className='font-display text-2xl font-bold tracking-tight'>Thanks, got it 👻</div>
+              <p className='text-[13px] text-muted max-w-sm leading-relaxed'>Your {label.toLowerCase()} was sent. If you left a contact, you may hear back.</p>
               <Button className='mt-2' onClick={() => setSent(false)}>Send another</Button>
             </div>
           ) : (
-            <div className='flex flex-col gap-4'>
+            <div className='flex flex-col gap-5'>
               <div className='flex flex-wrap gap-2'>
                 {KINDS.map(([id, emoji, text]) => (
                   <button key={id} onClick={() => setKind(id)}
-                    className={cx('h-9 px-3.5 rounded-lg border text-[13px] font-semibold transition-colors',
-                      kind === id ? 'border-accent/60 bg-accent/10 text-text' : 'border-line bg-surface-2/50 text-muted hover:text-text')}>
+                    className={cx('h-9 px-4 rounded-full text-[13px] font-semibold transition-all duration-200 active:scale-[0.97]',
+                      kind === id ? 'accent-soft border border-transparent text-text' : 'glass text-muted hover:text-text hover:bg-surface-2')}>
                     {emoji} {text}
                   </button>
                 ))}
@@ -79,20 +79,20 @@ export default function Suggestions() {
                 <Label hint='Optional, only if you want a reply'>Discord or email</Label>
                 <Input value={contact} onChange={e => setContact(e.target.value)} maxLength={200} placeholder='yourname or you@example.com' />
               </div>
-              <div className='flex flex-wrap items-center gap-3'>
+              <div className='flex flex-wrap items-center gap-3 pt-1'>
                 <Button variant='primary' icon={cfg?.key ? FiSend : FiGithub} loading={busy} disabled={tooShort} onClick={send}>
                   {cfg?.key ? 'Send' : 'Send via GitHub'}
                 </Button>
-                {cfg?.key && <button className='text-xs text-muted hover:text-text' disabled={tooShort} onClick={github}>or post it on GitHub</button>}
+                {cfg?.key && <button className='text-xs font-medium text-muted hover:text-accent transition-colors disabled:opacity-50' disabled={tooShort} onClick={github}>or post it on GitHub</button>}
                 {tooShort && message && <span className='text-xs text-muted'>A little more, please (10+ characters)</span>}
               </div>
             </div>
           )}
         </Card>
-        <Card className='anim-rise p-5 text-[12px] text-muted leading-relaxed' style={{ '--i': 1 }}>
-          <div className='text-[13px] font-semibold text-text mb-2'>What gets sent</div>
+        <Card className='anim-rise p-6 rounded-2xl text-[12px] text-muted leading-relaxed' style={{ '--i': 1 }}>
+          <div className='font-display text-[15px] font-bold tracking-tight text-text mb-2.5'>What gets sent</div>
           <p>Only your message, the contact you typed (if any) and your Spectre version. Nothing about your Riot account is included.</p>
-          <p className='mt-2'>{cfg?.key ? 'Messages are emailed to the developer.' : 'Messages open as an issue on Spectre’s GitHub, which needs a free GitHub account and is public.'}</p>
+          <p className='mt-3'>{cfg?.key ? 'Messages are emailed to the developer.' : 'Messages open as an issue on Spectre’s GitHub, which needs a free GitHub account and is public.'}</p>
         </Card>
       </div>
     </Page>

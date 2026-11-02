@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react'
 import { FiAward, FiSearch } from 'react-icons/fi'
 import { invoke } from '../lib/ipc'
 import { useRiot } from '../lib/riot'
-import { navigate } from '../nav'
 import { Badge, Button, Card, Empty, ErrorState, Input, Page, RequireRiot, Skeleton } from '../ui'
 import { TierIcon, cx, useCards, openPlayer } from './history/shared'
 
@@ -15,11 +14,12 @@ function Entry({ p, cards, me, sticky, index }) {
   const link = !secret && p.puuid
   return (
     <div style={{ '--i': index }} onClick={() => link && openPlayer(p)}
-      className={cx('grid items-center gap-3 px-4 h-12 border-b border-line/60 text-[13px] transition-colors', COLS,
-        link && 'cursor-pointer hover:bg-surface-2', p.puuid === me && 'bg-accent/10', sticky && 'bg-surface border-t border-accent/40 shadow-[0_-8px_24px_-12px_rgba(0,0,0,0.6)]')}>
-      <span className={cx('font-display text-lg font-bold', p.rank === 1 ? 'text-warn' : p.rank <= 3 ? 'text-text' : 'text-muted')}>#{p.rank}</span>
+      className={cx('grid items-center gap-3 px-5 h-[52px] text-[13px] transition-colors', COLS,
+        sticky ? 'glass-strong !border-x-0 !border-b-0 !border-t-accent/40' : 'border-b border-line',
+        link && 'cursor-pointer', link && p.puuid !== me && 'hover:bg-surface-2', p.puuid === me && !sticky && 'accent-soft')}>
+      <span className={cx('font-display text-lg font-bold tracking-tight tabular-nums', p.rank === 1 ? 'text-warn' : p.rank <= 3 ? 'text-text' : 'text-muted')}>#{p.rank}</span>
       <div className='flex items-center gap-3 min-w-0'>
-        <div className='w-8 h-8 rounded-md bg-surface-2 border border-line overflow-hidden shrink-0'>
+        <div className='w-9 h-9 rounded-lg bg-surface-2 border border-line overflow-hidden shrink-0'>
           {art && <img src={art} alt='' loading='lazy' className='w-full h-full object-cover' draggable={false} />}
         </div>
         <span className={cx('truncate font-semibold', secret && 'text-muted italic')}>
@@ -30,8 +30,8 @@ function Entry({ p, cards, me, sticky, index }) {
         {p.banned && <Badge tone='bad'>Banned</Badge>}
       </div>
       <TierIcon tier={p.tier} size={26} showName />
-      <span className='font-display font-bold'>{p.rr}</span>
-      <span className='text-muted'>{p.wins}</span>
+      <span className='font-display font-bold tracking-tight tabular-nums'>{p.rr}</span>
+      <span className='text-muted tabular-nums'>{p.wins}</span>
     </div>
   )
 }
@@ -65,23 +65,23 @@ function Content() {
   const you = mine || (data?.you && { ...data.you, puuid: riot.puuid, cardId: null, gameName: riot.gameName, tagLine: riot.tagLine, anonymous: false })
 
   if (error && !data) return <ErrorState error={error} onRetry={() => load(0)} />
-  if (!data) return <div className='flex flex-col gap-1.5'>{Array.from({ length: 12 }, (_, i) => <Skeleton key={i} className='h-12 rounded-lg' />)}</div>
+  if (!data) return <div className='flex flex-col gap-2'>{Array.from({ length: 12 }, (_, i) => <Skeleton key={i} className='h-[52px] rounded-xl' />)}</div>
 
   return (
     <>
-      <div className='flex flex-wrap items-center justify-between gap-3 mb-4'>
+      <div className='flex flex-wrap items-center justify-between gap-4 mb-5'>
         <div className='relative w-72'>
-          <FiSearch className='absolute left-3 top-1/2 -translate-y-1/2 text-muted' />
-          <Input className='pl-9' value={q} onChange={e => setQ(e.target.value)} placeholder='Search loaded players' />
+          <FiSearch className='absolute left-4 top-1/2 -translate-y-1/2 text-muted pointer-events-none z-10' />
+          <Input className='pl-10 h-10 !rounded-full' value={q} onChange={e => setQ(e.target.value)} placeholder='Search loaded players' />
         </div>
-        <div className='flex items-center gap-2 text-xs text-muted'>
+        <div className='flex items-center gap-2.5 text-[12px] text-muted tabular-nums'>
           <Badge tone='accent'>{data.season.name}</Badge>
           <span>{data.shard.toUpperCase()} - {players.length} of {data.total.toLocaleString()} loaded</span>
         </div>
       </div>
 
-      <Card className='overflow-hidden anim-rise'>
-        <div className={cx('grid gap-3 px-4 h-9 items-center bg-surface-2 text-[10px] font-semibold uppercase tracking-wider text-muted', COLS)}>
+      <Card className='overflow-hidden !rounded-2xl anim-rise'>
+        <div className={cx('grid gap-3 px-5 h-10 items-center bg-surface-2/60 border-b border-line text-[11px] font-semibold uppercase tracking-[0.12em] text-muted', COLS)}>
           <span>Rank</span><span>Player</span><span>Tier</span><span>RR</span><span>Wins</span>
         </div>
         {filtered.length ? filtered.map((p, i) => <Entry key={p.rank} p={p} cards={cards} me={riot.puuid} index={Math.min(i, 12)} />)
@@ -93,13 +93,13 @@ function Content() {
         )}
       </Card>
 
-      {!you && <p className='mt-3 text-xs text-muted text-center'>You are not on this act's leaderboard yet.</p>}
+      {!you && <p className='mt-4 text-[12px] text-muted text-center'>You are not on this act&apos;s leaderboard yet.</p>}
       {players.length < data.total && (
-        <div className='flex justify-center mt-4'>
+        <div className='flex justify-center mt-5'>
           <Button loading={more} onClick={() => load(players.length)}>Load more</Button>
         </div>
       )}
-      {error && <p className='mt-3 text-xs text-bad text-center'>{error}</p>}
+      {error && <p className='mt-4 text-[12px] text-bad text-center'>{error}</p>}
     </>
   )
 }

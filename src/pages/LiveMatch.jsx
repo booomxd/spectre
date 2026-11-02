@@ -17,17 +17,18 @@ const SkinsIcon = () => <GunIcon size={14} />
 
 function Banner({ m, onChangeSkins }) {
   return (
-    <Card className='relative overflow-hidden mb-5 anim-fade h-32'>
-      {m.map?.splash && <img src={m.map.splash} alt='' className='absolute inset-0 w-full h-full object-cover opacity-50' />}
-      <div className='absolute inset-0 bg-gradient-to-r from-bg via-bg/70 to-transparent' />
+    <Card className='relative overflow-hidden mb-6 anim-fade h-36 rounded-2xl'>
+      {m.map?.splash && <img src={m.map.splash} alt='' className='absolute inset-0 w-full h-full object-cover opacity-60' />}
+      <div className='absolute inset-0 bg-gradient-to-r from-bg/95 via-bg/60 to-transparent' />
+      <div className='absolute inset-0 bg-gradient-to-t from-bg/50 to-transparent' />
       {m.state === 'pregame' && <Button className='absolute top-1/2 -translate-y-1/2 right-5' icon={SkinsIcon} onClick={onChangeSkins}>Change skins</Button>}
-      <div className='relative h-full flex flex-col justify-end p-5'>
-        <div className='flex items-center gap-2 mb-1'>
+      <div className='relative h-full flex flex-col justify-end p-6'>
+        <div className='flex items-center gap-2 mb-2.5'>
           <Badge tone={m.state === 'ingame' ? 'good' : 'warn'}>{m.state === 'ingame' ? 'In match' : 'Agent select'}</Badge>
           <Badge><ModeIcon queue={m.queueId} size={11} />{queueName(m.queueId)}</Badge>
           {m.server && <Badge className='capitalize'>{m.server}</Badge>}
         </div>
-        <h2 className='font-display text-3xl font-bold uppercase leading-none'>{m.map?.name || 'Unknown map'}</h2>
+        <h2 className='font-display text-[34px] font-bold tracking-tight leading-none text-text'>{m.map?.name || 'Unknown map'}</h2>
       </div>
     </Card>
   )
@@ -37,7 +38,7 @@ function Team({ title, tone, players, memos, onScout, onSkins }) {
   return (
     <section className='min-w-0'>
       <SectionTitle right={<Badge tone={tone}>{players.length}</Badge>}>{title}</SectionTitle>
-      <div className='grid gap-2 stagger'>
+      <div className='grid gap-2.5 stagger'>
         {players.map((p, i) => <PlayerRow key={p.ref || i} p={p} i={i} memo={p.puuid && memos[p.puuid]} onScout={onScout} onSkins={onSkins} />)}
       </div>
     </section>
@@ -49,18 +50,18 @@ function Idle({ active }) {
   const members = party.data?.members || []
   return (
     <div className='grid gap-6 lg:grid-cols-[1fr_340px] items-start'>
-      <Card className='p-8'>
+      <Card className='p-10 rounded-2xl'>
         <Empty icon={FiRadio} title='Waiting for a match' hint='Queue up and this page fills with both teams, and your party as soon as agent select starts.' />
       </Card>
       <div>
         <SectionTitle>Your party</SectionTitle>
-        <Card className='p-4 grid gap-2.5 stagger'>
+        <Card className='p-3 grid gap-1 stagger rounded-2xl'>
           {party.loading && !party.data ? <Skeleton className='h-12' />
-            : !members.length ? <p className='text-[12px] text-muted'>No party found.</p>
+            : !members.length ? <p className='px-2 py-1.5 text-[12px] text-muted'>No party found.</p>
               : members.map((m, i) => (
-                <div key={m.puuid} className='anim-rise flex items-center gap-2.5' style={{ '--i': i }}>
+                <div key={m.puuid} className='anim-rise flex items-center gap-3 rounded-xl px-2 py-2 hover:bg-surface-2 transition-colors' style={{ '--i': i }}>
                   <PlayerCard id={m.card} name={m.hidden ? null : m.gameName} size={34} />
-                  <div className='min-w-0 flex-1 text-[13px] font-semibold truncate'>{m.hidden ? 'Hidden player' : m.gameName || '...'}<span className='text-[11px] text-muted font-normal'>{m.tagLine && ` #${m.tagLine}`}</span></div>
+                  <div className='min-w-0 flex-1 text-[13px] font-semibold text-text truncate'>{m.hidden ? 'Hidden player' : m.gameName || '...'}<span className='ml-0.5 text-[11px] text-muted font-normal'>{m.tagLine && ` #${m.tagLine}`}</span></div>
                   <RankIcon tier={m.rank} size={26} />
                 </div>
               ))}
@@ -98,7 +99,7 @@ function LiveBody({ active }) {
 
   let body
   if (tab === 'lobby') body = <Lobby active={active} matchState={d?.state} />
-  else if (live.loading && !d) body = <div className='grid gap-3'><Skeleton className='h-32 rounded-xl' />{Array.from({ length: 5 }, (_, i) => <Skeleton key={i} className='h-14 rounded-xl' />)}</div>
+  else if (live.loading && !d) body = <div className='grid gap-3'><Skeleton className='h-36 rounded-2xl mb-3' />{Array.from({ length: 5 }, (_, i) => <Skeleton key={i} className='h-[74px] rounded-xl' />)}</div>
   else if (live.error && !d) body = <ErrorState error={live.error} onRetry={live.reload} />
   else if (!d || d.state === 'menus') body = <Idle active={active} />
   else {
@@ -112,15 +113,15 @@ function LiveBody({ active }) {
         <Banner m={d} onChangeSkins={() => setPanel({ kind: 'loadout' })} />
         {d.state === 'pregame'
           ? <div className='max-w-4xl'><Team title='Your team' tone='accent' players={mine} {...rows} /></div>
-          : ffa ? <div className='grid gap-6 xl:grid-cols-2'>
+          : ffa ? <div className='grid gap-7 xl:grid-cols-2'>
             <Team title='Players' tone='accent' players={d.players.slice(0, half)} {...rows} />
             <Team title='Players' tone='accent' players={d.players.slice(half)} {...rows} />
           </div>
-          : <div className='grid gap-6 xl:grid-cols-2'>
+          : <div className='grid gap-7 xl:grid-cols-2'>
             <Team title='Your team' tone='accent' players={mine} {...rows} />
             <Team title='Opponents' tone='bad' players={theirs} {...rows} />
           </div>}
-        <p className='mt-5 text-[11px] text-muted flex items-center gap-1.5'><FiUsers /> The colored bar marks your own party. Scout any player for rank history and recent matches, or use the eye for their skins. Streamer-mode players' names always stay hidden.</p>
+        <p className='mt-6 text-[12px] leading-relaxed text-muted flex items-center gap-2'><FiUsers className='shrink-0 text-accent' /> The colored bar marks your own party. Scout any player for rank history and recent matches, or use the eye for their skins. Streamer-mode players&apos; names always stay hidden.</p>
       </div>
     )
   }
@@ -132,7 +133,7 @@ function LiveBody({ active }) {
         {panel?.kind === 'loadout' && (
           // Your own loadout during agent select: same editor as the Loadout page, applied in game right away.
           <div className='relative flex-1 overflow-y-auto'>
-            <button className='absolute right-5 top-5 z-10 w-9 h-9 rounded-lg border border-line text-muted hover:text-text flex items-center justify-center' onClick={closePanel} title='Close'><FiX /></button>
+            <button className='glass-strong absolute right-5 top-5 z-10 w-9 h-9 rounded-full text-muted hover:text-text hover:border-accent/40 transition-colors flex items-center justify-center' onClick={closePanel} title='Close'><FiX /></button>
             <Loadout active />
           </div>
         )}

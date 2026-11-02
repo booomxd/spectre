@@ -8,9 +8,9 @@ export default function Settings() {
   return (
     <Page title='Settings' subtitle='Appearance, behavior and connection'>
       {error ? <ErrorState error={error} /> : !settings ? (
-        <div className='grid gap-4 max-w-4xl'>{[0, 1, 2].map(i => <Skeleton key={i} className='h-32 rounded-xl' />)}</div>
+        <div className='grid gap-5 max-w-4xl'>{[0, 1, 2].map(i => <Skeleton key={i} className='h-32 rounded-2xl' />)}</div>
       ) : (
-        <div className='max-w-4xl flex flex-col gap-7 stagger'>
+        <div className='max-w-4xl flex flex-col gap-9 stagger'>
           {[<Appearance />, <General settings={settings} save={save} />, <Overlay settings={settings} save={save} />, <Connection />, <Data />, <About />]
             .map((s, i) => <div key={i} className='anim-rise' style={{ '--i': i }}>{s}</div>)}
         </div>

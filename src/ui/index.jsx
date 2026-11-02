@@ -12,10 +12,10 @@ export function Page({ title, subtitle, actions, children, className, bodyClassN
   return (
     <div className={cx('h-full flex flex-col', className)}>
       {(title || actions) && (
-        <header className='flex items-end justify-between gap-4 px-7 pt-6 pb-4'>
+        <header className='flex items-end justify-between gap-4 px-7 pt-6 pb-5'>
           <div className='min-w-0'>
-            {title && <h1 className='font-display text-[26px] font-bold leading-none text-text uppercase'>{title}</h1>}
-            {subtitle && <p className='mt-1.5 text-[13px] text-muted'>{subtitle}</p>}
+            {title && <h1 className='font-display text-[30px] font-bold leading-none tracking-tight text-text'>{title}</h1>}
+            {subtitle && <p className='mt-2 text-[13px] text-muted'>{subtitle}</p>}
           </div>
           {actions && <div className='flex items-center gap-2 shrink-0'>{actions}</div>}
         </header>
@@ -26,42 +26,42 @@ export function Page({ title, subtitle, actions, children, className, bodyClassN
 }
 
 export function Card({ className, hover, children, as: Tag = 'div', ...rest }) {
-  return <Tag className={cx('rounded-xl border border-line bg-surface', hover && 'lift cursor-pointer', className)} {...rest}>{children}</Tag>
+  return <Tag className={cx('glass rounded-xl', hover && 'lift cursor-pointer', className)} {...rest}>{children}</Tag>
 }
 
 export function SectionTitle({ children, right, className }) {
   return (
     <div className={cx('flex items-center justify-between mb-3', className)}>
-      <h2 className='text-[11px] font-semibold tracking-[0.18em] uppercase text-muted'>{children}</h2>
+      <h2 className='text-[11px] font-semibold tracking-[0.16em] uppercase text-muted'>{children}</h2>
       {right}
     </div>
   )
 }
 
 const BTN = {
-  primary: 'bg-accent text-bg hover:brightness-110',
-  subtle: 'bg-surface-2 text-text border border-line hover:border-accent/50',
+  primary: 'accent-fill text-bg hover:brightness-110',
+  subtle: 'glass text-text hover:border-accent/40 hover:bg-surface-2',
   ghost: 'text-muted hover:text-text hover:bg-surface-2',
   danger: 'bg-bad/15 text-bad border border-bad/30 hover:bg-bad/25',
 }
 export function Button({ variant = 'subtle', size = 'md', loading, icon: Icon, className, children, disabled, ...rest }) {
-  const sz = size === 'sm' ? 'h-8 px-3 text-xs' : size === 'lg' ? 'h-11 px-5 text-sm' : 'h-9 px-4 text-[13px]'
+  const sz = size === 'sm' ? 'h-8 px-3.5 text-xs' : size === 'lg' ? 'h-11 px-6 text-sm' : 'h-9 px-4 text-[13px]'
   return (
     <button disabled={disabled || loading}
-      className={cx('inline-flex items-center justify-center gap-2 rounded-lg font-semibold transition-all duration-150 active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none', sz, BTN[variant], className)} {...rest}>
+      className={cx('inline-flex items-center justify-center gap-2 rounded-full font-semibold transition-all duration-200 active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none', sz, BTN[variant], className)} {...rest}>
       {loading ? <FiLoader className='animate-spin' /> : Icon && <Icon />}
       {children}
     </button>
   )
 }
 
-const FIELD = 'w-full h-9 rounded-lg bg-surface-2 border border-line px-3 text-[13px] text-text placeholder:text-muted/60 outline-none transition-colors focus:border-accent/60'
+const FIELD = 'glass-field w-full h-9 rounded-lg px-3 text-[13px] text-text placeholder:text-muted/60 outline-none transition-[border-color,box-shadow] duration-200'
 export const Input = React.forwardRef(({ className, ...rest }, ref) => <input ref={ref} className={cx(FIELD, className)} {...rest} />)
 export const Textarea = React.forwardRef(({ className, ...rest }, ref) => <textarea ref={ref} className={cx(FIELD, 'h-auto py-2 resize-none', className)} {...rest} />)
 export function Select({ className, options, ...rest }) {
   return (
     <select className={cx(FIELD, 'pr-8 cursor-pointer', className)} {...rest}>
-      {options.map(o => <option key={o.value} value={o.value} className='bg-surface'>{o.label}</option>)}
+      {options.map(o => <option key={o.value} value={o.value} className='bg-panel text-text'>{o.label}</option>)}
     </select>
   )
 }
@@ -69,7 +69,7 @@ export function Select({ className, options, ...rest }) {
 export function Label({ children, hint }) {
   return (
     <div className='mb-1.5'>
-      <span className='text-[11px] font-semibold tracking-[0.14em] uppercase text-muted'>{children}</span>
+      <span className='text-[12px] font-semibold text-muted'>{children}</span>
       {hint && <p className='text-[11px] text-muted/70 mt-0.5'>{hint}</p>}
     </div>
   )
@@ -80,8 +80,8 @@ export function Toggle({ checked, onChange, label, hint, disabled }) {
     <label className={cx('flex items-center justify-between gap-4 cursor-pointer', disabled && 'opacity-50 pointer-events-none')}>
       {(label || hint) && <span><span className='block text-[13px] text-text'>{label}</span>{hint && <span className='block text-[11px] text-muted'>{hint}</span>}</span>}
       <button type='button' onClick={() => onChange(!checked)}
-        className={cx('relative w-10 h-[22px] rounded-full transition-colors duration-200 shrink-0', checked ? 'bg-accent' : 'bg-surface-2 border border-line')}>
-        <span className={cx('absolute top-[3px] w-4 h-4 rounded-full bg-text transition-all duration-200', checked ? 'left-[21px] bg-bg' : 'left-[3px]')} />
+        className={cx('relative w-11 h-6 rounded-full transition-all duration-300 shrink-0', checked ? 'accent-fill' : 'glass-field')}>
+        <span className={cx('absolute top-[3px] w-[18px] h-[18px] rounded-full bg-white shadow-[0_2px_6px_rgb(0_0_0/0.35)] transition-all duration-300', checked ? 'left-[23px]' : 'left-[3px]')} />
       </button>
     </label>
   )
@@ -96,13 +96,13 @@ export function Tabs({ tabs, value, onChange, className }) {
     if (el) setBar({ left: el.offsetLeft, width: el.offsetWidth })
   }, [value, tabs.length])
   return (
-    <div className={cx('relative inline-flex p-1 rounded-lg bg-surface border border-line', className)}>
-      <span className='absolute top-1 bottom-1 rounded-md bg-surface-2 border border-line transition-all duration-300 ease-out' style={bar} />
+    <div className={cx('glass relative inline-flex p-1 rounded-full', className)}>
+      <span className='accent-soft absolute top-1 bottom-1 rounded-full transition-all duration-300 ease-out' style={bar} />
       {tabs.map(t => {
         const v = t.value ?? t
         return (
           <button key={v} ref={el => (refs.current[v] = el)} onClick={() => onChange(v)}
-            className={cx('relative z-10 h-7 px-3 rounded-md text-xs font-semibold transition-colors', value === v ? 'text-text' : 'text-muted hover:text-text')}>
+            className={cx('relative z-10 h-7 px-3.5 rounded-full text-xs font-semibold transition-colors', value === v ? 'text-text' : 'text-muted hover:text-text')}>
             {t.label ?? t}
           </button>
         )
@@ -119,14 +119,14 @@ const TONES = {
   warn: 'bg-warn/15 text-warn border-warn/30',
 }
 export function Badge({ tone = 'neutral', className, children }) {
-  return <span className={cx('inline-flex items-center gap-1 h-5 px-2 rounded-md border text-[10px] font-bold tracking-wider uppercase', TONES[tone], className)}>{children}</span>
+  return <span className={cx('inline-flex items-center gap-1 h-5 px-2 rounded-full border text-[10px] font-semibold tracking-wide uppercase', TONES[tone], className)}>{children}</span>
 }
 
 export function Stat({ label, value, sub, className }) {
   return (
     <div className={className}>
-      <div className='text-[10px] font-semibold tracking-[0.16em] uppercase text-muted'>{label}</div>
-      <div className='font-display text-2xl font-bold text-text leading-tight'>{value}</div>
+      <div className='text-[11px] font-medium text-muted'>{label}</div>
+      <div className='font-display text-2xl font-bold text-text leading-tight tabular-nums'>{value}</div>
       {sub && <div className='text-[11px] text-muted'>{sub}</div>}
     </div>
   )
@@ -139,7 +139,7 @@ export function Spinner({ className }) { return <FiLoader className={cx('animate
 export function Empty({ icon: Icon = FiInbox, title, hint, action, className }) {
   return (
     <div className={cx('anim-fade flex flex-col items-center justify-center text-center gap-2 py-14', className)}>
-      <div className='w-12 h-12 rounded-xl bg-surface-2 border border-line flex items-center justify-center text-muted text-xl'><Icon /></div>
+      <div className='accent-soft w-14 h-14 rounded-2xl flex items-center justify-center text-accent text-xl mb-1'><Icon /></div>
       {title && <p className='text-sm font-semibold text-text'>{title}</p>}
       {hint && <p className='text-xs text-muted max-w-xs'>{hint}</p>}
       {action && <div className='mt-2'>{action}</div>}
@@ -168,14 +168,14 @@ export function Modal({ open, onClose, title, children, footer, width = 480 }) {
   }, [open, onClose])
   if (!open) return null
   return createPortal(
-    <div className='anim-fade fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm' onMouseDown={onClose}>
-      <div className='anim-pop rounded-2xl border border-line bg-surface shadow-2xl max-h-[85vh] flex flex-col' style={{ width }} onMouseDown={e => e.stopPropagation()}>
-        <div className='flex items-center justify-between px-5 pt-4 pb-3'>
-          <h3 className='font-display text-lg font-bold uppercase'>{title}</h3>
-          <button className='text-muted hover:text-text' onClick={onClose}><FiX /></button>
+    <div className='anim-fade fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-md' onMouseDown={onClose}>
+      <div className='glass-strong anim-pop rounded-2xl max-h-[85vh] flex flex-col' style={{ width }} onMouseDown={e => e.stopPropagation()}>
+        <div className='flex items-center justify-between px-6 pt-5 pb-3'>
+          <h3 className='font-display text-xl font-bold tracking-tight'>{title}</h3>
+          <button className='w-8 h-8 -mr-2 rounded-full flex items-center justify-center text-muted hover:text-text hover:bg-surface-2 transition-colors' onClick={onClose}><FiX /></button>
         </div>
-        <div className='px-5 pb-5 overflow-y-auto'>{children}</div>
-        {footer && <div className='px-5 py-3 border-t border-line flex justify-end gap-2'>{footer}</div>}
+        <div className='px-6 pb-6 overflow-y-auto'>{children}</div>
+        {footer && <div className='px-6 py-4 border-t border-line flex justify-end gap-2'>{footer}</div>}
       </div>
     </div>, document.body)
 }
@@ -200,9 +200,9 @@ export function ToastHost() {
   return createPortal(
     <div className='fixed bottom-5 right-5 z-[60] flex flex-col gap-2 items-end'>
       {items.map(t => (
-        <div key={t.id} className={cx('anim-rise flex items-center gap-2 max-w-sm rounded-lg border px-4 py-2.5 text-[13px] shadow-xl bg-surface',
-          t.tone === 'good' ? 'border-good/40' : t.tone === 'bad' ? 'border-bad/40' : 'border-line')}>
-          <span className={cx('w-1.5 h-1.5 rounded-full', t.tone === 'good' ? 'bg-good' : t.tone === 'bad' ? 'bg-bad' : 'bg-accent')} />
+        <div key={t.id} className={cx('glass-strong anim-rise flex items-center gap-2.5 max-w-sm rounded-full px-4 py-2.5 text-[13px] font-medium',
+          t.tone === 'good' ? '!border-good/40' : t.tone === 'bad' ? '!border-bad/40' : '')}>
+          <span className={cx('w-2 h-2 rounded-full shadow-[0_0_10px_currentColor]', t.tone === 'good' ? 'bg-good text-good' : t.tone === 'bad' ? 'bg-bad text-bad' : 'bg-accent text-accent')} />
           {t.message}
         </div>
       ))}

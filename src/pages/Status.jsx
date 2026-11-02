@@ -37,8 +37,8 @@ export default function Status({ active }) {
       actions={<Button variant='primary' icon={FiCheck} loading={busy} disabled={!riot.connected} onClick={apply}>Apply</Button>}>
       <RequireRiot>
         <div className='grid grid-cols-[1fr_320px] gap-5 items-start'>
-          <div className='space-y-4 min-w-0'>
-            <Card className='p-5 grid grid-cols-2 gap-4 anim-rise'>
+          <div className='space-y-5 min-w-0'>
+            <Card className='p-5 grid grid-cols-2 gap-5 anim-rise'>
               <div><Label>Game state</Label><Select value={state} onChange={e => setState(e.target.value)} options={GAME_STATES} /></div>
               <div><Label>Mode</Label><Select value={queue} onChange={e => setQueue(e.target.value)} options={QUEUES} /></div>
             </Card>
@@ -49,9 +49,8 @@ export default function Status({ active }) {
                   <Label hint='Shown during Agent Select and In Game'>Map</Label>
                   <Select value={mapUrl} onChange={e => setMap(e.target.value)} options={maps.map(m => ({ value: m.mapUrl, label: m.displayName }))} />
                 </div>
-                <div className={`relative h-28 bg-surface-2 transition-opacity ${showMap ? '' : 'opacity-30'}`}>
+                <div className={`relative h-full min-h-[112px] bg-surface-2 transition-opacity duration-300 [mask-image:linear-gradient(to_right,transparent,black_55%)] ${showMap ? '' : 'opacity-30'}`}>
                   {picked?.splash && <img key={picked.uuid} src={picked.splash} className='anim-fade absolute inset-0 w-full h-full object-cover' />}
-                  <div className='absolute inset-0 bg-gradient-to-r from-surface to-transparent' />
                 </div>
               </div>
             </Card>
@@ -59,14 +58,14 @@ export default function Status({ active }) {
             <Card className='p-5 anim-rise' style={{ animationDelay: '120ms' }}>
               <Label>Score (your team vs enemy)</Label>
               <div className='flex items-center gap-3 max-w-xs'>
-                <Input type='number' min='0' value={ally} onChange={e => setAlly(e.target.value)} />
-                <span className='text-muted'>-</span>
-                <Input type='number' min='0' value={enemy} onChange={e => setEnemy(e.target.value)} />
+                <Input type='number' min='0' value={ally} onChange={e => setAlly(e.target.value)} className='text-center tabular-nums' />
+                <span className='font-display text-lg font-bold text-muted'>-</span>
+                <Input type='number' min='0' value={enemy} onChange={e => setEnemy(e.target.value)} className='text-center tabular-nums' />
               </div>
             </Card>
 
             <Card className='p-5 anim-rise' style={{ animationDelay: '180ms' }}>
-              <div className='grid grid-cols-2 gap-4 max-w-sm mb-4'>
+              <div className='grid grid-cols-2 gap-4 max-w-sm mb-5'>
                 <div><Label>Party size</Label><Input type='number' min='1' max='10' value={partySize} onChange={e => setPartySize(e.target.value)} /></div>
                 <div><Label>Max party size</Label><Input type='number' min='1' max='10' value={maxPartySize} onChange={e => setMaxPartySize(e.target.value)} /></div>
               </div>

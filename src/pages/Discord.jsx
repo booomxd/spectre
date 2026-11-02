@@ -56,13 +56,13 @@ function Activity({ activity }) {
 function Options({ title, items, d, save }) {
   return (
     <div>
-      <div className='flex items-center gap-3 mb-1'>
-        <span className='text-[10px] font-bold tracking-[0.18em] uppercase text-accent'>{title}</span>
+      <div className='flex items-center gap-3 mb-1.5'>
+        <span className='text-[11px] font-semibold tracking-[0.14em] uppercase text-accent'>{title}</span>
         <span className='flex-1 h-px bg-line' />
       </div>
-      <div className='grid sm:grid-cols-2 gap-x-8'>
+      <div className='grid sm:grid-cols-2 gap-x-10'>
         {items.map(([k, label, hint, needs]) => (
-          <div key={k} className='py-3.5 border-b border-line/60'>
+          <div key={k} className='py-4 border-b border-line/60'>
             <Toggle checked={!!d[k] && (!needs || !!d[needs])} disabled={needs && !d[needs]} label={label} hint={hint} onChange={v => save({ discord: { [k]: v } })} />
           </div>
         ))}
@@ -95,42 +95,42 @@ export default function Discord({ active }) {
 
   return (
     <Page title='Discord presence' subtitle='Your session, on display. You choose the details.'
-      actions={<span className='inline-flex items-center gap-2 text-xs font-semibold'><FaDiscord className='text-base text-[#5865F2]' />{pill[0]}<span className={cx('w-2 h-2 rounded-full', pill[1])} /></span>}>
+      actions={<span className='glass inline-flex items-center gap-2 h-9 px-4 rounded-full text-xs font-semibold text-text'><FaDiscord className='text-base text-[#5865F2]' />{pill[0]}<span className={cx('w-2 h-2 rounded-full', pill[1])} /></span>}>
       {!d ? <Skeleton className='h-80 rounded-xl' /> : (
-        <div className='grid gap-5 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] items-start stagger'>
-          <div className='flex flex-col gap-5'>
-            <Card className='anim-rise p-5' style={{ '--i': 0 }}>
+        <div className='grid gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] items-start stagger'>
+          <div className='flex flex-col gap-6'>
+            <Card className='anim-rise p-6' style={{ '--i': 0 }}>
               <SectionTitle right={<FaDiscord className='text-muted' />}>Rich Presence</SectionTitle>
               <Toggle checked={!!d.enabled} disabled={busy} onChange={setEnabled} label='Enable Rich Presence'
                 hint='Shows your current match on your Discord profile while you play. Discord desktop needs to be running on this PC.' />
               {s.enabled && (s.connected
-                ? <p className='mt-3 text-xs text-good'>Showing on {s.user?.username || 'your'}'s profile · updates every 15s</p>
-                : s.error && <p className='mt-3 text-xs text-bad'>{s.error}</p>)}
+                ? <p className='mt-4 inline-flex items-center min-h-[24px] py-1 px-3 rounded-full border border-good/30 bg-good/15 text-xs font-medium text-good'>Showing on {s.user?.username || 'your'}'s profile · updates every 15s</p>
+                : s.error && <p className='mt-4 rounded-xl border border-bad/30 bg-bad/15 px-3.5 py-2.5 text-xs text-bad'>{s.error}</p>)}
             </Card>
-            <Card className='anim-rise p-5 flex flex-col gap-5' style={{ '--i': 1 }}>
+            <Card className='anim-rise p-6 flex flex-col gap-6' style={{ '--i': 1 }}>
               <SectionTitle>Presence details</SectionTitle>
               <Options title='Match context' items={MATCH} d={d} save={save} />
               <Options title='Session context' items={SESSION} d={d} save={save} />
             </Card>
           </div>
 
-          <Card className='anim-rise p-5 xl:sticky xl:top-0' style={{ '--i': 2 }}>
+          <Card className='anim-rise p-6 xl:sticky xl:top-0' style={{ '--i': 2 }}>
             <SectionTitle right={<FaDiscord className='text-muted' />}>Profile preview</SectionTitle>
-            <div className='flex flex-wrap gap-1.5 mb-4'>
+            <div className='flex flex-wrap gap-2 mb-5'>
               {SCENARIOS.map(([id, label]) => (
                 <button key={id} onClick={() => setScenario(id)}
-                  className={cx('h-7 px-3 rounded-full border text-xs font-semibold transition-colors',
-                    scenario === id ? 'border-accent/50 bg-accent/15 text-accent' : 'border-line bg-surface-2 text-muted hover:text-text')}>{label}</button>
+                  className={cx('h-8 px-3.5 rounded-full border text-xs font-semibold transition-all',
+                    scenario === id ? 'accent-soft border-transparent text-text' : 'glass text-muted hover:text-text hover:border-accent/40')}>{label}</button>
               ))}
             </div>
-            <div className='rounded-xl border border-line bg-bg/60 p-4'>
+            <div className='glass rounded-xl p-4'>
               <div className='text-[11px] font-bold tracking-[0.14em] uppercase text-muted mb-3'>Playing a game</div>
               {!riot.connected ? <p className='text-[13px] text-muted py-6 text-center'>Waiting for the Riot Client.</p>
                 : preview.loading && !preview.data ? <Skeleton className='h-[72px] rounded-lg' />
                   : preview.data?.activity ? <Activity activity={preview.data.activity} />
                     : <p className='text-[13px] text-muted py-6 text-center'>{scenario === 'live' ? 'Nothing to show right now. Start VALORANT, or turn on Show in lobby.' : 'Hidden here: Show in lobby is off.'}</p>}
             </div>
-            <p className='mt-3 text-xs text-muted'>Sample scenarios show how your settings appear on Discord, using your real rank. Live shows exactly what's being sent now.</p>
+            <p className='mt-4 text-xs leading-relaxed text-muted'>Sample scenarios show how your settings appear on Discord, using your real rank. Live shows exactly what's being sent now.</p>
           </Card>
         </div>
       )}

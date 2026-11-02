@@ -34,7 +34,7 @@ Live match ranks, scouting, skins, your party, Discord presence and more, all th
 | 🕶️ **Streamer-safe** | Players who hide their name in your match stay hidden everywhere in Spectre. No names, IDs or cards. |
 | 🖥️ **In-game overlay** | Both teams' ranks over the game, toggled with a hotkey, with optional click-through and auto-show. |
 | ⬆️ **Auto updates** | New versions show up in the app and install in one click. |
-| 🎨 **Seven themes** | Midnight, Onyx, Ember, Glacier, Verdant, Amethyst and Gilded. |
+| 🎨 **Twelve glass themes** | Midnight, Onyx, Ember, Glacier, Verdant, Amethyst, Gilded, Aurora, Sakura, Abyss, Sunset and the light Pearl. |
 
 ## 📸 Preview
 
