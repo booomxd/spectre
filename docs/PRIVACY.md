@@ -18,7 +18,7 @@ Spectre has no servers or accounts of its own, no analytics, and no telemetry.
 
 ## What is stored on your PC
 
-Settings, player notes, loadout presets and playbooks are saved as JSON files in `%APPDATA%\Spectre\store`. Delete that folder to reset Spectre completely.
+Settings, your notebook, player notes, a list of your friends' Riot IDs (to spot adds, removals and name changes), loadout presets and playbooks are saved as JSON files in `%APPDATA%\Spectre\store`. Delete that folder to reset Spectre completely.
 
 ## Other players
 

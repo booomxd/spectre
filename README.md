@@ -76,7 +76,7 @@ Grab the latest version from **[Releases](https://github.com/booomxd/spectre/rel
 | Section | Pages |
 | --- | --- |
 | 🔴 **Live** | Dashboard · Friends & chat · Live Match (with Lobby & Party and an always-on-top overlay) |
-| 📊 **Stats** | Progression · Loadout · Player Search · Match History · Notes · Encounters |
+| 📊 **Stats** | Progression · Loadout · Player Search · Match History · Notes · Activity · Encounters |
 | 🧭 **Explore** | Shop & Night Market · Discord · Weapons · Leaderboard |
 | 🎭 **LARP** | Rank Editor · Customize (any card or title) · Premier · Status |
 | 🗺️ **Tactics** | Strategy board with maps, agents, abilities and saved playbooks |
