@@ -7,7 +7,7 @@ import { useRiot } from '../../lib/riot'
 const START_PAGES = [
   ['dashboard', 'Dashboard'], ['friends', 'Friends'], ['live', 'Live Match'], ['progression', 'Progression'], ['loadout', 'Loadout'],
   ['search', 'Player Search'], ['history', 'Match History'], ['memo', 'Notes'], ['activity', 'Encounters'], ['shop', 'Shop'],
-  ['discord', 'Discord'], ['weapons', 'Weapons'], ['leaderboard', 'Leaderboard'], ['skins', 'Skin Changer'], ['rank', 'Rank Editor'],
+  ['discord', 'Discord'], ['weapons', 'Weapons'], ['leaderboard', 'Leaderboard'], ['rank', 'Rank Editor'],
   ['customize', 'Customize'], ['premier', 'Premier'], ['status', 'Status'], ['patchnotes', 'Patch Notes'], ['settings', 'Settings'],
 ].map(([value, label]) => ({ value, label }))
 

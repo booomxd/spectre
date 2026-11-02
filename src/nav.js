@@ -1,7 +1,7 @@
 // Every page in the app. The sidebar renders these groups in order; `tab` picks which top tab owns it.
 import { FiActivity, FiAward, FiClock, FiCompass, FiEdit3, FiFileText, FiGrid, FiLayers, FiRadio, FiSearch, FiSettings, FiShoppingBag, FiTarget, FiTrendingUp, FiUsers, FiUser, FiZap } from 'react-icons/fi'
 import { FaDiscord } from 'react-icons/fa'
-import { GiCrossedSwords, GiTrophy, GiPistolGun } from 'react-icons/gi'
+import { GiTrophy, GiPistolGun } from 'react-icons/gi'
 
 import Dashboard from './pages/Dashboard'
 import Friends from './pages/Friends'
@@ -16,7 +16,6 @@ import Shop from './pages/Shop'
 import Discord from './pages/Discord'
 import Weapons from './pages/Weapons'
 import Leaderboard from './pages/Leaderboard'
-import Skins from './pages/Skins'
 import RankEditor from './pages/RankEditor'
 import Customize from './pages/Customize'
 import Premier from './pages/Premier'
@@ -52,8 +51,7 @@ export const GROUPS = [
     ]
   },
   {
-    label: 'Profile Tools', pages: [
-      { id: 'skins', label: 'Skin Changer', icon: GiCrossedSwords, component: Skins },
+    label: 'LARP', pages: [
       { id: 'rank', label: 'Rank Editor', icon: FiTarget, component: RankEditor },
       { id: 'customize', label: 'Customize', icon: FiUser, component: Customize },
       { id: 'premier', label: 'Premier', icon: GiTrophy, component: Premier },

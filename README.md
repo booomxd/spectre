@@ -22,7 +22,7 @@ Requirements: Windows 10 or 11 (64-bit), VALORANT installed, and the Riot Client
 | **Live** | Dashboard, Friends (requests, party, chat), Live Match with an always-on-top overlay |
 | **Stats** | Progression, Loadout, Player Search, Match History, Notes, Encounters |
 | **Explore** | Shop (bundles, daily offers, Night Market), Discord Rich Presence, Weapons, Leaderboard |
-| **Profile Tools** | Skin Changer, Rank Editor, Customize, Premier, Status |
+| **LARP** | Rank Editor, Customize, Premier, Status |
 | **Tactics** | Strategy board with maps, agents, abilities and drawing tools, plus saved playbooks |
 
 See [docs/FEATURES.md](docs/FEATURES.md) for what each page does.

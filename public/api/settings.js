@@ -3,7 +3,10 @@ const DEFAULTS = {
     launchAtLogin: false,
     minimizeToTray: false,
     overlay: { opacity: 0.9, scale: 1 },
-    discord: { enabled: false, clientId: '', largeImage: '', showRank: true, showMap: true, showScore: true, showParty: true },
+    discord: {
+        enabled: false, showMode: true, showMap: true, showAgent: false, agentImage: false, showRank: true, showPeak: false,
+        showLevel: false, showParty: true, showScore: true, showElapsed: true, showLobby: true,
+    },
     startPage: 'dashboard',
     spectrePresence: true,
 };

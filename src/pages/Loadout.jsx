@@ -26,7 +26,6 @@ function withEdit(g, e) {
   return n
 }
 const gunToEdit = g => ({ skinId: g.SkinID, levelId: g.SkinLevelID, chromaId: g.ChromaID, buddy: g.CharmLevelID ? { charmId: g.CharmID, levelId: g.CharmLevelID, instance: g.CharmInstanceID } : null })
-const sameEdit = (a, b) => ['skinId', 'levelId', 'chromaId'].every(k => lc(a[k]) === lc(b[k])) && lc(a.buddy?.instance) === lc(b.buddy?.instance) && lc(a.buddy?.levelId) === lc(b.buddy?.levelId)
 
 function LoadoutView({ active }) {
   const weapons = useWeapons()
@@ -63,16 +62,13 @@ function LoadoutView({ active }) {
     setTmp(gunToEdit(eff(g)))
     setEditing(w)
   }
-  const stage = () => {
-    const g = guns.find(x => lc(x.ID) === lc(editing.uuid))
-    const key = lc(editing.uuid)
-    setEdits(e => {
-      const next = { ...e }
-      if (sameEdit(tmp, gunToEdit(g))) delete next[key]
-      else next[key] = tmp
-      return next
-    })
-    setEditing(null)
+  // Equips the edited gun in game right away (together with any other pending edits).
+  const applyGun = async () => {
+    const all = { ...edits, [lc(editing.uuid)]: tmp }
+    setSaving(true)
+    const r = await withToast(invoke('loadout:save', { Guns: guns.map(g => withEdit(g, all[lc(g.ID)])) }), `${editing.displayName} skin applied`)
+    setSaving(false)
+    if (r) { setEdits({}); setEditing(null); reload(true) }
   }
   const usedElsewhere = useMemo(() => {
     const s = new Set()
@@ -110,7 +106,7 @@ function LoadoutView({ active }) {
   const title = titles?.find(t => lc(t.uuid) === lc(identity?.PlayerTitleID))
 
   return (
-    <Page title='Loadout' subtitle='Your equipped weapons, buddies and identity. Changes stay pending until you apply them.'
+    <Page title='Loadout' subtitle='Your equipped weapons, buddies and identity. Pick a weapon to change its skin.'
       actions={pendingCount > 0 && <>
         <Badge tone='warn'>{pendingCount} pending</Badge>
         <Button size='sm' variant='ghost' icon={FiRotateCcw} onClick={() => setEdits({})}>Discard</Button>
@@ -233,7 +229,7 @@ function LoadoutView({ active }) {
       )}
 
       <Modal open={!!editing} onClose={() => setEditing(null)} width={760} title={editing ? `${editing.displayName} skin` : ''}
-        footer={<><Button variant='ghost' onClick={() => setEditing(null)}>Cancel</Button><Button variant='primary' onClick={stage}>Add to pending</Button></>}>
+        footer={<><Button variant='ghost' onClick={() => setEditing(null)}>Cancel</Button><Button variant='primary' loading={saving} onClick={applyGun}>Apply</Button></>}>
         {editing && tmp && (
           <div className='space-y-5'>
             <SkinPicker weapon={editing} owned={owned} value={tmp} onChange={v => setTmp(t => ({ ...t, ...v }))} />
@@ -243,7 +239,7 @@ function LoadoutView({ active }) {
                 <BuddyPicker owned={owned} value={tmp.buddy} usedInstances={usedElsewhere} onChange={b => setTmp(t => ({ ...t, buddy: b }))} />
               </div>
             )}
-            <p className='text-[11px] text-muted'>Only items you own are listed. Nothing changes in game until you press Apply changes.</p>
+            <p className='text-[11px] text-muted'>Only items you own are listed. Apply equips it in game right away.</p>
           </div>
         )}
       </Modal>

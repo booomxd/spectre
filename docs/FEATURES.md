@@ -55,11 +55,10 @@ Every weapon with its stats and damage falloff by range, plus every skin with vi
 ### Leaderboard
 The competitive leaderboard for your region and the current act, with friends highlighted.
 
-## Profile Tools
+## LARP
 
 These change how your profile appears **to your friends** in the Riot Client. They don't change your real rank, level or inventory.
 
-- **Skin Changer:** equip skins, chromas and levels you own.
 - **Rank Editor:** pick the rank and leaderboard position shown on your friend-list presence.
 - **Customize:** account level, idle state, player card and title shown to friends. Only owned cards and titles are listed.
 - **Premier:** the Premier team details shown on your presence.

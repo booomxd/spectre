@@ -4,7 +4,7 @@ import { Badge, Button, Card, Empty, Input, Label, Page, RequireRiot, Skeleton, 
 import { useRiot } from '../lib/riot'
 import { invoke, useInvoke } from '../lib/ipc'
 import { useContent } from '../lib/content'
-import { NO_TITLE, lc, useOwned } from './tools/gear'
+import { NO_TITLE, lc } from './tools/gear'
 import { PresencePanel, usePresence } from './tools/PresencePanel'
 
 const cx = (...c) => c.filter(Boolean).join(' ')
@@ -13,7 +13,6 @@ const TABS = [{ value: 'profile', label: 'Profile' }, { value: 'cards', label: '
 export default function Customize({ active }) {
   const riot = useRiot()
   const presence = usePresence(active)
-  const { owned } = useOwned(!riot.connected)
   const loadout = useInvoke('loadout:get', [], { skip: !riot.connected })
   const cards = useContent('playercards')
   const borders = useContent('levelborders')
@@ -35,18 +34,19 @@ export default function Customize({ active }) {
   const curLevel = level === '' ? (pp?.accountLevel ?? 1) : parseInt(level) || 1
   const curIdle = idle ?? presence.data?.current?.isIdle ?? false
 
-  const ownedCards = useMemo(() => owned && cards?.filter(c => c.displayIcon && owned.cards.has(lc(c.uuid))), [cards, owned])
-  const ownedTitles = useMemo(() => owned && titles?.filter(t => t.titleText && owned.titles.has(lc(t.uuid))), [titles, owned])
-  const shownCards = ownedCards?.filter(c => c.displayName.toLowerCase().includes(q.toLowerCase()))
-  const shownTitles = ownedTitles?.filter(t => (t.titleText + t.displayName).toLowerCase().includes(q.toLowerCase()))
+  // Cards and titles are presence-only (shown to friends, never equipped), so every one can be picked.
+  const allCards = useMemo(() => cards?.filter(c => c.displayIcon), [cards])
+  const allTitles = useMemo(() => titles?.filter(t => t.titleText), [titles])
+  const shownCards = allCards?.filter(c => c.displayName.toLowerCase().includes(q.toLowerCase()))
+  const shownTitles = allTitles?.filter(t => (t.titleText + t.displayName).toLowerCase().includes(q.toLowerCase()))
   const dirty = level !== '' || idle !== null || cardId || titleId !== undefined || borderId
 
   const save = async () => {
     setBusy(true)
     try {
       await invoke('tools:profile', { accountLevel: curLevel, isIdle: curIdle, playerCardId: cardId || undefined, playerTitleId: titleId })
-      if (cardId || titleId !== undefined || borderId) await invoke('loadout:identity', { cardId: cardId || undefined, titleId, borderId: borderId || undefined })
-      toast.success('Saved. Card, title and border may need a game restart to show in your own client')
+      if (borderId) await invoke('loadout:identity', { borderId })
+      toast.success(borderId ? 'Saved. The border may need a game restart to show in your own client' : 'Saved')
       setLevel(''); setIdle(null); setCardId(null); setTitleId(undefined); setBorderId(null)
       loadout.reload(true)
     } catch (e) { toast.error(e.message) }
@@ -61,7 +61,7 @@ export default function Customize({ active }) {
   )
 
   return (
-    <Page title='Customize' subtitle='Level, card, title and border. Cards and titles are limited to the ones you own.'
+    <Page title='Customize' subtitle='Level, card, title and border. Any card or title can be shown to friends.'
       actions={<Button variant='primary' icon={FiCheck} loading={busy} disabled={!dirty || !riot.connected} onClick={save}>Save changes</Button>}>
       <RequireRiot>
         <div className='grid grid-cols-[1fr_320px] gap-5 items-start'>

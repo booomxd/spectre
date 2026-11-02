@@ -57,6 +57,8 @@ app.whenReady().then(() => {
         height: 800,
         minWidth: 1040,
         minHeight: 680,
+        // Vite copies public/icon.png into build/ for the packaged app.
+        icon: isDev ? path.join(__dirname, 'icon.png') : path.join(__dirname, '..', 'build', 'icon.png'),
         frame: false,
         backgroundColor: '#0b0b0f',
         webPreferences: {
