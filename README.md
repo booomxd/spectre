@@ -10,7 +10,7 @@ It connects through the Riot Client you're already signed in to, so there's no R
 
 Builds are published on the **[Spectre releases page](https://github.com/booomxd/spectre-releases/releases)**. Each release has:
 
-- `Spectre Setup x.y.z.exe`: one-click installer, adds a desktop shortcut
+- `Spectre.Setup.x.y.z.exe`: one-click installer, adds a desktop shortcut
 - `Spectre-x.y.z-win.zip`: portable build, unzip and run `Spectre.exe`
 
 Requirements: Windows 10 or 11 (64-bit), VALORANT installed, and the Riot Client open and signed in.
