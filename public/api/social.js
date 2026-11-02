@@ -101,25 +101,40 @@ module.exports = ({ riot, handle }) => {
         return me.CurrentPartyID || null;
     }
 
+    // Party members' current ranks (the party data doesn't carry them), cached for five minutes.
+    const scouting = require('../scout')(riot);
+    const rankCache = new Map();
+    async function rankOf(puuid) {
+        const hit = rankCache.get(puuid);
+        if (hit && Date.now() - hit.at < 300000) return hit.tier;
+        let tier = 0;
+        try { tier = (await scouting.rank(puuid)).current.tier; } catch (e) { }
+        rankCache.set(puuid, { at: Date.now(), tier });
+        return tier;
+    }
+
     handle('social:party', async () => {
         const id = await partyId();
         if (!id) return null;
         const p = await riot.glz('get', `parties/v1/parties/${id}`);
         const shown = p.Members.filter(m => !m.PlayerIdentity?.Incognito).map(m => m.Subject);
-        const names = await riot.names(shown).catch(() => ({}));
+        const [names, ranks] = await Promise.all([
+            riot.names(shown).catch(() => ({})),
+            Promise.all(p.Members.map(m => rankOf(m.Subject))),
+        ]);
         const me = riot.state.puuid;
         const iOwn = p.Members.some(m => m.Subject === me && m.IsOwner);
         const mm = p.MatchmakingData || {};
         return {
             id: p.ID, state: p.State, open: p.Accessibility === 'OPEN', iOwn,
-            queueId: mm.QueueID || null, queues: p.EligibleQueues || [],
-            members: p.Members.map(m => ({
+            queueId: mm.QueueID || null, queues: p.EligibleQueues || [], inviteCode: p.InviteCode || null,
+            members: p.Members.map((m, i) => ({
                 puuid: m.Subject, self: m.Subject === me, owner: !!m.IsOwner, ready: !!m.IsReady,
                 hidden: !!m.PlayerIdentity?.Incognito,
                 gameName: names[m.Subject]?.gameName || null, tagLine: names[m.Subject]?.tagLine || null,
                 card: m.PlayerIdentity?.PlayerCardID || null,
                 level: m.PlayerIdentity?.HideAccountLevel ? null : m.PlayerIdentity?.AccountLevel ?? null,
-                rank: m.CompetitiveTier || 0,
+                rank: m.CompetitiveTier || ranks[i] || 0,
             })),
         };
     });
@@ -136,6 +151,36 @@ module.exports = ({ riot, handle }) => {
         await riot.glz('post', `parties/v1/parties/${id}/invites/name/${enc(name)}/tag/${enc(tag)}`);
         return true;
     });
+    // Lobby controls for your own party. Riot rejects them (with an error shown to the user) while a match is running.
+    async function inParty() {
+        const id = await partyId();
+        if (!id) throw new Error('You are not in a party');
+        return id;
+    }
+    handle('social:queue', async queueId => {
+        await riot.glz('post', `parties/v1/parties/${await inParty()}/makedefault?queueID=${enc(queueId)}`);
+        return true;
+    });
+    handle('social:matchmaking', async start => {
+        await riot.glz('post', `parties/v1/parties/${await inParty()}/matchmaking/${start ? 'join' : 'leave'}`);
+        return true;
+    });
+    handle('social:ready', async ready => {
+        await riot.glz('post', `parties/v1/parties/${await inParty()}/members/${riot.state.puuid}/setReady`, { ready: !!ready });
+        return true;
+    });
+    handle('social:inviteCode', async create => {
+        const id = await inParty();
+        const res = await riot.glz(create ? 'post' : 'delete', `parties/v1/parties/${id}/invitecode`);
+        return create ? res?.InviteCode || null : null;
+    });
+    handle('social:joinCode', async code => {
+        const c = String(code || '').trim();
+        if (!c) throw new Error('Enter an invite code');
+        await riot.glz('post', `parties/v1/players/joinbycode/${enc(c)}`);
+        return true;
+    });
+
     // Leaving (own puuid) and kicking (another member, owner only) are the same DELETE.
     handle('social:partyRemove', async puuid => { await riot.glz('delete', `parties/v1/players/${puuid}`); return true; });
 

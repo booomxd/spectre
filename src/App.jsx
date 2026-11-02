@@ -4,6 +4,7 @@ import { GROUPS, PAGES, STRATEGIES } from './nav'
 import { invoke } from './lib/ipc'
 import { RiotProvider, useRiot } from './lib/riot'
 import { applySavedTheme } from './lib/theme'
+import logo from './assets/spectre-logo.svg'
 import { ToastHost } from './ui'
 import Overlay from './pages/Overlay'
 
@@ -37,9 +38,7 @@ function Sidebar({ page, setPage }) {
   return (
     <aside className='w-[220px] shrink-0 flex flex-col border-r border-line bg-bg'>
       <div className='px-5 pt-5 pb-4 flex items-center gap-2.5'>
-        <div className='w-8 h-8 rounded-lg bg-accent/15 border border-accent/40 flex items-center justify-center rotate-45'>
-          <div className='w-3 h-3 bg-accent rounded-sm' />
-        </div>
+        <img src={logo} alt='' className='w-8 h-8' draggable={false} />
         <div>
           <div className='font-display text-lg font-bold leading-none tracking-widest'>SPECTRE</div>
         </div>
