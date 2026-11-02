@@ -11,7 +11,7 @@ const START_PAGES = [
   ['customize', 'Customize'], ['premier', 'Premier'], ['status', 'Status'], ['patchnotes', 'Patch Notes'], ['settings', 'Settings'],
 ].map(([value, label]) => ({ value, label }))
 
-const Row = ({ children }) => <div className='py-3.5 first:pt-0 last:pb-0 border-b border-line last:border-0'>{children}</div>
+const Row = ({ children }) => <div className='py-4 first:pt-0 last:pb-0 border-b border-line last:border-0'>{children}</div>
 
 // Slider that only saves when released, so dragging does not spam the store.
 function Slider({ label, value, min, max, step, onCommit, format }) {
@@ -20,12 +20,12 @@ function Slider({ label, value, min, max, step, onCommit, format }) {
   const commit = () => { if (v != null) { onCommit(v); setV(null) } }
   return (
     <div>
-      <div className='flex items-center justify-between mb-1'>
-        <span className='text-[13px]'>{label}</span>
-        <span className='font-display text-sm text-accent'>{format(shown)}</span>
+      <div className='flex items-center justify-between mb-2'>
+        <span className='text-[13px] text-text'>{label}</span>
+        <span className='accent-soft h-6 px-2.5 rounded-full inline-flex items-center font-display text-[12px] font-semibold text-accent tabular-nums'>{format(shown)}</span>
       </div>
       <input type='range' min={min} max={max} step={step} value={shown} style={{ accentColor: 'rgb(var(--accent))' }}
-        className='w-full cursor-pointer' onChange={e => setV(+e.target.value)} onMouseUp={commit} onKeyUp={commit} onTouchEnd={commit} />
+        className='w-full h-1.5 cursor-pointer' onChange={e => setV(+e.target.value)} onMouseUp={commit} onKeyUp={commit} onTouchEnd={commit} />
     </div>
   )
 }
@@ -34,7 +34,7 @@ export function General({ settings, save }) {
   return (
     <section>
       <SectionTitle>General</SectionTitle>
-      <Card className='p-5'>
+      <Card className='p-6 rounded-2xl'>
         <Row><Toggle checked={settings.launchAtLogin} onChange={v => save({ launchAtLogin: v })} label='Launch at login' hint='Start Spectre when you sign in to Windows' /></Row>
         <Row><Toggle checked={settings.minimizeToTray} onChange={v => save({ minimizeToTray: v })} label='Minimize to tray' hint='Keep running in the background when minimized' /></Row>
         <Row><Toggle checked={settings.spectrePresence !== false} onChange={v => save({ spectrePresence: v })} label='Show that I use Spectre' hint='Adds a small marker to your Riot presence so friends using Spectre can see you use it' /></Row>
@@ -86,10 +86,10 @@ function Keybind({ value, onChange, ok }) {
     <div className='flex items-center gap-2 shrink-0'>
       {ok === false && !rec && <span className='text-[11px] text-bad'>In use by another app</span>}
       <button onClick={() => setRec(r => !r)} onBlur={() => setRec(false)}
-        className={'min-w-[150px] h-9 px-3 rounded-lg border text-[12px] font-semibold flex items-center justify-center gap-1 transition-colors ' +
-          (rec ? 'border-accent bg-accent/10 text-accent anim-pulse' : 'border-line bg-surface-2 hover:border-accent/40')}>
+        className={'min-w-[160px] h-9 px-3.5 rounded-full text-[12px] font-semibold flex items-center justify-center gap-1 transition-all duration-200 ' +
+          (rec ? 'accent-soft border border-transparent text-accent anim-pulse' : 'glass-field text-text hover:border-accent/40')}>
         {rec ? 'Press keys... (Esc to cancel)' : value
-          ? value.split('+').map(k => <kbd key={k} className='px-1.5 py-0.5 rounded border border-line bg-bg font-sans text-[11px]'>{k}</kbd>)
+          ? value.split('+').map(k => <kbd key={k} className='min-w-[22px] px-1.5 py-0.5 rounded-md border border-line bg-surface-2 text-text font-sans text-[11px] text-center'>{k}</kbd>)
           : <span className='text-muted'>Not set</span>}
       </button>
     </div>
@@ -105,7 +105,7 @@ export function Overlay({ settings, save }) {
   return (
     <section>
       <SectionTitle right={<Button size='sm' icon={FiMonitor} onClick={() => withToast(invoke('overlay:toggle'))}>Show / hide</Button>}>Overlay</SectionTitle>
-      <Card className='p-5'>
+      <Card className='p-6 rounded-2xl'>
         <Row>
           <div className='flex items-center justify-between gap-4'>
             <Label hint='Show or hide the overlay from anywhere, even in game. Backspace while recording clears it.'>Toggle overlay</Label>
@@ -127,7 +127,7 @@ export function Overlay({ settings, save }) {
             <Slider label='Scale' min={0.7} max={1.5} step={0.05} value={o.scale} format={v => v.toFixed(2) + 'x'} onCommit={v => set({ scale: v })} />
           </div>
         </Row>
-        <p className='text-[11px] text-muted mt-3'>The overlay shows over VALORANT in <b>Windowed fullscreen</b>. Exclusive fullscreen draws over everything, overlays included.</p>
+        <p className='text-[11px] text-muted mt-4 leading-relaxed'>The overlay shows over VALORANT in <b className='text-text font-semibold'>Windowed fullscreen</b>. Exclusive fullscreen draws over everything, overlays included.</p>
       </Card>
     </section>
   )
@@ -139,20 +139,20 @@ export function Connection() {
   const reconnect = async () => { setBusy(true); await withToast(invoke('riot:connect'), 'Connected to the Riot Client'); setBusy(false) }
   const cell = (k, v) => (
     <div>
-      <div className='text-[10px] font-semibold tracking-[0.16em] uppercase text-muted'>{k}</div>
-      <div className='font-display text-lg font-bold uppercase'>{v || '-'}</div>
+      <div className='text-[12px] font-semibold text-muted'>{k}</div>
+      <div className='font-display text-xl font-bold tracking-tight uppercase mt-0.5'>{v || '-'}</div>
     </div>
   )
   return (
     <section>
       <SectionTitle right={<Badge tone={riot.connected ? 'good' : 'bad'}>{riot.connected ? 'Connected' : 'Offline'}</Badge>}>Connection</SectionTitle>
-      <Card className='p-5 flex flex-wrap items-center gap-x-10 gap-y-4'>
-        <span className={'w-3 h-3 rounded-full ' + (riot.connected ? 'bg-good anim-pulse' : 'bg-bad')} />
+      <Card className='p-6 rounded-2xl flex flex-wrap items-center gap-x-10 gap-y-4'>
+        <span className={'w-3 h-3 rounded-full ring-4 ' + (riot.connected ? 'bg-good ring-good/20 shadow-[0_0_12px_rgb(var(--good)/0.7)] anim-pulse' : 'bg-bad ring-bad/20')} />
         {cell('Region', riot.region)}
         {cell('Shard', riot.shard)}
         <div className='min-w-0'>
-          <div className='text-[10px] font-semibold tracking-[0.16em] uppercase text-muted'>Client version</div>
-          <div className='text-[13px] truncate max-w-[280px]'>{riot.clientVersion || '-'}</div>
+          <div className='text-[12px] font-semibold text-muted'>Client version</div>
+          <div className='text-[13px] text-text truncate max-w-[280px] mt-1 tabular-nums'>{riot.clientVersion || '-'}</div>
         </div>
         <Button className='ml-auto' icon={FiRefreshCw} loading={busy} onClick={reconnect}>Reconnect</Button>
       </Card>
@@ -167,12 +167,12 @@ export function Data() {
   return (
     <section>
       <SectionTitle>Data</SectionTitle>
-      <Card className='p-5'>
+      <Card className='p-6 rounded-2xl'>
         <Row>
           <div className='flex items-center justify-between gap-4'>
             <div className='min-w-0'>
-              <div className='text-[13px]'>Data folder</div>
-              <div className='text-[11px] text-muted truncate'>{info.data?.dataPath || '...'}</div>
+              <div className='text-[13px] text-text'>Data folder</div>
+              <div className='text-[11px] text-muted truncate mt-0.5'>{info.data?.dataPath || '...'}</div>
             </div>
             <Button icon={FiFolder} onClick={() => withToast(invoke('app:openDataFolder'))}>Open</Button>
           </div>
@@ -180,8 +180,8 @@ export function Data() {
         <Row>
           <div className='flex items-center justify-between gap-4'>
             <div>
-              <div className='text-[13px]'>Cached data</div>
-              <div className='text-[11px] text-muted'>Clears the browser cache. Settings, notes and presets are kept.</div>
+              <div className='text-[13px] text-text'>Cached data</div>
+              <div className='text-[11px] text-muted mt-0.5'>Clears the browser cache. Settings, notes and presets are kept.</div>
             </div>
             <Button variant='danger' icon={FiTrash2} onClick={() => setConfirm(true)}>Clear cache</Button>
           </div>
@@ -224,9 +224,9 @@ function Updates() {
       : s.available ? `Spectre ${s.latest} is available. You're on ${s.current}.`
         : `You're up to date (${s.current}).`
   return (
-    <div className='mt-4 flex items-center gap-3 flex-wrap rounded-lg border border-line bg-surface-2/50 px-4 py-3'>
+    <div className='glass mt-5 flex items-center gap-3 flex-wrap rounded-xl px-5 py-4'>
       <div className='min-w-0 flex-1'>
-        <div className='text-[12px] font-semibold text-text'>Updates</div>
+        <div className='text-[13px] font-semibold text-text'>Updates</div>
         <div className={`text-[11px] mt-0.5 ${s?.available ? 'text-accent' : 'text-muted'}`}>{text}</div>
       </div>
       {s?.available && <Button size='sm' variant='primary' icon={FiDownload} loading={pct != null} onClick={install}>{s.canInstall ? 'Update now' : 'Download'}</Button>}
@@ -239,39 +239,39 @@ export function About() {
   return (
     <section>
       <SectionTitle>About</SectionTitle>
-      <Card className='p-5'>
+      <Card className='p-6 rounded-2xl'>
         <div className='flex items-center justify-between gap-4 flex-wrap'>
           <div>
-            <div className='font-display text-2xl font-bold uppercase leading-none'>Spectre <span className='text-accent'>{info.data?.version?.split('.').slice(0, 2).join('.') || ''}</span></div>
-            <div className='text-[12px] text-muted mt-1.5'>
+            <div className='font-display text-[28px] font-bold tracking-tight leading-none'>Spectre <span className='text-accent'>{info.data?.version?.split('.').slice(0, 2).join('.') || ''}</span></div>
+            <div className='text-[12px] text-muted mt-2 tabular-nums'>
               {info.loading ? <Skeleton className='h-3 w-24' /> : `Version ${info.data?.version || '-'}${info.data?.electron ? ` · Electron ${info.data.electron}` : ''}`}
             </div>
           </div>
-          <div className='flex gap-2'>
+          <div className='flex flex-wrap gap-2'>
             {LINKS.map(([l, u]) => <Button key={u} size='sm' icon={FiExternalLink} onClick={() => openExternal(u)}>{l}</Button>)}
           </div>
         </div>
 
         <Updates />
 
-        <p className='text-[13px] text-text/90 mt-4 leading-relaxed'>
+        <p className='text-[13px] text-text/90 mt-5 leading-relaxed'>
           A desktop app for VALORANT players: store, friends, live match details, match history, progression, loadouts and tactics, in one place.
         </p>
 
-        <div className='grid sm:grid-cols-3 gap-3 mt-4'>
+        <div className='grid sm:grid-cols-3 gap-4 mt-5'>
           {[
             ['Private by design', 'Notes, playbooks, presets and settings are stored only on this PC. No accounts, analytics or tracking.'],
             ['Uses your Riot Client', 'Signs in through the Riot Client already running on your PC. Your password is never asked for or stored.'],
             ['Free & non-commercial', 'A personal project shared with friends. Not for sale.'],
           ].map(([t, d]) => (
-            <div key={t} className='rounded-lg border border-line bg-surface-2/50 p-3'>
-              <div className='text-[12px] font-semibold text-text'>{t}</div>
-              <div className='text-[11px] text-muted mt-1 leading-relaxed'>{d}</div>
+            <div key={t} className='glass rounded-xl p-4'>
+              <div className='text-[13px] font-semibold text-text'>{t}</div>
+              <div className='text-[11px] text-muted mt-1.5 leading-relaxed'>{d}</div>
             </div>
           ))}
         </div>
 
-        <div className='border-t border-line mt-4 pt-3 grid gap-1.5 text-[11px] text-muted/80 leading-relaxed'>
+        <div className='border-t border-line mt-5 pt-4 grid gap-1.5 text-[11px] text-muted/80 leading-relaxed'>
           <p>Game data and imagery courtesy of valorant-api.com.</p>
           <p>Spectre isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games and all associated properties are trademarks or registered trademarks of Riot Games, Inc.</p>
           <p>Third-party tools are used at your own risk.</p>

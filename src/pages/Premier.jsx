@@ -39,8 +39,8 @@ export default function Premier({ active }) {
 
   const Div = ({ d, color }) => (
     <button onClick={() => set('division', d)} title={divisionLabel(d)}
-      className={cx('h-9 min-w-[40px] px-2.5 rounded-lg border text-xs font-bold transition-all hover:-translate-y-0.5', form.division === d ? 'text-bg' : 'border-line text-muted hover:text-text bg-surface-2')}
-      style={form.division === d ? { background: color, borderColor: color, boxShadow: `0 0 14px ${color}55` } : undefined}>
+      className={cx('h-9 min-w-[42px] px-3 rounded-full border text-xs font-semibold tabular-nums transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.97]', form.division === d ? 'text-[#0b0f17]' : 'glass text-muted hover:text-text hover:bg-surface-2')}
+      style={form.division === d ? { background: `linear-gradient(135deg, ${color}, ${color}cc)`, borderColor: color, boxShadow: `inset 0 1px 0 rgb(255 255 255 / 0.35), 0 8px 22px -8px ${color}aa` } : undefined}>
       {d === 0 ? 'Unseeded' : d === 21 ? 'Contender' : d === 22 ? 'Invite' : ((d - 1) % 5) + 1}
     </button>
   )
@@ -50,35 +50,35 @@ export default function Premier({ active }) {
       actions={<Button variant='primary' icon={FiCheck} loading={busy} disabled={!form || !riot.connected} onClick={apply}>Apply</Button>}>
       <RequireRiot>
         <div className='grid grid-cols-[1fr_320px] gap-5 items-start'>
-          <div className='space-y-4 min-w-0'>
+          <div className='space-y-5 min-w-0'>
             {form && (
               <>
-                <Card className='p-5 grid grid-cols-[1fr_140px_140px] gap-4 anim-rise'>
+                <Card className='p-5 grid grid-cols-[1fr_140px_140px] gap-5 anim-rise'>
                   <div><Label>Team name</Label><Input value={form.rosterName} maxLength={24} onChange={e => set('rosterName', e.target.value)} placeholder='Team name' /></div>
                   <div><Label>Tag</Label><Input value={form.rosterTag} maxLength={5} onChange={e => set('rosterTag', e.target.value.toUpperCase())} placeholder='TAG' /></div>
                   <div><Label>Score</Label><Input type='number' min='0' value={form.score} onChange={e => set('score', e.target.value)} /></div>
                 </Card>
                 <Card className='p-5 anim-rise' style={{ animationDelay: '60ms' }}>
-                  <SectionTitle right={<span className='text-xs font-semibold text-accent'>{divisionLabel(form.division)}</span>}>Division</SectionTitle>
-                  <div className='space-y-3'>
-                    <div className='flex gap-1.5'>{SPECIAL.slice(0, 1).map(s => <Div key={s.d} {...s} />)}</div>
+                  <SectionTitle right={<span className='accent-soft inline-flex items-center h-6 px-2.5 rounded-full text-[11px] font-semibold text-accent'>{divisionLabel(form.division)}</span>}>Division</SectionTitle>
+                  <div className='space-y-3.5'>
+                    <div className='flex gap-2'>{SPECIAL.slice(0, 1).map(s => <Div key={s.d} {...s} />)}</div>
                     {GROUPS.map(g => (
-                      <div key={g.name} className='flex items-center gap-3'>
-                        <span className='w-24 text-[11px] font-semibold uppercase tracking-wider' style={{ color: g.color }}>{g.name}</span>
-                        <div className='flex gap-1.5'>{[0, 1, 2, 3, 4].map(i => <Div key={i} d={g.start + i} color={g.color} />)}</div>
+                      <div key={g.name} className='flex items-center gap-4'>
+                        <span className='w-24 flex items-center gap-2 text-[12px] font-semibold tracking-tight text-text'><span className='w-2 h-2 rounded-full shrink-0' style={{ background: g.color, boxShadow: `0 0 8px ${g.color}` }} />{g.name}</span>
+                        <div className='flex gap-2'>{[0, 1, 2, 3, 4].map(i => <Div key={i} d={g.start + i} color={g.color} />)}</div>
                       </div>
                     ))}
-                    <div className='flex gap-1.5'>{SPECIAL.slice(1).map(s => <Div key={s.d} {...s} />)}</div>
+                    <div className='flex gap-2'>{SPECIAL.slice(1).map(s => <Div key={s.d} {...s} />)}</div>
                   </div>
                 </Card>
-                <Card className='p-5 space-y-4 anim-rise' style={{ animationDelay: '120ms' }}>
+                <Card className='p-5 space-y-5 anim-rise' style={{ animationDelay: '120ms' }}>
                   <Toggle checked={form.showTag} onChange={v => set('showTag', v)} label='Show team tag' hint='Tag in front of your name' />
                   <Toggle checked={form.showPlating} onChange={v => set('showPlating', v)} label='Show plating' hint='Premier border on your player card' />
                   <Toggle checked={form.showAura} onChange={v => set('showAura', v)} label='Show aura' hint='Division glow around your card' />
                 </Card>
               </>
             )}
-            {!form && <div className='skeleton h-64 rounded-xl' />}
+            {!form && <div className='skeleton h-64 rounded-2xl' />}
           </div>
           <PresencePanel presence={presence} draft={form ? { premier: { ...form, division: form.division } } : {}} />
         </div>

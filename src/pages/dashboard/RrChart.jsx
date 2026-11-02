@@ -29,18 +29,18 @@ export default function RrChart({ rows }) {
       <svg viewBox={`0 0 ${W} ${H}`} className='w-full h-auto select-none'>
         <defs>
           <linearGradient id='rrFill' x1='0' y1='0' x2='0' y2='1'>
-            <stop offset='0%' style={{ stopColor: 'rgb(var(--accent))', stopOpacity: 0.28 }} />
+            <stop offset='0%' style={{ stopColor: 'rgb(var(--accent))', stopOpacity: 0.32 }} />
             <stop offset='100%' style={{ stopColor: 'rgb(var(--accent))', stopOpacity: 0 }} />
           </linearGradient>
         </defs>
         {grid.map(v => (
           <g key={v}>
-            <line x1={PL} x2={W - PR} y1={y(v)} y2={y(v)} className='stroke-line' strokeDasharray='3 5' />
+            <line x1={PL} x2={W - PR} y1={y(v)} y2={y(v)} className='stroke-line' strokeDasharray='2 6' strokeLinecap='round' />
             {tiers?.[v / 100] && <image href={tiers[v / 100].smallIcon} x={8} y={y(v) - 12} width={24} height={24} />}
           </g>
         ))}
         <path d={area} fill='url(#rrFill)' className='transition-opacity duration-1000' style={{ opacity: on ? 1 : 0 }} />
-        <path d={line} pathLength={1} fill='none' strokeWidth={2.5} strokeLinejoin='round' strokeLinecap='round' className='stroke-accent'
+        <path d={line} pathLength={1} fill='none' strokeWidth={3} strokeLinejoin='round' strokeLinecap='round' className='stroke-accent'
           style={{ strokeDasharray: 1, strokeDashoffset: on ? 0 : 1, transition: 'stroke-dashoffset 1.3s cubic-bezier(.3,.7,.2,1)' }} />
         {pts.map((p, i) => (
           <g key={i} onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)} className='cursor-pointer'>
@@ -54,9 +54,9 @@ export default function RrChart({ rows }) {
         {tiers?.[rows[rows.length - 1].tierAfter] && <image href={tiers[rows[rows.length - 1].tierAfter].smallIcon} x={pts[pts.length - 1][0] - 13} y={pts[pts.length - 1][1] - 38} width={26} height={26} />}
       </svg>
       {h && (
-        <div className='anim-pop absolute top-0 right-0 rounded-lg border border-line bg-surface-2 px-3 py-2 text-xs pointer-events-none'>
-          <div className='font-semibold text-text'>{mapName(h.mapId) || 'Competitive'} <span className={h.change >= 0 ? 'text-good' : 'text-bad'}>{h.change >= 0 ? '+' : ''}{h.change} RR</span></div>
-          <div className='text-muted'>{tiers?.[h.tierAfter]?.tierName || ''} {h.rrAfter} RR - {new Date(h.time).toLocaleDateString()}</div>
+        <div className='glass-strong anim-pop absolute top-1 right-1 rounded-xl px-3.5 py-2.5 text-xs pointer-events-none'>
+          <div className='font-display text-[13px] font-bold tracking-tight text-text'>{mapName(h.mapId) || 'Competitive'} <span className={h.change >= 0 ? 'text-good tabular-nums' : 'text-bad tabular-nums'}>{h.change >= 0 ? '+' : ''}{h.change} RR</span></div>
+          <div className='mt-0.5 text-muted tabular-nums'>{tiers?.[h.tierAfter]?.tierName || ''} {h.rrAfter} RR - {new Date(h.time).toLocaleDateString()}</div>
         </div>
       )}
     </div>

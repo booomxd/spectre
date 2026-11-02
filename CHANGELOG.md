@@ -1,5 +1,15 @@
 # 📜 Changelog
 
+## 2.3.0
+
+### ✨ A cleaner UI
+- A completely redesigned look: frosted glass panels over a soft, glowing backdrop that follows your theme
+- A clearer, more readable layout with roomier spacing and calmer headings
+- SF Pro typography (when it's installed; Inter otherwise)
+- Rounder buttons, chips and switches, with smoother motion throughout
+- Five new themes: Aurora, Sakura, Abyss, Sunset and Pearl, Spectre's first light theme
+- A refreshed theme picker with a live preview of every theme
+
 ## 2.2.1
 
 ### 🕘 Match history

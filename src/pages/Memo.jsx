@@ -29,37 +29,37 @@ export default function Memo({ params }) {
   return (
     <Page title='Notes' subtitle='Notes and tags on players you meet'
       actions={<Button variant='primary' icon={FiPlus} onClick={() => setTarget({})}>New note</Button>}>
-      <div className='flex flex-col gap-3 mb-5'>
+      <div className='flex flex-col gap-4 mb-6'>
         <div className='relative max-w-sm'>
-          <FiSearch className='absolute left-3 top-1/2 -translate-y-1/2 text-muted' />
-          <Input className='pl-9' value={q} onChange={e => setQ(e.target.value)} placeholder='Search name, notes or tags' />
+          <FiSearch className='absolute left-3.5 top-1/2 -translate-y-1/2 text-muted pointer-events-none z-10' />
+          <Input className='!pl-10 !h-10 !rounded-full' value={q} onChange={e => setQ(e.target.value)} placeholder='Search name, notes or tags' />
         </div>
-        <div className='flex flex-wrap gap-1.5'>
+        <div className='flex flex-wrap gap-2'>
           {chips.map(t => <TagChip key={t} label={t} active={tag === t} onClick={() => setTag(tag === t ? null : t)} />)}
         </div>
       </div>
 
       {error && !data ? <ErrorState error={error} onRetry={reload} />
-        : loading && !data ? <div className='grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-3'>{Array.from({ length: 6 }, (_, i) => <Skeleton key={i} className='h-32 rounded-xl' />)}</div>
+        : loading && !data ? <div className='grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-4'>{Array.from({ length: 6 }, (_, i) => <Skeleton key={i} className='h-36 rounded-xl' />)}</div>
           : !shown.length ? (
             <Empty icon={FiEdit3} title={memos.length ? 'No notes match' : 'No notes yet'}
               hint={memos.length ? 'Try clearing the search or tag filter.' : 'Add a note on a player from a match scoreboard, their profile, or here.'}
               action={!memos.length && <Button icon={FiPlus} onClick={() => setTarget({})}>New note</Button>} />
           ) : (
-            <div className='stagger grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-3'>
+            <div className='stagger grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-4'>
               {shown.map((m, i) => (
-                <Card key={m.puuid} hover style={{ '--i': Math.min(i, 12) }} className='p-4 flex flex-col gap-2.5' onClick={() => setTarget({ puuid: m.puuid, name: m.name })}>
+                <Card key={m.puuid} hover style={{ '--i': Math.min(i, 12) }} className='p-5 flex flex-col gap-3' onClick={() => setTarget({ puuid: m.puuid, name: m.name })}>
                   <div className='flex items-center gap-2'>
-                    <span className='font-display text-base font-bold uppercase truncate flex-1'>{m.name || 'Unknown player'}</span>
+                    <span className='font-display text-[17px] font-bold tracking-tight text-text truncate flex-1'>{m.name || 'Unknown player'}</span>
                     <RatingIcon rating={m.rating} />
                   </div>
                   {m.tags.length > 0 && (
-                    <div className='flex flex-wrap gap-1'>{m.tags.map(t => <span key={t} className='h-5 px-2 rounded-md border border-accent/30 bg-accent/10 text-accent text-[10px] font-bold uppercase tracking-wider inline-flex items-center'>{t}</span>)}</div>
+                    <div className='flex flex-wrap gap-1.5'>{m.tags.map(t => <span key={t} className='h-6 px-2.5 rounded-full border border-accent/30 bg-accent/[0.12] text-accent text-[11px] font-semibold inline-flex items-center'>{t}</span>)}</div>
                   )}
-                  <p className={cx('text-[13px] line-clamp-3 flex-1', m.text ? 'text-text/80' : 'text-muted italic')}>{m.text || 'No notes'}</p>
-                  <div className='flex items-center justify-between text-[11px] text-muted'>
+                  <p className={cx('text-[13px] leading-relaxed line-clamp-3 flex-1', m.text ? 'text-text/80' : 'text-muted italic')}>{m.text || 'No notes'}</p>
+                  <div className='flex items-center justify-between pt-3 border-t border-line text-[11px] text-muted'>
                     <span>Updated {timeAgo(m.updatedAt)}</span>
-                    {friendSet.has(m.puuid) && <button className='hover:text-accent transition-colors' onClick={e => { e.stopPropagation(); navigate('search', { puuid: m.puuid }) }}>View profile</button>}
+                    {friendSet.has(m.puuid) && <button className='font-semibold text-accent hover:underline' onClick={e => { e.stopPropagation(); navigate('search', { puuid: m.puuid }) }}>View profile</button>}
                   </div>
                 </Card>
               ))}

@@ -9,11 +9,11 @@ import { TierIcon, cx, kd, seasonName, useSeasons } from './history/shared'
 
 function RankBlock({ label, tier, rr, sub }) {
   return (
-    <div className='flex items-center gap-3 rounded-xl bg-bg/60 backdrop-blur border border-line px-4 py-2.5 min-w-[170px]'>
+    <div className='glass-strong flex items-center gap-3.5 rounded-xl px-4 py-3 min-w-[180px]'>
       <TierIcon tier={tier} size={44} />
       <div>
-        <div className='text-[10px] font-semibold tracking-[0.16em] uppercase text-muted'>{label}</div>
-        <div className='font-display text-lg font-bold leading-tight'><TierName tier={tier} />{rr != null && tier ? <span className='text-muted text-sm font-semibold'> {rr} RR</span> : null}</div>
+        <div className='text-[12px] font-medium text-muted'>{label}</div>
+        <div className='font-display text-lg font-bold tracking-tight leading-tight'><TierName tier={tier} />{rr != null && tier ? <span className='text-muted text-sm font-semibold tabular-nums'> {rr} RR</span> : null}</div>
         {sub && <div className='text-[11px] text-muted'>{sub}</div>}
       </div>
     </div>
@@ -27,16 +27,16 @@ function TierName({ tier }) {
 function ScoutStats({ scout }) {
   const r = scout.data?.recent
   const stat = (label, value, sub) => (
-    <div className='min-w-[84px]'>
-      <div className='text-[10px] font-semibold tracking-[0.16em] uppercase text-muted'>{label}</div>
-      <div className='font-display text-2xl font-bold leading-tight'>{value}</div>
-      {sub && <div className='text-[11px] text-muted'>{sub}</div>}
+    <div className='min-w-[90px]'>
+      <div className='text-[12px] font-medium text-muted'>{label}</div>
+      <div className='font-display text-[26px] font-bold tracking-tight leading-tight tabular-nums mt-0.5'>{value}</div>
+      {sub && <div className='text-[11px] text-muted tabular-nums'>{sub}</div>}
     </div>
   )
-  if (scout.loading && !scout.data) return <Skeleton className='h-[74px] rounded-xl' />
+  if (scout.loading && !scout.data) return <Skeleton className='h-[90px] rounded-xl' />
   if (!r) return null
   return (
-    <Card className='anim-rise p-4 flex flex-wrap items-center gap-x-8 gap-y-3'>
+    <Card className='anim-rise p-5 flex flex-wrap items-center gap-x-10 gap-y-4'>
       {stat('Headshot %', r.hs != null ? `${r.hs}%` : '-', `last ${r.matches} competitive`)}
       {stat('K/D', kd(r.kills, r.deaths), `${r.kills} / ${r.deaths}`)}
       {r.team > 0 && stat('Recent win rate', `${Math.round(r.wins / r.team * 100)}%`, `${r.wins}W ${r.team - r.wins}L`)}
@@ -46,7 +46,7 @@ function ScoutStats({ scout }) {
 
 function ActHistory({ scout, seasons }) {
   const tiers = useTiers()
-  if (scout.loading && !scout.data) return <div className='grid gap-2'>{Array.from({ length: 4 }, (_, i) => <Skeleton key={i} className='h-14 rounded-xl' />)}</div>
+  if (scout.loading && !scout.data) return <div className='grid gap-2.5'>{Array.from({ length: 4 }, (_, i) => <Skeleton key={i} className='h-[60px] rounded-xl' />)}</div>
   if (scout.error && !scout.data) return <ErrorState error={scout.error} onRetry={scout.reload} />
   const start = id => Date.parse(seasons[id]?.startTime) || 0
   const acts = [...(scout.data?.acts || [])].sort((a, b) => start(b.seasonId) - start(a.seasonId))
@@ -55,32 +55,32 @@ function ActHistory({ scout, seasons }) {
   const best = Math.max(...acts.map(a => a.peak))
   const peakAct = [...acts].reverse().find(a => a.peak === best)?.seasonId
   return (
-    <div className='grid gap-2 stagger'>
+    <div className='grid gap-2.5 stagger'>
       {acts.map((a, i) => {
         const wr = Math.round(a.wins / a.games * 100)
         const isPeak = a.seasonId === peakAct
         return (
           <div key={a.seasonId} style={{ '--i': Math.min(i, 12) }}
-            className={cx('anim-rise flex items-center gap-3 rounded-xl border bg-surface px-3 py-2', isPeak ? 'border-accent/50' : 'border-line')}>
-            <div className='w-[64px] shrink-0 text-[12px] font-semibold'>{seasonName(seasons, a.seasonId) || 'Act'}</div>
-            <div className='flex items-center gap-1.5 w-[150px] shrink-0' title='Final rank'>
+            className={cx('anim-rise flex items-center gap-4 rounded-xl px-4 py-2.5', isPeak ? 'accent-soft' : 'glass')}>
+            <div className='w-[64px] shrink-0 font-display text-[13px] font-bold tracking-tight'>{seasonName(seasons, a.seasonId) || 'Act'}</div>
+            <div className='flex items-center gap-2 w-[150px] shrink-0' title='Final rank'>
               <TierIcon tier={a.tier} size={30} />
               <div className='leading-tight'>
                 <div className='text-[12px] font-semibold'>{a.tier ? tiers?.[a.tier]?.tierName : 'Unranked'}</div>
-                <div className='text-[10px] uppercase tracking-wider text-muted'>Final</div>
+                <div className='text-[11px] text-muted'>Final</div>
               </div>
             </div>
-            <div className={cx('flex items-center gap-1.5 rounded-lg px-2 py-1 border', a.peak ? 'border-accent/40 bg-accent/10' : 'border-line')} title='Act peak'>
+            <div className={cx('flex items-center gap-2 rounded-full pl-1.5 pr-3.5 py-1 border', a.peak ? 'border-accent/30 bg-accent/10' : 'border-line bg-surface-2/60')} title='Act peak'>
               <TierIcon tier={a.peak} size={26} />
               <div className='leading-tight'>
                 <div className='text-[12px] font-semibold'>{a.peak ? tiers?.[a.peak]?.tierName : '-'}</div>
-                <div className='text-[10px] uppercase tracking-wider text-accent'>Act peak</div>
+                <div className='text-[11px] font-medium text-accent'>Act peak</div>
               </div>
             </div>
             {isPeak && a.peak > 0 && <Badge tone='accent'>All-time peak</Badge>}
             <div className='ml-auto text-right leading-tight'>
-              <div className='text-[13px] font-semibold'>{wr}% <span className='text-muted font-normal text-[11px]'>win rate</span></div>
-              <div className='text-[11px] text-muted'>{a.wins}W of {a.games} games</div>
+              <div className='text-[13px] font-semibold tabular-nums'>{wr}% <span className='text-muted font-normal text-[11px]'>win rate</span></div>
+              <div className='text-[11px] text-muted tabular-nums'>{a.wins}W of {a.games} games</div>
             </div>
           </div>
         )
@@ -98,25 +98,26 @@ function Profile({ puuid }) {
   const seasons = useSeasons()
 
   if (error && !data) return <ErrorState error={error} onRetry={reload} />
-  if (loading && !data) return <Skeleton className='h-52 rounded-2xl' />
+  if (loading && !data) return <Skeleton className='h-[230px] rounded-2xl' />
   const name = data.gameName ? `${data.gameName}#${data.tagLine}` : ''
   const wr = data.current?.games ? Math.round(data.current.wins / data.current.games * 100) : null
 
   return (
     <div className='flex flex-col gap-5'>
-      <Card className='anim-rise relative overflow-hidden min-h-[210px]'>
+      <Card className='anim-rise relative overflow-hidden !rounded-2xl min-h-[230px]'>
         {data.cardId && card?.wideArt && <img src={card.wideArt} alt='' className='absolute inset-0 w-full h-full object-cover' draggable={false} />}
-        <div className='absolute inset-0 bg-gradient-to-t from-surface via-surface/60 to-surface/10' />
-        <div className='relative h-full min-h-[210px] flex flex-col justify-end p-5 gap-4'>
+        {/* Dark scrim over the card art: the name stays white and legible on every theme. Without art the plain glass shows through. */}
+        {data.cardId && card?.wideArt && <div className='absolute inset-0 bg-gradient-to-t from-black/75 via-black/35 to-black/5' />}
+        <div className='relative h-full min-h-[230px] flex flex-col justify-end p-6 gap-4'>
           <div className='flex flex-wrap items-end justify-between gap-4'>
             <div className='min-w-0'>
-              <div className='flex items-center gap-2 mb-1.5'>
+              <div className='flex items-center gap-2 mb-2.5'>
                 {data.self && <Badge tone='accent'>You</Badge>}
                 {data.level != null && <Badge>Level {data.level}</Badge>}
                 {data.leaderboardRank && <Badge tone='warn'>Leaderboard #{data.leaderboardRank}</Badge>}
               </div>
-              <h2 className='font-display text-4xl font-bold uppercase leading-none truncate'>{name || 'Hidden player'}</h2>
-              {title?.titleText && <div className='text-sm text-muted mt-1.5'>{title.titleText}</div>}
+              <h2 className={cx('font-display text-[40px] font-bold tracking-tight leading-none truncate', data.cardId && card?.wideArt ? 'text-white drop-shadow-[0_2px_12px_rgb(0_0_0/0.45)]' : 'text-text')}>{name || 'Hidden player'}</h2>
+              {title?.titleText && <div className={cx('text-sm mt-2', data.cardId && card?.wideArt ? 'text-white/75' : 'text-muted')}>{title.titleText}</div>}
             </div>
             <div className='flex flex-wrap gap-3'>
               <RankBlock label='Current' tier={data.current?.tier} rr={data.current?.rr}
@@ -127,7 +128,7 @@ function Profile({ puuid }) {
         </div>
       </Card>
 
-      {data.notes.length > 0 && <div className='text-xs text-warn'>{data.notes.join('. ')}</div>}
+      {data.notes.length > 0 && <div className='text-[12px] text-warn'>{data.notes.join('. ')}</div>}
 
       <ScoutStats scout={scout} />
 
@@ -138,11 +139,11 @@ function Profile({ puuid }) {
             <ActHistory scout={scout} seasons={seasons} />
           </div>
           <div>
-          <SectionTitle>Recent matches</SectionTitle>
-          <HistoryPanel puuid={puuid} step={10} />
+            <SectionTitle>Recent matches</SectionTitle>
+            <HistoryPanel puuid={puuid} step={10} />
           </div>
         </div>
-        <Card className='p-4 xl:sticky xl:top-0'>
+        <Card className='p-5 xl:sticky xl:top-0'>
           <SectionTitle>Note</SectionTitle>
           <MemoForm target={{ puuid, name }} memo={memo} onSaved={reloadMemo} onDeleted={reloadMemo} />
         </Card>
@@ -178,30 +179,30 @@ export default function PlayerSearch({ params }) {
   return (
     <Page title='Player Search' subtitle='Look up any player by Riot ID: rank, peak, level and recent matches'>
       <RequireRiot>
-        <form className='flex gap-2 max-w-xl' onSubmit={e => { e.preventDefault(); find(text.trim()) }}>
+        <form className='flex gap-2.5 max-w-xl' onSubmit={e => { e.preventDefault(); find(text.trim()) }}>
           <div className='relative flex-1'>
-            <FiSearch className='absolute left-3 top-1/2 -translate-y-1/2 text-muted' />
-            <Input className='pl-9' value={text} onChange={e => setText(e.target.value)} placeholder='Name#Tag' autoFocus />
+            <FiSearch className='absolute left-4 top-1/2 -translate-y-1/2 text-muted pointer-events-none z-10' />
+            <Input className='pl-10 h-10 !rounded-full' value={text} onChange={e => setText(e.target.value)} placeholder='Name#Tag' autoFocus />
           </div>
-          <Button type='submit' variant='primary' loading={busy} disabled={!text.trim()}>Search</Button>
+          <Button type='submit' variant='primary' className='h-10 px-5' loading={busy} disabled={!text.trim()}>Search</Button>
         </form>
-        {searchError && <div className='anim-fade mt-2 text-xs text-bad'>{searchError}</div>}
+        {searchError && <div className='anim-fade mt-2.5 pl-4 text-[12px] text-bad'>{searchError}</div>}
 
         {recent?.length > 0 && (
-          <div className='flex flex-wrap items-center gap-1.5 mt-3'>
+          <div className='flex flex-wrap items-center gap-2 mt-4'>
             <FiClock className='text-muted text-xs mr-1' />
             {recent.map(r => (
               <button key={r.puuid} onClick={() => open(r)}
-                className={cx('h-7 px-3 rounded-full border text-xs font-semibold transition-all active:scale-95',
-                  puuid === r.puuid ? 'border-accent/50 bg-accent/15 text-accent' : 'border-line bg-surface-2 text-muted hover:text-text hover:border-accent/30')}>
+                className={cx('h-7 px-3.5 rounded-full text-[12px] font-semibold transition-all active:scale-95',
+                  puuid === r.puuid ? 'accent-soft text-accent' : 'glass text-muted hover:text-text hover:border-accent/30')}>
                 {r.gameName}<span className='opacity-60'>#{r.tagLine}</span>
               </button>
             ))}
-            <button title='Clear recent searches' onClick={clear} className='w-7 h-7 rounded-full text-muted hover:text-bad transition-colors flex items-center justify-center'><FiX /></button>
+            <button title='Clear recent searches' onClick={clear} className='w-7 h-7 rounded-full text-muted hover:text-bad hover:bg-surface-2 transition-colors flex items-center justify-center'><FiX /></button>
           </div>
         )}
 
-        <div className='mt-6'>
+        <div className='mt-7'>
           {puuid ? <Profile key={puuid} puuid={puuid} />
             : <Empty icon={FiUser} title='Search for a player' hint="Type any Riot ID above to see their rank, peak and recent matches." />}
         </div>

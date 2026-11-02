@@ -96,4 +96,4 @@ Send ideas, bug reports or anything else straight to the developer by email. Onl
 Spectre checks for new releases on launch and every few hours. When one is out, it offers a one-click update that downloads and verifies the installer, installs it and restarts. Portable copies get a link to the new download. Check any time from **Settings → About**.
 
 ### 🎨 Settings
-Seven themes (Midnight, Onyx, Ember, Glacier, Verdant, Amethyst, Gilded), the start page, launch at login, minimize to tray, and overlay hotkeys, click-through, auto-show, opacity and size.
+Twelve glass themes (Midnight, Onyx, Ember, Glacier, Verdant, Amethyst, Gilded, Aurora, Sakura, Abyss, Sunset and the light Pearl), the start page, launch at login, minimize to tray, and overlay hotkeys, click-through, auto-show, opacity and size.

@@ -34,7 +34,7 @@ function UpdateButton() {
   return (
     <>
       <button onClick={go} disabled={pct != null} title={s.canInstall ? 'Download, install and restart' : 'Open the download page'}
-        className='h-7 mr-2 px-3 rounded-md text-xs font-semibold flex items-center gap-1.5 bg-accent text-bg hover:opacity-90 disabled:opacity-80 transition-opacity'>
+        className='accent-fill h-7 mr-2 px-3.5 rounded-full text-xs font-semibold flex items-center gap-1.5 text-bg hover:brightness-110 disabled:opacity-80 transition-[filter,opacity]'>
         <FiDownload size={13} />{pct != null ? `Updating ${pct}%` : `${s.canInstall ? 'Update' : 'Download'} ${s.latest}`}
       </button>
       <Modal open={prompt} onClose={() => setPrompt(false)} title={`Spectre ${s.latest} is here`} width={420}
@@ -50,20 +50,20 @@ function UpdateButton() {
 
 function TitleBar({ tab, setTab }) {
   return (
-    <div className='drag h-11 shrink-0 flex items-center justify-between border-b border-line bg-bg pl-4 pr-1'>
-      <div className='flex items-center gap-1 p-1 rounded-lg bg-surface border border-line'>
+    <div className='drag h-12 shrink-0 flex items-center justify-between pl-3 pr-1.5'>
+      <div className='glass flex items-center gap-0.5 p-1 rounded-full'>
         {[{ id: 'home', label: 'Home' }, { id: 'strategies', label: 'Tactics' }].map(t => (
           <button key={t.id} onClick={() => setTab(t.id)}
-            className={cx('h-7 px-3 rounded-md text-xs font-semibold transition-all duration-200',
-              tab === t.id ? 'bg-surface-2 text-text border border-line' : 'text-muted hover:text-text border border-transparent')}>
+            className={cx('h-7 px-4 rounded-full text-xs font-semibold transition-all duration-200',
+              tab === t.id ? 'accent-soft text-text' : 'text-muted hover:text-text')}>
             {t.label}
           </button>
         ))}
       </div>
-      <div className='flex items-center'>
+      <div className='flex items-center gap-0.5'>
         <UpdateButton />
-        {[['win:minimize', FiMinus, 'hover:bg-surface-2'], ['win:maximize', FiSquare, 'hover:bg-surface-2'], ['win:close', FiX, 'hover:bg-accent hover:text-bg']].map(([ch, Icon, hov]) => (
-          <button key={ch} onClick={() => invoke(ch)} className={cx('w-11 h-9 flex items-center justify-center text-muted rounded-md transition-colors', hov)}>
+        {[['win:minimize', FiMinus, 'hover:bg-surface-2 hover:text-text'], ['win:maximize', FiSquare, 'hover:bg-surface-2 hover:text-text'], ['win:close', FiX, 'hover:bg-bad hover:text-white']].map(([ch, Icon, hov]) => (
+          <button key={ch} onClick={() => invoke(ch)} className={cx('w-10 h-8 flex items-center justify-center text-muted rounded-full transition-colors', hov)}>
             <Icon size={ch === 'win:maximize' ? 12 : 15} />
           </button>
         ))}
@@ -75,24 +75,21 @@ function TitleBar({ tab, setTab }) {
 function Sidebar({ page, setPage }) {
   const riot = useRiot()
   return (
-    <aside className='w-[220px] shrink-0 flex flex-col border-r border-line bg-bg'>
-      <div className='px-5 pt-5 pb-4 flex items-center gap-2.5'>
-        <img src={logo} alt='' className='w-8 h-8' draggable={false} />
-        <div>
-          <div className='font-display text-lg font-bold leading-none tracking-widest'>SPECTRE</div>
-        </div>
+    <aside className='glass-strong w-[220px] shrink-0 flex flex-col ml-3 mb-3 rounded-2xl overflow-hidden'>
+      <div className='px-4 pt-4 pb-3 flex items-center gap-2.5'>
+        <img src={logo} alt='' className='w-8 h-8 rounded-[10px] shadow-[0_6px_18px_-6px_rgb(var(--accent)/0.6)]' draggable={false} />
+        <div className='font-brand text-lg font-bold leading-none'>SPECTRE</div>
       </div>
-      <nav className='flex-1 overflow-y-auto px-3 pb-3'>
+      <nav className='flex-1 overflow-y-auto px-2.5 pb-2'>
         {GROUPS.map(g => (
-          <div key={g.label} className='mb-3'>
-            <div className='px-2.5 pb-1.5 pt-2 text-[10px] font-semibold tracking-[0.2em] uppercase text-muted/70'>{g.label}</div>
+          <div key={g.label} className='mb-2.5'>
+            <div className='px-2.5 pb-1 pt-2 text-[11px] font-semibold text-muted/70'>{g.label}</div>
             {g.pages.map(p => {
               const active = page === p.id
               return (
                 <button key={p.id} onClick={() => setPage(p.id)}
-                  className={cx('group relative w-full flex items-center gap-3 h-9 px-2.5 rounded-lg text-[13px] font-medium transition-all duration-150',
-                    active ? 'bg-surface-2 text-text' : 'text-muted hover:text-text hover:bg-surface')}>
-                  <span className={cx('absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-accent transition-all duration-200', active ? 'opacity-100' : 'opacity-0 scale-y-0')} />
+                  className={cx('group relative w-full flex items-center gap-3 h-9 px-2.5 rounded-[10px] text-[13px] font-medium transition-all duration-200',
+                    active ? 'accent-soft text-text' : 'text-muted hover:text-text hover:bg-surface-2')}>
                   <p.icon className={cx('shrink-0 transition-colors', active ? 'text-accent' : 'group-hover:text-text')} size={15} />
                   {p.label}
                 </button>
@@ -101,8 +98,8 @@ function Sidebar({ page, setPage }) {
           </div>
         ))}
       </nav>
-      <div className='m-3 p-3 rounded-xl border border-line bg-surface flex items-center gap-3'>
-        <span className={cx('w-2 h-2 rounded-full shrink-0', riot.connected ? 'bg-good' : 'bg-warn anim-pulse')} />
+      <div className='glass m-2.5 p-3 rounded-xl flex items-center gap-3'>
+        <span className={cx('w-2 h-2 rounded-full shrink-0', riot.connected ? 'bg-good shadow-[0_0_10px_rgb(var(--good))]' : 'bg-warn anim-pulse')} />
         <div className='min-w-0'>
           <div className='text-[13px] font-semibold truncate'>{riot.connected ? riot.gameName : 'Not connected'}</div>
           <div className='text-[11px] text-muted truncate'>{riot.connected ? `#${riot.tagLine} · ${String(riot.shard).toUpperCase()}` : 'Waiting for Riot Client'}</div>
@@ -141,9 +138,10 @@ function Shell() {
 
   const Strat = STRATEGIES.component
   return (
-    <div className='h-full flex flex-col'>
-      <TitleBar tab={tab} setTab={setTab} />
-      <div className='flex-1 flex min-h-0 relative'>
+    <div className='h-full flex flex-col relative'>
+      <div className='backdrop' aria-hidden='true'><div className='orb orb-1' /><div className='orb orb-2' /><div className='orb orb-3' /></div>
+      <div className='relative z-10'><TitleBar tab={tab} setTab={setTab} /></div>
+      <div className='flex-1 flex min-h-0 relative z-10'>
         <div className={cx('flex-1 flex min-h-0', tab !== 'home' && 'hidden')}>
           <Sidebar page={page} setPage={setPage} />
           <main className='flex-1 relative min-w-0'>

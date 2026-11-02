@@ -3,41 +3,128 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Theme tokens. Colors are "r g b" triplets so Tailwind can apply opacity (bg-accent/20). */
-:root, [data-theme='midnight'] {
-  --bg: 11 11 15;
-  --surface: 20 20 27;
-  --surface-2: 28 28 38;
-  --border: 40 40 54;
-  --text: 238 238 245;
-  --muted: 140 140 162;
+/* Theme tokens. Colors are "r g b" triplets so Tailwind can apply opacity (bg-accent/20).
+   Glass: surfaces are translucent (--surface-a / --surface-2-a) over the app backdrop, borders are hairlines
+   (--line at --line-a), --panel is the opaque fill for menus and popovers, --orb-* tint the backdrop.
+   The first block is the shared dark base (and Midnight). :where() keeps it below each theme's own rule, and it also
+   applies to any element with data-theme, so theme previews inside a light app still get the dark base. */
+:root, :where([data-theme]:not([data-theme='pearl'])) {
+  --bg: 9 9 14;
+  --panel: 22 21 30;
+  --surface: 255 255 255;    --surface-a: 0.045;
+  --surface-2: 255 255 255;  --surface-2-a: 0.075;
+  --line: 255 255 255;       --line-a: 0.09;
+  --hi-a: 0.08;
+  --shadow-a: 0.75;
+  --text: 242 242 248;
+  --muted: 150 150 172;
   --accent: 255 70 85;
   --accent-2: 255 140 120;
   --good: 74 222 128;
   --bad: 248 113 113;
   --warn: 250 204 21;
+  --orb-1: 255 70 85;  --orb-2: 255 140 120;  --orb-3: 70 60 160;  --orb-a: 0.32;
+  color-scheme: dark;
 }
-[data-theme='onyx']     { --bg: 0 0 0;    --surface: 12 12 12; --surface-2: 22 22 22; --border: 38 38 38; --accent: 235 235 235; --accent-2: 160 160 160; }
-[data-theme='ember']    { --bg: 14 10 8;  --surface: 26 18 14; --surface-2: 36 26 20; --border: 58 40 30; --accent: 255 128 48; --accent-2: 255 190 90; }
-[data-theme='glacier']  { --bg: 8 12 18;  --surface: 14 21 31; --surface-2: 20 30 44; --border: 34 50 70; --accent: 86 200 255; --accent-2: 160 230 255; }
-[data-theme='verdant']  { --bg: 8 13 10;  --surface: 14 23 18; --surface-2: 20 33 26; --border: 32 54 42; --accent: 62 220 140; --accent-2: 160 240 190; }
-[data-theme='amethyst'] { --bg: 12 9 18;  --surface: 22 16 32; --surface-2: 32 23 46; --border: 52 38 74; --accent: 176 120 255; --accent-2: 230 160 255; }
-[data-theme='gilded']   { --bg: 12 11 7;  --surface: 23 21 13; --surface-2: 33 30 19; --border: 56 50 30; --accent: 232 190 90; --accent-2: 255 225 150; }
+[data-theme='onyx']     { --bg: 5 5 6;    --panel: 20 20 22; --accent: 235 235 240; --accent-2: 160 160 170; --orb-1: 120 120 135; --orb-2: 70 70 80;    --orb-3: 40 40 50;   --orb-a: 0.28; --muted: 145 145 155; }
+[data-theme='ember']    { --bg: 12 8 6;   --panel: 30 21 16; --accent: 255 128 48;  --accent-2: 255 190 90;  --orb-1: 255 110 40;  --orb-2: 255 180 80;  --orb-3: 150 40 30;  --muted: 168 148 136; }
+[data-theme='glacier']  { --bg: 6 10 16;  --panel: 16 24 35; --accent: 86 200 255;  --accent-2: 160 230 255; --orb-1: 60 170 255;  --orb-2: 140 225 255; --orb-3: 40 60 170;  --muted: 136 156 178; }
+[data-theme='verdant']  { --bg: 6 11 9;   --panel: 16 27 21; --accent: 62 220 140;  --accent-2: 160 240 190; --orb-1: 40 200 120;  --orb-2: 150 235 180; --orb-3: 20 90 110;  --muted: 136 166 150; }
+[data-theme='amethyst'] { --bg: 9 7 15;   --panel: 26 20 38; --accent: 176 120 255; --accent-2: 230 160 255; --orb-1: 150 100 255; --orb-2: 220 150 255; --orb-3: 60 70 255;  --muted: 158 148 182; }
+[data-theme='gilded']   { --bg: 10 9 6;   --panel: 28 25 16; --accent: 232 190 90;  --accent-2: 255 225 150; --orb-1: 220 170 70;  --orb-2: 255 220 140; --orb-3: 120 70 30;  --muted: 168 160 138; }
+[data-theme='aurora']   { --bg: 5 10 14;  --panel: 15 26 32; --accent: 45 212 191;  --accent-2: 167 139 250; --orb-1: 30 200 170;  --orb-2: 150 120 250; --orb-3: 40 90 200;  --muted: 138 162 172; }
+[data-theme='sakura']   { --bg: 13 8 12;  --panel: 34 22 31; --accent: 255 121 176; --accent-2: 255 190 215; --orb-1: 255 110 170; --orb-2: 255 185 210; --orb-3: 130 70 200; --muted: 176 148 164; }
+[data-theme='abyss']    { --bg: 4 7 18;   --panel: 14 20 42; --accent: 92 132 255;  --accent-2: 120 220 255; --orb-1: 70 110 255;  --orb-2: 100 210 255; --orb-3: 30 30 120;  --muted: 140 150 184; }
+[data-theme='sunset']   { --bg: 13 7 10;  --panel: 34 19 25; --accent: 255 94 140;  --accent-2: 255 176 92;  --orb-1: 255 80 130;  --orb-2: 255 170 80;  --orb-3: 120 40 160; --muted: 178 146 156; }
+[data-theme='pearl'] {
+  --bg: 232 234 242;
+  --panel: 248 248 252;
+  --surface: 255 255 255;    --surface-a: 0.55;
+  --surface-2: 255 255 255;  --surface-2-a: 0.75;
+  --line: 20 24 48;          --line-a: 0.1;
+  --hi-a: 0.7;
+  --shadow-a: 0.18;
+  --text: 22 24 36;
+  --muted: 96 100 122;
+  --accent: 99 91 255;
+  --accent-2: 214 92 255;
+  --good: 22 163 74;
+  --bad: 220 38 38;
+  --warn: 202 138 4;
+  --orb-1: 140 130 255; --orb-2: 240 140 255; --orb-3: 80 200 255; --orb-a: 0.45;
+  color-scheme: light;
+}
 
 * { box-sizing: border-box; user-select: none; }
 html, body, #root { height: 100%; margin: 0; overflow: hidden; }
-body { font-family: 'Inter', sans-serif; background: rgb(var(--bg)); color: rgb(var(--text)); -webkit-font-smoothing: antialiased; }
+body {
+  font-family: "SF Pro Text", "SF Pro Display", "SF Pro", -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  background: rgb(var(--bg)); color: rgb(var(--text));
+  -webkit-font-smoothing: antialiased; font-feature-settings: "cv11", "ss01";
+}
 input, textarea, select { user-select: text; font-family: inherit; }
 img { object-fit: contain; -webkit-user-drag: none; }
+::selection { background: rgb(var(--accent) / 0.35); }
 
 .drag { -webkit-app-region: drag; }
 .no-drag, button, input, select, textarea, a { -webkit-app-region: no-drag; }
-.font-display { font-family: 'Rajdhani', sans-serif; letter-spacing: 0.04em; }
+/* Headings and numbers: SF Pro Display when installed, Inter otherwise. */
+.font-display { font-family: "SF Pro Display", "SF Pro", -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI Variable Display", "Segoe UI", sans-serif; letter-spacing: -0.015em; }
+/* The SPECTRE wordmark only. */
+.font-brand { font-family: 'Rajdhani', sans-serif; letter-spacing: 0.14em; }
 
-::-webkit-scrollbar { width: 8px; height: 8px; }
+/* App backdrop: slow-drifting color orbs under a faint grid. Rendered once by the shell. */
+.backdrop { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; background: rgb(var(--bg)); }
+.backdrop::after {
+  content: ""; position: absolute; inset: 0;
+  background-image: linear-gradient(rgb(var(--line) / 0.035) 1px, transparent 1px), linear-gradient(90deg, rgb(var(--line) / 0.035) 1px, transparent 1px);
+  background-size: 56px 56px;
+  -webkit-mask-image: radial-gradient(ellipse 75% 60% at 60% 0%, #000 15%, transparent 75%);
+}
+.orb { position: absolute; border-radius: 50%; filter: blur(110px); will-change: transform; transition: background-color 0.8s ease; }
+.orb-1 { width: 46vmax; height: 46vmax; left: -10vmax; top: -22vmax; background: rgb(var(--orb-1) / var(--orb-a)); animation: drift-1 28s ease-in-out infinite alternate; }
+.orb-2 { width: 36vmax; height: 36vmax; right: -12vmax; top: 18vh; background: rgb(var(--orb-2) / calc(var(--orb-a) * 0.6)); animation: drift-2 34s ease-in-out infinite alternate; }
+.orb-3 { width: 42vmax; height: 42vmax; left: 22vw; bottom: -30vmax; background: rgb(var(--orb-3) / calc(var(--orb-a) * 0.9)); animation: drift-3 40s ease-in-out infinite alternate; }
+@keyframes drift-1 { to { transform: translate(16vw, 12vh) scale(1.08); } }
+@keyframes drift-2 { to { transform: translate(-14vw, 20vh) scale(0.92); } }
+@keyframes drift-3 { to { transform: translate(-10vw, -16vh) scale(1.12); } }
+
+/* Glass surfaces.
+   .glass        translucent panel with a hairline border and top highlight (cards, rows, tiles)
+   .glass-strong denser, blurred panel for things that float over content (sidebar, modals, drawers, menus, toasts)
+   .glass-field  form controls */
+.glass {
+  background: linear-gradient(180deg, rgb(var(--surface) / calc(var(--surface-a) * 1.5)), rgb(var(--surface) / calc(var(--surface-a) * 0.6)));
+  border: 1px solid rgb(var(--line) / var(--line-a));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / var(--hi-a)), 0 18px 40px -30px rgb(0 0 0 / var(--shadow-a));
+}
+.glass-strong {
+  background: linear-gradient(180deg, rgb(var(--panel) / 0.78), rgb(var(--panel) / 0.68));
+  border: 1px solid rgb(var(--line) / calc(var(--line-a) * 1.3));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / var(--hi-a)), 0 30px 70px -30px rgb(0 0 0 / var(--shadow-a));
+  -webkit-backdrop-filter: blur(28px) saturate(170%); backdrop-filter: blur(28px) saturate(170%);
+}
+.glass-field {
+  background: rgb(var(--surface-2) / var(--surface-2-a));
+  border: 1px solid rgb(var(--line) / var(--line-a));
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / calc(var(--shadow-a) * 0.25));
+}
+.glass-field:focus, .glass-field:focus-within { border-color: rgb(var(--accent) / 0.6); box-shadow: 0 0 0 3px rgb(var(--accent) / 0.16); }
+/* Accent fill for primary actions and selected states. */
+.accent-fill {
+  background: linear-gradient(135deg, rgb(var(--accent)), rgb(var(--accent-2)));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35), 0 8px 24px -10px rgb(var(--accent) / 0.75);
+}
+/* White single-color game icons (currencies) turn dark on light themes. */
+[data-theme='pearl'] .mono-icon { filter: invert(1) brightness(0.35); }
+/* Selected item (nav row, tab, chip): soft accent tint with an accent hairline. */
+.accent-soft { background: rgb(var(--accent) / 0.14); box-shadow: inset 0 0 0 1px rgb(var(--accent) / 0.3), inset 0 1px 0 rgb(255 255 255 / 0.08); }
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgb(var(--border)); border-radius: 8px; border: 2px solid rgb(var(--bg)); }
-::-webkit-scrollbar-thumb:hover { background: rgb(var(--muted) / 0.5); }
+::-webkit-scrollbar-thumb { background: rgb(var(--line) / 0.14); border-radius: 10px; border: 3px solid transparent; background-clip: padding-box; }
+::-webkit-scrollbar-thumb:hover { background: rgb(var(--line) / 0.26); background-clip: padding-box; }
+::-webkit-scrollbar-corner { background: transparent; }
 
 /* Motion. Pages, cards and lists use these; prefers-reduced-motion turns them off. */
 @keyframes page-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
@@ -57,11 +144,11 @@ img { object-fit: contain; -webkit-user-drag: none; }
 /* Stagger children: give each child style={{ '--i': index }}. */
 .stagger > * { animation: rise 0.36s cubic-bezier(0.2, 0.8, 0.2, 1) both; animation-delay: calc(var(--i, 0) * 35ms); }
 .skeleton {
-  background: linear-gradient(90deg, rgb(var(--surface-2)) 0%, rgb(var(--border)) 50%, rgb(var(--surface-2)) 100%);
-  background-size: 800px 100%; animation: shimmer 1.2s linear infinite; border-radius: 8px;
+  background: linear-gradient(90deg, rgb(var(--line) / 0.05) 0%, rgb(var(--line) / 0.11) 50%, rgb(var(--line) / 0.05) 100%);
+  background-size: 800px 100%; animation: shimmer 1.2s linear infinite; border-radius: 10px;
 }
-.lift { transition: transform 0.18s ease, border-color 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease; }
-.lift:hover { transform: translateY(-2px); border-color: rgb(var(--accent) / 0.45); box-shadow: 0 8px 24px -12px rgb(var(--accent) / 0.35); }
+.lift { transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.25s ease; }
+.lift:hover { transform: translateY(-2px); border-color: rgb(var(--accent) / 0.4); box-shadow: inset 0 1px 0 rgb(255 255 255 / var(--hi-a)), 0 14px 34px -16px rgb(var(--accent) / 0.45); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-delay: 0ms !important; transition-duration: 0.01ms !important; }

@@ -62,48 +62,47 @@ export function PresencePanel({ presence, draft = {} }) {
   const reset = () => withToast(invoke('tools:reset'), 'Overrides cleared. Your real profile returns on the next game state change').then(() => presence.reload(true))
 
   return (
-    <div className='space-y-3 sticky top-0'>
-      <Card className='overflow-hidden anim-rise'>
-        <div className='h-28 relative bg-surface-2'>
+    <div className='space-y-4 sticky top-0'>
+      <Card className='overflow-hidden rounded-2xl anim-rise'>
+        <div className='h-32 relative bg-surface-2 [mask-image:linear-gradient(to_bottom,black_45%,transparent)]'>
           {card?.wideArt && <img key={card.uuid} src={card.wideArt} className='anim-fade w-full h-full object-cover' />}
-          <div className='absolute inset-0 bg-gradient-to-t from-surface via-surface/30 to-transparent' />
-          <div className='absolute top-2.5 left-3 right-3 flex items-center justify-between'>
+          <div className='absolute top-3 left-3.5 right-3.5 flex items-center justify-between'>
             <Badge tone='accent'>Live preview</Badge>
             {data?.error && <Badge tone='warn'>Game not detected</Badge>}
           </div>
         </div>
-        <div className='px-4 pb-4 -mt-9 relative'>
+        <div className='px-5 pb-5 -mt-10 relative'>
           <div className='flex items-end gap-3'>
-            <div className='w-16 h-16 rounded-xl bg-surface border border-line flex items-center justify-center shrink-0'>
+            <div className='glass-strong w-16 h-16 rounded-2xl flex items-center justify-center shrink-0'>
               {t?.largeIcon ? <img key={tier} src={t.largeIcon} className='anim-pop w-12 h-12 object-contain' /> : <Skeleton className='w-10 h-10 rounded-full' />}
             </div>
             <div className='min-w-0 pb-0.5'>
-              <div className='font-display text-lg font-bold leading-tight truncate'>{riot.gameName || 'Player'}<span className='text-muted font-normal text-sm'> #{riot.tagLine}</span></div>
-              <div className='text-[12px] text-muted'>{t?.tierName || '...'}{lb > 0 && <span className='text-accent'> #{lb}</span>}</div>
+              <div className='font-display text-lg font-bold tracking-tight leading-tight text-text truncate'>{riot.gameName || 'Player'}<span className='text-muted font-normal text-sm'> #{riot.tagLine}</span></div>
+              <div className='text-[12px] font-medium text-muted mt-0.5'>{t?.tierName || '...'}{lb > 0 && <span className='text-accent tabular-nums'> #{lb}</span>}</div>
             </div>
           </div>
-          <div className='mt-3 space-y-1.5 text-[12px]'>
+          <div className='mt-4 rounded-xl bg-surface-2 border border-line px-3.5 py-3 space-y-2 text-[12px]'>
             <Row k='Level' v={level ?? '-'} />
             <Row k='Title' v={title ? (title.titleText || title.displayName) : 'None'} />
             <Row k='Premier' v={hasPremier ? `${pr.showTag !== false && pr.rosterTag ? `[${pr.rosterTag}] ` : ''}${pr.rosterName || ''} - ${divisionLabel(pr.division)}` : 'No team'} />
             <Row k='Status' v={statusText(st, maps) || '-'} />
           </div>
-          {loading && !data && <Skeleton className='h-4 mt-3' />}
+          {loading && !data && <Skeleton className='h-4 mt-3 rounded-full' />}
           {error && <p className='text-[11px] text-bad mt-2'>{error}</p>}
           {data?.error && <p className='text-[11px] text-warn mt-2'>{data.error}</p>}
         </div>
       </Card>
 
-      <Card className='p-4 anim-rise' style={{ animationDelay: '60ms' }}>
+      <Card className='p-5 rounded-2xl anim-rise' style={{ animationDelay: '60ms' }}>
         <SectionTitle right={overrideCount > 0 && <Badge tone='accent'>{overrideCount} active</Badge>}>Presence</SectionTitle>
         <Toggle checked={keep} onChange={toggleKeep} label='Keep applied' hint='Re-sends your edits every 5s whenever the game resets them' />
-        <Button size='sm' variant='subtle' icon={FiRotateCcw} className='mt-3 w-full' onClick={reset} disabled={!overrideCount}>Reset overrides</Button>
-        <p className='mt-3 flex gap-2 text-[11px] text-muted'><FiInfo className='shrink-0 mt-0.5' />Only your friends see this. It changes how you appear in their friends list and never touches your real rank or account.</p>
+        <Button size='sm' variant='subtle' icon={FiRotateCcw} className='mt-4 w-full' onClick={reset} disabled={!overrideCount}>Reset overrides</Button>
+        <p className='mt-4 flex gap-2 text-[11px] leading-relaxed text-muted'><FiInfo className='shrink-0 mt-0.5 text-accent' />Only your friends see this. It changes how you appear in their friends list and never touches your real rank or account.</p>
       </Card>
     </div>
   )
 }
 
 const Row = ({ k, v }) => (
-  <div className='flex justify-between gap-3'><span className='text-muted'>{k}</span><span className='text-right truncate font-medium'>{v}</span></div>
+  <div className='flex justify-between gap-3'><span className='text-muted'>{k}</span><span className='text-right truncate font-medium text-text tabular-nums'>{v}</span></div>
 )

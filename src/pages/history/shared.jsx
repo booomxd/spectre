@@ -68,7 +68,7 @@ export function playerLabel(p, agents) {
 export function AgentIcon({ id, agents, size = 36, className }) {
   const a = agents[id]
   return (
-    <div className={cx('shrink-0 rounded-lg bg-surface-2 border border-line overflow-hidden flex items-center justify-center', className)} style={{ width: size, height: size }}>
+    <div className={cx('shrink-0 rounded-lg bg-surface-2 border border-line overflow-hidden flex items-center justify-center shadow-[inset_0_1px_0_rgb(255_255_255/0.06)]', className)} style={{ width: size, height: size }}>
       {a ? <img src={a.displayIcon} alt={a.displayName} title={a.displayName} className='w-full h-full object-cover' draggable={false} /> : <FiUser className='text-muted' />}
     </div>
   )
@@ -77,11 +77,11 @@ export function AgentIcon({ id, agents, size = 36, className }) {
 export function TierIcon({ tier, size = 28, showName }) {
   const tiers = useTiers()
   const t = tiers?.[tier]
-  if (!t || !tier) return <span className='text-muted text-xs'>{showName ? 'Unranked' : '-'}</span>
+  if (!t || !tier) return <span className='text-muted text-[12px]'>{showName ? 'Unranked' : '-'}</span>
   return (
-    <span className='inline-flex items-center gap-1.5' title={t.tierName}>
+    <span className='inline-flex items-center gap-2' title={t.tierName}>
       <img src={t.smallIcon} alt={t.tierName} style={{ width: size, height: size }} draggable={false} />
-      {showName && <span className='text-xs font-semibold' style={{ color: `#${t.color.slice(0, 6)}` }}>{t.tierName}</span>}
+      {showName && <span className='text-[12px] font-semibold' style={{ color: `#${t.color.slice(0, 6)}` }}>{t.tierName}</span>}
     </span>
   )
 }

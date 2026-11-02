@@ -54,9 +54,9 @@ export default function Customize({ active }) {
   }
 
   const search = (
-    <div className='relative mb-3'>
-      <FiSearch className='absolute left-3 top-1/2 -translate-y-1/2 text-muted' />
-      <Input value={q} onChange={e => setQ(e.target.value)} placeholder='Search' className='pl-9' />
+    <div className='relative mb-4'>
+      <FiSearch className='absolute left-3.5 top-1/2 -translate-y-1/2 text-muted pointer-events-none' />
+      <Input value={q} onChange={e => setQ(e.target.value)} placeholder='Search' className='pl-10 rounded-full' />
     </div>
   )
 
@@ -66,9 +66,9 @@ export default function Customize({ active }) {
       <RequireRiot>
         <div className='grid grid-cols-[1fr_320px] gap-5 items-start'>
           <div className='min-w-0'>
-            <Tabs tabs={TABS} value={tab} onChange={t => { setTab(t); setQ('') }} className='mb-4' />
+            <Tabs tabs={TABS} value={tab} onChange={t => { setTab(t); setQ('') }} className='mb-5' />
             {tab === 'profile' && (
-              <div className='space-y-3 anim-fade'>
+              <div className='space-y-4 anim-fade'>
                 <Card className='p-5'>
                   <Label hint='Shown in the lobby and friends list'>Account level</Label>
                   <Input type='number' min='1' max='2000' value={level === '' ? curLevel : level} onChange={e => setLevel(e.target.value)} className='max-w-[160px]' />
@@ -79,14 +79,14 @@ export default function Customize({ active }) {
             {tab === 'cards' && (
               <div className='anim-fade'>
                 {search}
-                {!shownCards ? <div className='grid grid-cols-4 gap-2.5'>{Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className='h-40 rounded-xl' />)}</div>
+                {!shownCards ? <div className='grid grid-cols-4 gap-3'>{Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className='h-40 rounded-2xl' />)}</div>
                   : !shownCards.length ? <Empty title='No cards found' /> : (
-                    <div className='grid grid-cols-4 gap-2.5 stagger'>
+                    <div className='grid grid-cols-4 gap-3 stagger'>
                       {shownCards.map((c, i) => (
                         <button key={c.uuid} style={{ '--i': Math.min(i, 14) }} onClick={() => setCardId(c.uuid)}
-                          className={cx('lift anim-rise rounded-xl border p-1.5 text-left', lc(curCard) === lc(c.uuid) ? 'border-accent bg-accent/10' : 'border-line bg-surface')}>
-                          <img src={c.displayIcon} className='w-full rounded-lg' loading='lazy' />
-                          <div className='text-[10px] text-muted truncate mt-1 text-center'>{c.displayName}</div>
+                          className={cx('lift anim-rise rounded-2xl p-2 text-left', lc(curCard) === lc(c.uuid) ? 'accent-soft border border-accent/50' : 'glass hover:bg-surface-2')}>
+                          <img src={c.displayIcon} className='w-full rounded-xl' loading='lazy' />
+                          <div className='text-[11px] font-medium text-muted truncate mt-1.5 px-1 text-center'>{c.displayName}</div>
                         </button>
                       ))}
                     </div>
@@ -94,12 +94,12 @@ export default function Customize({ active }) {
               </div>
             )}
             {tab === 'borders' && (
-              <div className='grid grid-cols-3 gap-2.5 stagger anim-fade'>
-                {!borders ? Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className='h-24 rounded-xl' />) : borders.filter(b => b.levelNumberAppearance).map((b, i) => (
+              <div className='grid grid-cols-3 gap-3 stagger anim-fade'>
+                {!borders ? Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className='h-28 rounded-2xl' />) : borders.filter(b => b.levelNumberAppearance).map((b, i) => (
                   <button key={b.uuid} style={{ '--i': Math.min(i, 14) }} onClick={() => setBorderId(b.uuid)}
-                    className={cx('lift anim-rise rounded-xl border p-3', lc(curBorder) === lc(b.uuid) ? 'border-accent bg-accent/10' : 'border-line bg-surface')}>
+                    className={cx('lift anim-rise rounded-2xl p-4', lc(curBorder) === lc(b.uuid) ? 'accent-soft border border-accent/50' : 'glass hover:bg-surface-2')}>
                     <img src={b.levelNumberAppearance} className='w-full h-14 object-contain' loading='lazy' />
-                    <div className='text-[11px] text-muted text-center mt-1.5'>From level {b.startingLevel}</div>
+                    <div className='text-[11px] font-medium text-muted text-center mt-2 tabular-nums'>From level {b.startingLevel}</div>
                   </button>
                 ))}
               </div>
@@ -107,15 +107,15 @@ export default function Customize({ active }) {
             {tab === 'titles' && (
               <div className='anim-fade'>
                 {search}
-                {!shownTitles ? <Skeleton className='h-40 rounded-xl' /> : (
-                  <div className='space-y-1.5 stagger'>
+                {!shownTitles ? <Skeleton className='h-40 rounded-2xl' /> : (
+                  <div className='space-y-2 stagger'>
                     <TitleRow on={!curTitle} onClick={() => setTitleId('')} title='No title' sub='Remove title' />
                     {shownTitles.map((t, i) => <TitleRow key={t.uuid} i={i} on={lc(curTitle) === lc(t.uuid)} onClick={() => setTitleId(t.uuid)} title={t.titleText} sub={t.displayName} />)}
                   </div>
                 )}
               </div>
             )}
-            {dirty && <div className='mt-4'><Badge tone='warn'>Unsaved changes</Badge></div>}
+            {dirty && <div className='mt-5'><Badge tone='warn'>Unsaved changes</Badge></div>}
           </div>
           <PresencePanel presence={presence} draft={{ level: curLevel, cardId: curCard, titleId: curTitle || null }} />
         </div>
@@ -127,9 +127,9 @@ export default function Customize({ active }) {
 function TitleRow({ on, onClick, title, sub, i = 0 }) {
   return (
     <button onClick={onClick} style={{ '--i': Math.min(i, 14) }}
-      className={cx('lift anim-rise w-full text-left rounded-xl border px-4 py-2.5', on ? 'border-accent bg-accent/10' : 'border-line bg-surface')}>
-      <div className='text-[13px] font-semibold'>{title}</div>
-      <div className='text-[11px] text-muted'>{sub}</div>
+      className={cx('lift anim-rise w-full text-left rounded-xl px-4 py-3', on ? 'accent-soft border border-accent/50' : 'glass hover:bg-surface-2')}>
+      <div className='text-[13px] font-semibold text-text tracking-tight'>{title}</div>
+      <div className='text-[11px] text-muted mt-0.5'>{sub}</div>
     </button>
   )
 }

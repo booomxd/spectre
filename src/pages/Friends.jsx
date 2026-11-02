@@ -28,23 +28,23 @@ function FriendRow({ f, i, canInvite, onInvite, onChat, chatOpen }) {
   const val = f.product === 'valorant'
   return (
     <div onClick={() => onChat(f)} style={{ '--i': i }}
-      className={cx('group anim-rise flex items-center gap-3 rounded-xl border px-3 py-2.5 cursor-pointer transition-colors',
-        chatOpen ? 'border-accent/50 bg-surface-2' : 'border-line bg-surface hover:border-accent/40 hover:bg-surface-2/60', !f.online && !chatOpen && 'opacity-60 hover:opacity-100')}>
+      className={cx('group anim-rise flex items-center gap-3.5 rounded-xl border px-3.5 py-3 cursor-pointer transition-all duration-200',
+        chatOpen ? 'accent-soft border-transparent' : 'glass hover:border-accent/40 hover:bg-surface-2', !f.online && !chatOpen && 'opacity-60 hover:opacity-100')}>
       <div className='relative'>
         <PlayerCard id={s.card} name={f.gameName} size={42} />
         {f.online && <StatusDot state={s.state} className='absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5' />}
       </div>
       <div className='min-w-0 flex-1'>
         <div className='flex items-baseline gap-1.5 truncate'>
-          <span className='text-[13px] font-semibold text-text truncate'>{f.gameName}</span>
+          <span className='text-[14px] font-semibold tracking-tight text-text truncate'>{f.gameName}</span>
           <span className='text-[11px] text-muted'>#{f.tagLine}</span>
           {f.spectre && <Badge tone='accent' className='!h-4 !px-1.5 !text-[9px] self-center'>Spectre</Badge>}
           {f.note && <span className='text-[11px] text-accent/80 truncate'>· {f.note}</span>}
         </div>
-        <div className='text-[12px] text-muted truncate'>{statusLine(f)}</div>
+        <div className='text-[12px] text-muted truncate mt-0.5'>{statusLine(f)}</div>
       </div>
       {val && s.partySize > 1 && <Badge><FiUsers /> {s.partySize}/{s.maxPartySize}</Badge>}
-      {val && s.level != null && <span className='hidden xl:block text-[11px] text-muted w-10 text-right'>Lv {s.level}</span>}
+      {val && s.level != null && <span className='hidden xl:block text-[11px] text-muted w-10 text-right tabular-nums'>Lv {s.level}</span>}
       {val && <RankIcon tier={s.rank} size={30} />}
       <div className='flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity' onClick={e => e.stopPropagation()}>
         <Button variant='ghost' size='sm' className='!px-2' title='Message' onClick={() => onChat(f)}><FiMessageSquare /></Button>
@@ -59,9 +59,9 @@ function FriendRow({ f, i, canInvite, onInvite, onChat, chatOpen }) {
 function Group({ title, items, chatPuuid, ...rest }) {
   if (!items.length) return null
   return (
-    <section className='mb-6'>
-      <SectionTitle right={<span className='text-[11px] text-muted'>{items.length}</span>}>{title}</SectionTitle>
-      <div className='grid gap-2 stagger'>{items.map((f, i) => <FriendRow key={f.puuid} f={f} i={i} chatOpen={chatPuuid === f.puuid} {...rest} />)}</div>
+    <section className='mb-7'>
+      <SectionTitle right={<span className='text-[11px] text-muted tabular-nums'>{items.length}</span>}>{title}</SectionTitle>
+      <div className='grid gap-2.5 stagger'>{items.map((f, i) => <FriendRow key={f.puuid} f={f} i={i} chatOpen={chatPuuid === f.puuid} {...rest} />)}</div>
     </section>
   )
 }
@@ -69,24 +69,24 @@ function Group({ title, items, chatPuuid, ...rest }) {
 function PartyPanel({ party, loading, error, reload }) {
   const [busy, setBusy] = useState(false)
   const act = async (p, ok) => { setBusy(true); await withToast(p, ok); setBusy(false); reload(true) }
-  if (loading && !party) return <Card className='p-4'><Skeleton className='h-14 w-full' /></Card>
-  if (error && !party) return <Card className='p-4 text-[12px] text-muted'>Party unavailable. Open VALORANT to use parties.</Card>
-  if (!party) return <Card className='p-4'><Empty icon={FiUsers} title='No party' hint='Start VALORANT to get a party.' className='!py-6' /></Card>
+  if (loading && !party) return <Card className='p-5'><Skeleton className='h-14 w-full rounded-xl' /></Card>
+  if (error && !party) return <Card className='p-5 text-[13px] text-muted'>Party unavailable. Open VALORANT to use parties.</Card>
+  if (!party) return <Card className='p-5'><Empty icon={FiUsers} title='No party' hint='Start VALORANT to get a party.' className='!py-6' /></Card>
   return (
-    <Card className='p-4 anim-fade'>
-      <div className='flex items-center justify-between mb-3'>
+    <Card className='p-5 anim-fade'>
+      <div className='flex items-center justify-between mb-4'>
         <div className='flex items-center gap-2'>
           <Badge tone={party.state === 'MATCHMAKING' ? 'warn' : 'neutral'}>{party.state === 'MATCHMAKING' ? 'In queue' : 'Lobby'}</Badge>
           {party.queueId && <span className='text-[12px] text-muted'>{queueName(party.queueId)}</span>}
         </div>
-        <span className='text-[11px] text-muted'>{party.members.length}/5</span>
+        <span className='text-[11px] text-muted tabular-nums'>{party.members.length}/5</span>
       </div>
-      <div className='grid gap-2 mb-3 stagger'>
+      <div className='grid gap-1.5 mb-4 stagger'>
         {party.members.map((m, i) => (
-          <div key={m.puuid} className='anim-rise flex items-center gap-2.5' style={{ '--i': i }}>
+          <div key={m.puuid} className='anim-rise flex items-center gap-3 rounded-xl px-2 py-1.5 -mx-2 hover:bg-surface-2 transition-colors' style={{ '--i': i }}>
             <PlayerCard id={m.card} name={m.hidden ? null : m.gameName} size={34} />
             <div className='min-w-0 flex-1'>
-              <div className='text-[13px] font-semibold truncate'>{m.hidden ? 'Hidden player' : m.gameName || '...'}{m.tagLine && <span className='text-[11px] text-muted font-normal'> #{m.tagLine}</span>}</div>
+              <div className='text-[13px] font-semibold tracking-tight text-text truncate'>{m.hidden ? 'Hidden player' : m.gameName || '...'}{m.tagLine && <span className='text-[11px] text-muted font-normal'> #{m.tagLine}</span>}</div>
               <div className='text-[11px] text-muted'>{m.owner ? 'Leader' : 'Member'}{m.level != null && ` · Lv ${m.level}`}{m.self && ' · You'}</div>
             </div>
             <RankIcon tier={m.rank} size={26} />
@@ -94,7 +94,7 @@ function PartyPanel({ party, loading, error, reload }) {
           </div>
         ))}
       </div>
-      <div className='border-t border-line pt-3 flex items-center justify-between gap-3'>
+      <div className='border-t border-line pt-4 flex items-center justify-between gap-3'>
         <Toggle checked={party.open} disabled={!party.iOwn || busy} label='Open party' hint={party.iOwn ? 'Friends can join freely' : 'Only the leader can change this'}
           onChange={v => act(invoke('social:partyAccess', v), v ? 'Party opened' : 'Party closed')} />
         {party.members.length > 1 && <Button variant='danger' size='sm' icon={FiLogOut} disabled={busy} onClick={() => act(invoke('social:partyRemove', party.members.find(m => m.self).puuid), 'Left party')}>Leave</Button>}
@@ -108,13 +108,13 @@ function Requests({ data, reload }) {
   if (!data || (!data.incoming.length && !data.outgoing.length)) return null
   const run = async (key, channel, puuid, ok) => { setBusy(key); await withToast(invoke(channel, puuid), ok); setBusy(''); reload(true) }
   const Row = ({ r, children }) => (
-    <div className='anim-rise flex items-center gap-2 py-1.5'>
-      <div className='min-w-0 flex-1 text-[13px] truncate'>{r.gameName}<span className='text-[11px] text-muted'> #{r.tagLine}</span></div>
+    <div className='anim-rise flex items-center gap-2 rounded-xl px-2 py-1.5 -mx-2 hover:bg-surface-2 transition-colors'>
+      <div className='min-w-0 flex-1 text-[13px] font-medium text-text truncate'>{r.gameName}<span className='text-[11px] text-muted'> #{r.tagLine}</span></div>
       {children}
     </div>
   )
   return (
-    <Card className='p-4 anim-fade'>
+    <Card className='p-5 anim-fade'>
       <SectionTitle>Friend requests</SectionTitle>
       <div className='max-h-60 overflow-y-auto pr-1'>
         {data.incoming.map(r => (
@@ -147,7 +147,7 @@ function AddFriend({ onDone }) {
     if (ok) { setId(''); onDone() }
   }
   return (
-    <Card className='p-4'>
+    <Card className='p-5'>
       <SectionTitle>Add friend</SectionTitle>
       <form onSubmit={submit} className='flex gap-2'>
         <Input value={id} onChange={e => setId(e.target.value)} placeholder='Name#Tag' />
@@ -195,11 +195,11 @@ function FriendsBody({ active }) {
       <div className={cx('grid gap-6 items-start', chat ? 'lg:grid-cols-[1fr_420px]' : 'lg:grid-cols-[1fr_330px]')}>
         <div className='min-w-0'>
           <div className='relative mb-5'>
-            <FiSearch className='absolute left-3 top-1/2 -translate-y-1/2 text-muted' />
-            <Input value={q} onChange={e => setQ(e.target.value)} placeholder='Search friends or notes' className='!pl-9' />
+            <FiSearch className='absolute left-3.5 top-1/2 -translate-y-1/2 text-muted pointer-events-none z-10' />
+            <Input value={q} onChange={e => setQ(e.target.value)} placeholder='Search friends or notes' className='!pl-10 !h-10 !rounded-full' />
           </div>
           {friends.loading && !friends.data ? (
-            <div className='grid gap-2'>{Array.from({ length: 7 }, (_, i) => <Skeleton key={i} className='h-[62px] rounded-xl' />)}</div>
+            <div className='grid gap-2.5'>{Array.from({ length: 7 }, (_, i) => <Skeleton key={i} className='h-[66px] rounded-xl' />)}</div>
           ) : friends.error && !friends.data ? <ErrorState error={friends.error} onRetry={friends.reload} />
             : !friends.data?.length ? <Empty icon={FiUsers} title='No friends yet' hint='Add a friend by Riot ID on the right.' />
               : !(online || groups.offline.length) ? <Empty icon={FiSearch} title='No matches' hint='Try a different name or note.' />
@@ -215,7 +215,7 @@ function FriendsBody({ active }) {
             <ChatPanel key={chat.cid} cid={chat.cid} friend={byPuuid[chat.puuid]} statusLine={statusLine} active={active}
               onClose={() => setChat(null)} onSent={() => convs.reload(true)} />
           </div>
-        ) : <div className='grid gap-4 lg:sticky lg:top-0'>
+        ) : <div className='grid gap-5 lg:sticky lg:top-0'>
           <div>
             <SectionTitle>Party</SectionTitle>
             <PartyPanel party={party.data} loading={party.loading} error={party.error} reload={party.reload} />

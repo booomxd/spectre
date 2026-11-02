@@ -17,17 +17,17 @@ function DashboardBody({ active }) {
 
   return (
     <Page title='Dashboard' subtitle='Your account at a glance'>
-      <div className='space-y-4'>
+      <div className='space-y-5'>
         <Hero riot={riot} identity={identity.data} account={account.data} rank={rank.data} />
-        <div className='grid grid-cols-1 lg:grid-cols-3 gap-4 items-start'>
-          <div className='lg:col-span-2 space-y-4'>
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+        <div className='grid grid-cols-1 lg:grid-cols-3 gap-5 items-start'>
+          <div className='lg:col-span-2 space-y-5'>
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-5'>
               <BundleCard bundles={store.data?.bundles} cat={cat} />
               <PassCard pass={pickPass(contracts.data?.contracts)} cat={cat} loading={contracts.loading && !contracts.data} />
             </div>
             <DailyCard store={store.data} cat={cat} />
           </div>
-          <div className='space-y-4'>
+          <div className='space-y-5'>
             <WalletCard wallet={wallet.data} cat={cat} />
             <ClockCard store={store.data} />
             <FriendsCard friends={friends} />

@@ -13,29 +13,29 @@ const ROUND_LABEL = { elim: 'Elimination', defuse: 'Spike defused', detonate: 'S
 function Row({ p, me, agents, memo, onSearch, onMemo }) {
   const diff = p.kills - p.deaths
   return (
-    <div className={cx('grid items-center gap-2 px-3 h-11 text-[13px] border-t border-line/60', COLS, p.puuid && p.puuid === me && 'bg-accent/10')}>
+    <div className={cx('grid items-center gap-2 px-4 h-12 text-[13px] tabular-nums border-t border-line transition-colors', COLS, p.puuid && p.puuid === me ? 'accent-soft' : 'hover:bg-surface-2')}>
       <div className='flex items-center gap-2.5 min-w-0'>
         <AgentIcon id={p.agent} agents={agents} size={30} />
         <div className='min-w-0'>
           <div title={p.hidden ? 'Name hidden by streamer mode' : undefined} className={cx('truncate font-semibold leading-tight', p.hidden && 'text-muted')}>{playerLabel(p, agents)}</div>
           <div className='flex items-center gap-1.5'>
-            {p.hidden && <span title='Name hidden by streamer mode' className='text-[10px] uppercase tracking-wider text-muted'>Hidden</span>}
+            {p.hidden && <span title='Name hidden by streamer mode' className='text-[11px] font-medium text-muted'>Hidden</span>}
             {memo && <MemoBadge memo={memo} onClick={() => onMemo(p)} />}
           </div>
         </div>
       </div>
       <TierIcon tier={p.tier} size={24} />
-      <span className='font-display font-bold'>{p.acs}</span>
+      <span className='font-display font-bold tracking-tight'>{p.acs}</span>
       <span>{p.kills}</span><span>{p.deaths}</span><span>{p.assists}</span>
-      <span className={diff > 0 ? 'text-good' : diff < 0 ? 'text-bad' : 'text-muted'}>{diff > 0 ? '+' : ''}{diff}</span>
+      <span className={cx('font-semibold', diff > 0 ? 'text-good' : diff < 0 ? 'text-bad' : 'text-muted')}>{diff > 0 ? '+' : ''}{diff}</span>
       <span>{p.adr ?? '-'}</span>
       <span>{p.hs != null ? p.hs : '-'}</span>
       <span className='text-muted'>{p.fb}</span><span className='text-muted'>{p.fd}</span>
-      <div className='flex justify-end gap-1'>
+      <div className='flex justify-end gap-0.5'>
         {p.puuid && !p.hidden && (
           <>
-            <button title='View profile' onClick={() => onSearch(p)} className='w-6 h-6 rounded-md text-muted hover:text-accent hover:bg-surface-2 flex items-center justify-center transition-colors'><FiSearch /></button>
-            <button title='Note' onClick={() => onMemo(p)} className='w-6 h-6 rounded-md text-muted hover:text-accent hover:bg-surface-2 flex items-center justify-center transition-colors'><FiEdit3 /></button>
+            <button title='View profile' onClick={() => onSearch(p)} className='w-7 h-7 rounded-full text-muted hover:text-accent hover:bg-surface-2 flex items-center justify-center transition-colors'><FiSearch /></button>
+            <button title='Note' onClick={() => onMemo(p)} className='w-7 h-7 rounded-full text-muted hover:text-accent hover:bg-surface-2 flex items-center justify-center transition-colors'><FiEdit3 /></button>
           </>
         )}
       </div>
@@ -45,12 +45,12 @@ function Row({ p, me, agents, memo, onSearch, onMemo }) {
 
 function Scoreboard({ title, tone, players, me, agents, memos, onSearch, onMemo }) {
   return (
-    <div className='rounded-xl border border-line overflow-hidden'>
-      <div className={cx('flex items-center justify-between px-3 h-9 bg-surface-2')}>
-        <span className={cx('text-[11px] font-bold uppercase tracking-[0.16em]', tone)}>{title}</span>
-        <span className='text-[10px] text-muted'>{players.length} players</span>
+    <div className='glass rounded-xl overflow-hidden'>
+      <div className={cx('flex items-center justify-between px-4 h-11 bg-surface-2/60')}>
+        <span className={cx('font-display text-[14px] font-bold tracking-tight', tone)}>{title}</span>
+        <span className='text-[11px] text-muted'>{players.length} players</span>
       </div>
-      <div className={cx('grid gap-2 px-3 h-7 items-center text-[10px] font-semibold uppercase tracking-wider text-muted', COLS)}>
+      <div className={cx('grid gap-2 px-4 h-8 items-center border-t border-line text-[10px] font-semibold uppercase tracking-[0.08em] text-muted', COLS)}>
         {HEAD.map((h, i) => <span key={i}>{h}</span>)}
       </div>
       {players.map(p => <Row key={p.key} p={p} me={me} agents={agents} memo={memos[p.puuid]} onSearch={onSearch} onMemo={onMemo} />)}
@@ -64,16 +64,16 @@ function Timeline({ rounds, teams, myTeam }) {
   const lanes = [{ id: myTeam, label: 'You' }, { id: enemy, label: 'Enemy' }]
   const gap = i => (i === 12 || i === 24 ? 'ml-3' : '')
   return (
-    <div className='rounded-xl border border-line p-3 overflow-x-auto'>
+    <div className='glass rounded-xl p-4 overflow-x-auto'>
       <div className='flex flex-col gap-1.5 min-w-max'>
         {lanes.map((lane, li) => (
           <div key={lane.id} className='flex items-center gap-1'>
-            <span className='w-12 text-[10px] font-semibold uppercase tracking-wider text-muted'>{lane.label}</span>
+            <span className='w-12 text-[12px] font-semibold text-muted'>{lane.label}</span>
             {rounds.map((r, i) => {
               const Icon = ROUND_ICON[r.kind] || FiClock
               const won = r.winner === lane.id
               return (
-                <div key={r.num} className={cx('w-6 h-6 rounded-md flex items-center justify-center text-[11px] border', gap(i),
+                <div key={r.num} className={cx('w-6 h-6 rounded-full flex items-center justify-center text-[11px] border', gap(i),
                   won ? (li === 0 ? 'bg-good/15 border-good/40 text-good' : 'bg-bad/15 border-bad/40 text-bad') : 'border-transparent text-transparent')}
                   title={won ? `Round ${r.num + 1}: ${ROUND_LABEL[r.kind]}${r.site ? ` (${r.site})` : ''}` : undefined}>
                   {won && <Icon />}
@@ -84,11 +84,11 @@ function Timeline({ rounds, teams, myTeam }) {
         ))}
         <div className='flex items-center gap-1'>
           <span className='w-12' />
-          {rounds.map((r, i) => <span key={r.num} className={cx('w-6 text-center text-[9px] text-muted', gap(i))}>{r.num + 1}</span>)}
+          {rounds.map((r, i) => <span key={r.num} className={cx('w-6 text-center text-[10px] text-muted tabular-nums', gap(i))}>{r.num + 1}</span>)}
         </div>
       </div>
-      <div className='flex flex-wrap gap-3 mt-2 pt-2 border-t border-line/60 text-[10px] text-muted'>
-        {Object.keys(ROUND_ICON).map(k => { const I = ROUND_ICON[k]; return <span key={k} className='inline-flex items-center gap-1'><I />{ROUND_LABEL[k]}</span> })}
+      <div className='flex flex-wrap gap-x-4 gap-y-1.5 mt-3 pt-3 border-t border-line text-[11px] text-muted'>
+        {Object.keys(ROUND_ICON).map(k => { const I = ROUND_ICON[k]; return <span key={k} className='inline-flex items-center gap-1.5'><I />{ROUND_LABEL[k]}</span> })}
       </div>
     </div>
   )
@@ -100,8 +100,8 @@ export default function MatchDetail({ matchId, me, memos = {}, onSearch, onMemo 
   const { data, error, loading, reload } = useInvoke('history:detail', [matchId])
   if (error && !data) return <ErrorState error={error} onRetry={reload} />
   if (loading || !data) return (
-    <div className='flex flex-col gap-3'>
-      <Skeleton className='h-16 rounded-xl' /><Skeleton className='h-48 rounded-xl' /><Skeleton className='h-48 rounded-xl' />
+    <div className='flex flex-col gap-4'>
+      <Skeleton className='h-24 rounded-2xl' /><Skeleton className='h-48 rounded-xl' /><Skeleton className='h-48 rounded-xl' />
     </div>
   )
   const map = maps[data.mapId]
@@ -118,17 +118,18 @@ export default function MatchDetail({ matchId, me, memos = {}, onSearch, onMemo 
       players: sorted(data.players.filter(p => p.team === id)),
     }))
   return (
-    <div className='flex flex-col gap-3'>
-      <div className='relative overflow-hidden rounded-xl border border-line h-20 flex items-center px-4'>
-        {map?.splash && <img src={map.splash} alt='' className='absolute inset-0 w-full h-full object-cover opacity-40' draggable={false} />}
-        <div className='absolute inset-0 bg-gradient-to-r from-surface via-surface/70 to-transparent' />
-        <div className='relative flex items-center gap-4 w-full'>
+    <div className='flex flex-col gap-4'>
+      <div className='glass relative overflow-hidden rounded-2xl h-24 flex items-center px-6'>
+        {map?.splash && <img src={map.splash} alt='' className='absolute inset-0 w-full h-full object-cover opacity-50' draggable={false} />}
+        {/* Fades the map art into the modal's own fill so text stays readable on light and dark themes. */}
+        <div className='absolute inset-0 bg-gradient-to-r from-panel via-panel/75 to-panel/10' />
+        <div className='relative flex items-center gap-5 w-full'>
           <div>
-            <div className={cx('font-display text-2xl font-bold uppercase leading-none', R.text)}>{R.label}</div>
-            <div className='text-xs text-muted mt-1'>{map?.displayName || 'Unknown map'} - {data.mode}</div>
+            <div className={cx('font-display text-[28px] font-bold tracking-tight leading-none', R.text)}>{R.label}</div>
+            <div className='text-[12px] text-muted mt-1.5'>{map?.displayName || 'Unknown map'} - {data.mode}</div>
           </div>
-          {!ffa && <div className='font-display text-3xl font-bold ml-2'>{team(myTeam)?.roundsWon ?? 0}<span className='text-muted mx-1.5'>:</span>{data.teams.find(t => t.id !== myTeam)?.roundsWon ?? 0}</div>}
-          <div className='ml-auto text-right text-xs text-muted'>
+          {!ffa && <div className='font-display text-[34px] font-bold tracking-tight tabular-nums leading-none ml-3'>{team(myTeam)?.roundsWon ?? 0}<span className='text-muted mx-1.5'>:</span>{data.teams.find(t => t.id !== myTeam)?.roundsWon ?? 0}</div>}
+          <div className='ml-auto text-right text-[12px] text-muted leading-relaxed'>
             <div>{fmtDate(data.start)}</div><div>{fmtLen(data.length)} long</div>
           </div>
         </div>
