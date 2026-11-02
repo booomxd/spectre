@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Spectre">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2a1458"/>
+      <stop offset="1" stop-color="#0d0821"/>
+    </linearGradient>
+    <linearGradient id="ghost" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.7" stop-color="#e4dcff"/>
+      <stop offset="1" stop-color="#b9a8ff" stop-opacity="0.85"/>
+    </linearGradient>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="14" result="b"/>
+      <feFlood flood-color="#9b7bff" flood-opacity="0.65"/>
+      <feComposite in2="b" operator="in"/>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <path filter="url(#glow)" fill="url(#ghost)"
+        d="M136 246 C136 176 190 116 256 116 C322 116 376 176 376 246 V380
+           a40 40 0 0 1 -80 0 a40 40 0 0 1 -80 0 a40 40 0 0 1 -80 0 Z"/>
+  <ellipse cx="216" cy="244" rx="18" ry="26" fill="#1a0f3a"/>
+  <ellipse cx="296" cy="244" rx="18" ry="26" fill="#1a0f3a"/>
+  <ellipse cx="222" cy="234" rx="5" ry="7" fill="#ffffff" opacity="0.8"/>
+  <ellipse cx="302" cy="234" rx="5" ry="7" fill="#ffffff" opacity="0.8"/>
+</svg>
