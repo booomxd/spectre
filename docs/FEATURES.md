@@ -1,79 +1,93 @@
-# Features
+# ✨ Features
 
 Spectre has two tabs. **Home** holds every page in the sidebar groups below, and **Tactics** is a full-width strategy board.
 
-## Live
+## 🔴 Live
 
-### Dashboard
+### 🏠 Dashboard
 Your account at a glance: rank and RR, peak rank, wallet, daily offers with their reset timer, battle pass progress, and online friends.
 
-### Friends
+### 👥 Friends
 Online friends with what they're doing in VALORANT, incoming and outgoing friend requests, your current party, and direct-message chat.
 
-### Live Match
-Fills in as soon as agent select starts and follows you into the match.
+### 🎯 Live Match
+Two tabs that follow the game: **Lobby & Party** in menus, **Live Match** from agent select on.
 
-- **Agent select:** your team's agents and lock state. Rank, RR and peak show for you, your friends and your party.
-- **In match:** both teams with each player's current-act rank, RR and peak rank. Your party is marked with a colored bar.
-- **Streamer mode:** players who hide their name are shown only by their agent. Their name, Riot ID, account level and player card are never shown. In a match you can press **Scout** on them to see their recent competitive form (wins, K/D, headshot %).
-- **Scout** on a named player opens their full profile in Player Search.
-- **Overlay:** a small always-on-top window with both rosters that you can drag anywhere. You can set its opacity and size in Settings.
+**Lobby & Party**
+- Your party with ranks, the leader's crown and a Ready / Standby toggle.
+- Invite friends by Riot ID, or join a party with an invite code.
+- Pick a mode, start or cancel matchmaking, open or close your party, and generate an invite code. Mode, matchmaking, access and codes are leader-only.
+- During a match these lock; inviting still works.
 
-Rank lookups are cached for five minutes per player, so Spectre doesn't spam Riot's services during a match.
+**Agent select**
+- Your team's agents, lock state, and every teammate's rank and peak. Enemies aren't shown until the match starts.
+- **Change skins** opens your loadout editor in a side panel. Changes are equipped in game right away.
 
-## Stats
+**In match**
+- Player cards with card art, current-act rank and RR, peak rank, and Vandal / Phantom skins. Your party is marked with a colored bar.
+- **Scout** (any player) opens a side panel: current rank and career peak, recent performance (win rate, KDA, combat score, headshot %, KAST, damage per round, first bloods), rank history by act, top agents, and the last 10 competitive matches with RR changes.
+- **👁 Skins** (any player) shows their card and title, sprays, and every weapon skin with its gun buddy.
+- Deathmatch splits everyone across both columns.
+- An always-on-top **overlay** with both rosters. Set its opacity and size in Settings.
 
-### Progression
+**Streamer mode:** players who hide their name are shown only by their agent. Their name, Riot ID, account level, card and title never appear, in rows or panels.
+
+## 📊 Stats
+
+### 📈 Progression
 Battle pass and agent contract progress, account level, and your competitive RR history.
 
-### Loadout
-Your equipped weapon skins, sprays, buddies, card and title, plus saved loadout presets you can switch between. Only items you own can be equipped.
+### 🎒 Loadout
+Your equipped weapon skins, sprays, buddies, card and title, plus saved presets. Pick a weapon, choose a skin, level, variant and buddy, and press **Apply** to equip it right away. Only items you own are listed.
 
-### Player Search
+### 🔍 Player Search
 Look up any player by Riot ID (`Name#Tag`): current and peak rank, act-by-act history and recent competitive form.
 
-### Match History
+### 🕘 Match History
 Your recent matches with scores, K/D/A, ACS, ADR and headshot %. Open any match for the full scoreboard and round-by-round breakdown.
 
-### Notes
+### 📝 Notes
 Private notes, tags and a rating you attach to players. Notes show up next to those players in Live Match.
 
-### Encounters
+### 🤝 Encounters
 Friends and party members you played with in your last 20 matches, sorted by how often. Other players stay hidden.
 
-## Explore
+## 🧭 Explore
 
-### Shop
+### 🛒 Shop
 Featured bundles, daily offers, accessories and the Night Market when it's live, with prices and time remaining.
 
-### Discord
-Optional Discord Rich Presence that shows your current VALORANT activity on your Discord profile.
+### 🎮 Discord
+Discord Rich Presence through Spectre's own Discord app: one switch to turn it on, no setup.
+- **Match details:** game mode, map art, agent (optionally as the main image), rank with RR, peak rank.
+- **Session details:** account level, party size or "Solo", round score, elapsed time, and whether to stay on in the lobby.
+- **Profile preview** with Live and sample scenarios (Competitive, Deathmatch, Team DM, Agent Select, Lobby, In Queue) using your real rank.
 
-### Weapons
+### 🔫 Weapons
 Every weapon with its stats and damage falloff by range, plus every skin with video previews, levels and variants.
 
-### Leaderboard
+### 🏆 Leaderboard
 The competitive leaderboard for your region and the current act, with friends highlighted.
 
-## LARP
+## 🎭 LARP
 
 These change how your profile appears **to your friends** in the Riot Client. They don't change your real rank, level or inventory.
 
 - **Rank Editor:** pick the rank and leaderboard position shown on your friend-list presence.
-- **Customize:** account level, idle state, player card and title shown to friends. Only owned cards and titles are listed.
+- **Customize:** account level, idle state, player card and title shown to friends. Any card or title can be picked, since they're presence-only. Borders are equipped for real and may need a game restart.
 - **Premier:** the Premier team details shown on your presence.
 - **Status:** your presence status text.
 
 VALORANT rewrites your presence whenever your party, queue or match changes. With **Keep applied** on, Spectre re-sends your edits each time.
 
-## Tactics
+## 🗺️ Tactics
 
 A whiteboard for planning rounds. Pick a map, place agents and abilities, and draw arrows and zones. Strategies are grouped into playbooks and saved locally.
 
-## System
+## ⚙️ System
 
-### Patch Notes
+### 📰 Patch Notes
 The latest official VALORANT patch notes.
 
-### Settings
+### 🎨 Settings
 Seven themes (Midnight, Onyx, Ember, Glacier, Verdant, Amethyst, Gilded), the start page, launch at login, minimize to tray, and overlay opacity and size.

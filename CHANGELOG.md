@@ -1,4 +1,30 @@
-# Changelog
+# 📜 Changelog
+
+## 2.1.0
+
+### 🎯 Live Match
+- New player cards with card art, current and peak rank, and Vandal / Phantom skins
+- **Scout** side panel for every player once the match starts: rank history, recent performance (KDA, ACS, HS %, KAST, ADR, first bloods), top agents and the last 10 competitive matches
+- **Skins** side panel: anyone's card, title, sprays, weapon skins and buddies
+- Agent select shows every teammate's rank; scouting opens once the match starts
+- **Change skins** during agent select
+- Deathmatch splits players across both columns
+- Streamer-mode players stay nameless everywhere
+
+### 👥 Lobby & Party
+- New tab: party members, invite by Riot ID, invite codes, mode picker, matchmaking, ready and party access
+
+### 🎮 Discord
+- Built-in Spectre Discord app: one switch, no setup
+- Map art, agent and rank images, new detail options, and a profile preview with sample scenarios
+
+### 🎭 LARP (was Profile Tools)
+- Skin Changer removed (use Loadout or Change skins)
+- Cards and titles are presence-only, and any of them can be shown
+
+### 🎨 App
+- New ghost logo for the sidebar, window, taskbar and installer
+- The skin dialog applies right away instead of queueing changes
 
 ## 2.0.0
 

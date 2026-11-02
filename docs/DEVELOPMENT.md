@@ -94,8 +94,8 @@ Runs `vite build` into `build/`, then electron-builder packages `release/Spectre
 
 1. Bump `version` in `package.json` and add an entry to `CHANGELOG.md`.
 2. Commit, then build with `npm run electron:build`.
-3. Publish the build to the public releases repo with the GitHub CLI:
+3. Publish the build as a GitHub release with the GitHub CLI:
 
 ```
-gh release create vX.Y.Z "release/Spectre Setup X.Y.Z.exe" "release/Spectre-X.Y.Z-win.zip" --repo booomxd/spectre-releases --title "Spectre X.Y.Z" --notes-file notes.md
+gh release create vX.Y.Z "release/Spectre Setup X.Y.Z.exe" "release/Spectre-X.Y.Z-win.zip" --repo booomxd/spectre --title "Spectre X.Y.Z" --notes-file notes.md
 ```
