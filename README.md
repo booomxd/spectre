@@ -69,6 +69,18 @@ Every page is explained in **[docs/FEATURES.md](docs/FEATURES.md)**.
 
 Details in **[docs/PRIVACY.md](docs/PRIVACY.md)**.
 
+## 🛡️ Safety
+
+Spectre is **not a cheat** and never touches the game itself.
+
+- 🚫 No reading or changing game memory or files, and nothing injected.
+- 🧱 No contact with Vanguard: it's a regular desktop app.
+- 🔌 It talks to Riot the same way the VALORANT client does, using your own signed-in session.
+- 👀 It only changes things when you ask, like equipping a skin or inviting a friend.
+
+> [!NOTE]
+> Spectre is unofficial, so use it at your own risk 💜
+
 ## 🛠️ Build from source
 
 ```bash
