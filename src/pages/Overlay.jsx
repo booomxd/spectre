@@ -8,8 +8,6 @@ import { displayName } from './live/PlayerRow'
 import { PARTY_COLORS, queueName } from './live/util'
 import logo from '../assets/spectre-logo.svg'
 
-const drag = { WebkitAppRegion: 'drag' }
-const noDrag = { WebkitAppRegion: 'no-drag' }
 const cx = (...c) => c.filter(Boolean).join(' ')
 const title = s => (s || '').toLowerCase().replace(/(^|\s)\S/g, c => c.toUpperCase())
 
@@ -111,17 +109,18 @@ export default function Overlay() {
     <div className='h-screen w-screen overflow-hidden p-1' style={{ zoom: scale }}>
       <div className='h-full flex flex-col rounded-2xl border border-line overflow-hidden anim-fade shadow-[inset_0_1px_0_rgb(255_255_255/0.07)]'
         style={{ background: `linear-gradient(180deg, rgb(var(--panel) / ${opacity}), rgb(var(--bg) / ${opacity}))` }}>
-        <div className={cx('flex items-center gap-2 pl-2.5 pr-2 h-9 shrink-0 border-b border-line select-none', !locked && 'cursor-move')} style={drag}>
-          <img src={logo} alt='' className='w-4 h-4 shrink-0' draggable={false} />
-          <span className='flex-1 min-w-0 truncate font-display text-[12px] font-semibold tracking-tight text-text'>
+        <div className={cx('flex items-center gap-2 pl-2.5 pr-2 h-9 shrink-0 border-b border-line select-none', !locked && 'cursor-move')} data-tauri-drag-region>
+          {/* Only the bar itself starts a window drag, so its labels let clicks through to it. */}
+          <img src={logo} alt='' className='w-4 h-4 shrink-0 pointer-events-none' draggable={false} />
+          <span className='pointer-events-none flex-1 min-w-0 truncate font-display text-[12px] font-semibold tracking-tight text-text'>
             {inMatch ? `${d.map?.name || 'Match'} · ${queueName(d.queueId)}` : 'Spectre'}
           </span>
-          {inMatch && <span className={cx('flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-semibold', d.state === 'ingame' ? 'bg-good/[0.15] text-good border-good/30' : 'bg-warn/[0.15] text-warn border-warn/30')}>
+          {inMatch && <span className={cx('pointer-events-none flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-semibold', d.state === 'ingame' ? 'bg-good/[0.15] text-good border-good/30' : 'bg-warn/[0.15] text-warn border-warn/30')}>
             <span className={cx('w-1.5 h-1.5 rounded-full anim-pulse', d.state === 'ingame' ? 'bg-good' : 'bg-warn')} />{d.state === 'ingame' ? 'Live' : 'Agent select'}
           </span>}
-          <button className='w-6 h-6 rounded-full flex items-center justify-center text-muted hover:text-text hover:bg-surface-2 transition-colors' style={noDrag}
+          <button className='w-6 h-6 rounded-full flex items-center justify-center text-muted hover:text-text hover:bg-surface-2 transition-colors'
             title='Lock: clicks pass through to the game' onClick={() => invoke('overlay:lock', true).catch(() => { })}>{locked ? <FiLock size={12} /> : <FiUnlock size={12} />}</button>
-          <button className='w-6 h-6 rounded-full flex items-center justify-center text-muted hover:text-bad hover:bg-bad/[0.15] transition-colors' style={noDrag}
+          <button className='w-6 h-6 rounded-full flex items-center justify-center text-muted hover:text-bad hover:bg-bad/[0.15] transition-colors'
             title={hotkey ? `Hide (${hotkey})` : 'Hide'} onClick={() => invoke('overlay:close').catch(() => { })}><FiX size={13} /></button>
         </div>
         <div className='flex-1 min-h-0 overflow-y-auto p-1.5'>{body}</div>

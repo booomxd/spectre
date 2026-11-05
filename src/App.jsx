@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { FiDownload, FiMinus, FiSquare, FiX } from 'react-icons/fi'
 import { GROUPS, PAGES, STRATEGIES, navigate } from './nav'
-import { invoke, openExternal, useEvent } from './lib/ipc'
+import { invoke, isOverlayWindow, openExternal, useEvent } from './lib/ipc'
 import { RiotProvider, useRiot } from './lib/riot'
 import { applySavedTheme } from './lib/theme'
 import logo from './assets/spectre-logo.svg'
@@ -50,7 +50,7 @@ function UpdateButton() {
 
 function TitleBar({ tab, setTab }) {
   return (
-    <div className='drag h-12 shrink-0 flex items-center justify-between pl-3 pr-1.5'>
+    <div data-tauri-drag-region className='drag h-12 shrink-0 flex items-center justify-between pl-3 pr-1.5'>
       <div className='glass flex items-center gap-0.5 p-1 rounded-full'>
         {[{ id: 'home', label: 'Home' }, { id: 'strategies', label: 'Tactics' }].map(t => (
           <button key={t.id} onClick={() => setTab(t.id)}
@@ -162,8 +162,8 @@ function Shell() {
 
 export default function App() {
   useEffect(applySavedTheme, [])
-  // The overlay window loads the same bundle with #/overlay.
-  const isOverlay = window.location.hash === '#/overlay'
+  // The overlay window loads the same bundle.
+  const isOverlay = isOverlayWindow()
   return (
     <RiotProvider>
       {isOverlay ? <Overlay /> : <Shell />}
