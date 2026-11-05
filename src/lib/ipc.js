@@ -1,22 +1,25 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { invoke as tauriInvoke } from '@tauri-apps/api/core'
+import { listen } from '@tauri-apps/api/event'
+import { getCurrentWindow } from '@tauri-apps/api/window'
 
-const { ipcRenderer } = window.require('electron')
-
-// Calls a main-process handler; resolves with its data or throws its error message.
+// Calls a backend channel (one Rust `ipc` command routes them all); resolves with its data or throws its error message.
 export async function invoke(channel, ...args) {
-  const res = await ipcRenderer.invoke(channel, ...args)
-  if (!res?.ok) throw new Error(res?.error || 'Request failed')
-  return res.data
+  try {
+    return await tauriInvoke('ipc', { channel, args })
+  } catch (e) {
+    throw new Error(typeof e === 'string' ? e : e?.message || 'Request failed')
+  }
 }
 
-// Subscribe to a main-process event for the component's lifetime.
+// Subscribe to a backend event for the component's lifetime.
 export function useEvent(channel, fn) {
   const ref = useRef(fn)
   ref.current = fn
   useEffect(() => {
-    const listener = (e, payload) => ref.current(payload)
-    ipcRenderer.on(channel, listener)
-    return () => ipcRenderer.removeListener(channel, listener)
+    let off = null, gone = false
+    listen(channel, e => ref.current(e.payload)).then(un => { if (gone) un(); else off = un })
+    return () => { gone = true; off?.() }
   }, [channel])
 }
 
@@ -42,3 +45,8 @@ export function useInvoke(channel, args = [], { deps = [], poll, skip } = {}) {
 }
 
 export const openExternal = url => invoke('app:openExternal', url)
+
+// The in-game overlay is its own window running the same bundle.
+export function isOverlayWindow() {
+  try { return getCurrentWindow().label === 'overlay' } catch (e) { return window.location.hash === '#/overlay' }
+}
