@@ -2,6 +2,7 @@
 // channel names and arguments the Electron app used, and listens for events with the same names.
 pub mod api;
 pub mod core;
+mod migrate;
 
 use crate::core::error::msg;
 use crate::core::riot::{data_dir, Riot};
@@ -91,6 +92,7 @@ pub fn run() {
             register_core(&mut reg);
             api::register_all(&mut reg, &ctx);
             app.manage(Arc::new(Backend { ctx: ctx.clone(), reg }));
+            migrate::run(&ctx);
 
             // Tray: click (or "Show Spectre") brings the window back; used by "Minimize to tray".
             let show = MenuItem::with_id(app, "show", "Show Spectre", true, None::<&str>)?;
