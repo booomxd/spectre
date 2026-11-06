@@ -54,3 +54,21 @@ export function StatusDot({ state, className }) {
   const color = state === 'ingame' ? 'bg-good' : state === 'queue' || state === 'pregame' ? 'bg-warn' : state === 'menus' ? 'bg-accent' : state === 'away' ? 'bg-muted' : 'bg-line'
   return <span className={cx('inline-block w-2 h-2 rounded-full', color, (state === 'queue' || state === 'ingame') && 'anim-pulse', className)} />
 }
+
+// Tier color as '#rrggbb' (valorant-api gives 'rrggbbaa'); null for unranked or while tiers load.
+export function useRankColor(tier) {
+  const tiers = useTiers()
+  const c = tier > 0 && tiers?.[tier]?.color
+  return c ? `#${c.slice(0, 6)}` : null
+}
+
+// Rank icon sitting on a soft glow in its own tier color. The glow is static (no animated filter).
+export function RankGlow({ tier, size = 34, className }) {
+  const color = useRankColor(tier)
+  return (
+    <span className={cx('relative inline-grid place-items-center shrink-0', className)} style={{ width: size, height: size }}>
+      {color && <span className='absolute -inset-2 rounded-full opacity-60 pointer-events-none' style={{ background: `radial-gradient(closest-side, ${color}66, transparent)` }} />}
+      <RankIcon tier={tier} size={size} className='relative' />
+    </span>
+  )
+}

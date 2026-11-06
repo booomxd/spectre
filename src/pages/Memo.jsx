@@ -3,7 +3,8 @@ import {
   FiBookOpen, FiCheck, FiChevronDown, FiCopy, FiCrosshair, FiExternalLink, FiFileText, FiFlag, FiLink, FiLoader,
   FiMap, FiMessageSquare, FiPlus, FiRotateCcw, FiSearch, FiStar, FiTrash2, FiUsers, FiZap,
 } from 'react-icons/fi'
-import { Button, Card, Empty, ErrorState, Input, Modal, Page, Skeleton, Tabs, Textarea, toast } from '../ui'
+import { Button, Card, Empty, ErrorState, Input, Item, Modal, Page, SegmentedTabs, Skeleton, Stagger, Swap, Textarea, toast } from '../ui'
+import { ListRow, Pane, SearchField, SPLIT_BODY, SplitView } from './friends/Layout'
 import { invoke, openExternal, useInvoke } from '../lib/ipc'
 import { cx } from './history/shared'
 import { MemoModal } from './history/MemoEditor'
@@ -23,11 +24,17 @@ const COLORS = {
   pink: { dot: 'bg-pink-500', chip: 'text-pink-500 bg-pink-500/15' },
 }
 const TABS = [
-  { value: 'notes', label: <span className='inline-flex items-center gap-1.5'><FiFileText /> Notes</span> },
-  { value: 'crosshairs', label: <span className='inline-flex items-center gap-1.5'><FiCrosshair /> Crosshairs</span> },
-  { value: 'links', label: <span className='inline-flex items-center gap-1.5'><FiLink /> Links</span> },
-  { value: 'snippets', label: <span className='inline-flex items-center gap-1.5'><FiMessageSquare /> Chat snippets</span> },
+  { value: 'notes', label: 'Notes', icon: FiFileText },
+  { value: 'crosshairs', label: 'Crosshairs', icon: FiCrosshair },
+  { value: 'links', label: 'Links', icon: FiLink },
+  { value: 'snippets', label: 'Chat snippets', icon: FiMessageSquare },
 ]
+// One-line summary under a section name.
+const summary = x => {
+  const n = (k, word) => x[k].length && `${x[k].length} ${word}${x[k].length > 1 ? 's' : ''}`
+  const parts = [n('crosshairs', 'crosshair'), n('links', 'link'), n('snippets', 'snippet')].filter(Boolean)
+  return parts.length ? parts.join(' · ') : x.notes ? x.notes.slice(0, 60) : 'Empty'
+}
 const uid = () => Math.random().toString(36).slice(2, 10)
 const copy = (text, what) => navigator.clipboard.writeText(text).then(() => toast.success(`${what} copied`))
 
@@ -48,9 +55,9 @@ function Appearance({ s, onChange }) {
   }, [open])
   return (
     <div ref={ref} className='relative'>
-      <Button size='sm' onClick={() => setOpen(o => !o)}>Appearance <FiChevronDown className={cx('transition-transform', open && 'rotate-180')} /></Button>
+      <Button size='sm' variant='ghost' onClick={() => setOpen(o => !o)}>Style <FiChevronDown className={cx('transition-transform', open && 'rotate-180')} /></Button>
       {open && (
-        <div className='glass-strong anim-pop absolute right-0 top-10 z-30 w-[244px] rounded-xl p-4'>
+        <div className='glass-strong anim-pop absolute right-0 top-11 z-30 w-[256px] rounded-2xl p-4'>
           <div className='text-[12px] font-semibold text-muted mb-2'>Color</div>
           <div className='flex flex-wrap gap-2'>
             {Object.entries(COLORS).map(([k, c]) => (
@@ -85,21 +92,21 @@ function ItemList({ items, empty, icon, fields, onAdd, onRemove, row }) {
     <div className='flex flex-col gap-4 min-h-0'>
       <form onSubmit={add} className='flex gap-2'>
         {fields.map(f => (
-          <Input key={f.key} value={form[f.key] || ''} maxLength={f.max} placeholder={f.placeholder} className={f.className}
+          <Input key={f.key} value={form[f.key] || ''} maxLength={f.max} placeholder={f.placeholder} className={'!rounded-full ' + (f.className || '')}
             onChange={e => setForm(v => ({ ...v, [f.key]: e.target.value }))} />
         ))}
         <Button type='submit' variant='primary' icon={FiPlus} disabled={!ready} className='shrink-0'>Add</Button>
       </form>
       {!items.length ? <Empty icon={icon} title={empty.title} hint={empty.hint} />
-        : <div className='stagger flex flex-col gap-2'>
+        : <Stagger className='flex flex-col gap-2'>
           {items.map((it, i) => (
-            <div key={it.id} style={{ '--i': Math.min(i, 12) }} className='group flex items-center gap-3 rounded-xl border border-line bg-surface-2/60 px-4 py-3'>
+            <Item key={it.id} index={i} className='group glass-inset flex items-center gap-3 rounded-2xl px-4 py-3'>
               <div className='min-w-0 flex-1'>{row(it)}</div>
               <button title='Remove' onClick={() => onRemove(it.id)}
                 className='w-8 h-8 shrink-0 rounded-full flex items-center justify-center text-muted opacity-0 group-hover:opacity-100 hover:text-bad hover:bg-bad/15 transition-all'><FiTrash2 size={14} /></button>
-            </div>
+            </Item>
           ))}
-        </div>}
+        </Stagger>}
     </div>
   )
 }
@@ -158,133 +165,136 @@ export default function Memo({ params }) {
   const shown = sections.filter(x => !q || `${x.name} ${x.notes}`.toLowerCase().includes(q.toLowerCase()))
   const count = sections.length
 
+  const list = (
+    <Pane title='Sections' right={<Button size='sm' variant='glow' icon={FiPlus} disabled={!doc} onClick={addSection}>New</Button>}
+      header={<SearchField value={q} onChange={setQ} placeholder='Search sections' />}
+      footer={<Button size='sm' variant='ghost' icon={FiRotateCcw} className='w-full' disabled={!doc} onClick={() => setConfirm({ kind: 'reset' })}>Reset notes</Button>}>
+      {!doc ? <div className='flex flex-col gap-1.5 p-1'>{[0, 1, 2, 3].map(i => <Skeleton key={i} className='h-12 rounded-2xl' />)}</div> : (
+        <Stagger className='flex flex-col gap-0.5'>
+          {shown.map((x, i) => (
+            <Item key={x.id} index={i}>
+              <ListRow selected={s && x.id === s.id} layoutId='squad-notes' onClick={() => { setCur(x.id); setRenaming(false) }}>
+                <SectionIcon s={x} size='relative w-9 h-9 text-[14px]' />
+                <span className='relative flex-1 min-w-0'>
+                  <span className='block truncate text-[13.5px] font-semibold text-text'>{x.name}</span>
+                  <span className='block truncate text-[11px] text-muted mt-0.5'>{summary(x)}</span>
+                </span>
+                {count > 1 && (
+                  <button title='Delete section' onClick={e => { e.stopPropagation(); setConfirm({ kind: 'section', id: x.id, name: x.name }) }}
+                    className='relative w-7 h-7 rounded-full flex items-center justify-center text-muted opacity-0 group-hover:opacity-100 hover:text-bad hover:bg-bad/15 transition-all'><FiTrash2 size={13} /></button>
+                )}
+              </ListRow>
+            </Item>
+          ))}
+          {!shown.length && <p className='px-3 py-6 text-center text-[12px] text-muted'>No sections match.</p>}
+        </Stagger>
+      )}
+    </Pane>
+  )
+
   return (
     <Page title='Notes' subtitle={doc ? `${count} ${count === 1 ? 'section' : 'sections'} · saved on this device` : 'Saved on this device'}
-      actions={<Button variant='ghost' icon={FiRotateCcw} disabled={!doc} onClick={() => setConfirm({ kind: 'reset' })}>Reset notes</Button>}
-      bodyClassName='flex flex-col'>
-      {nb.error && !doc ? <ErrorState error={nb.error} onRetry={nb.reload} />
-        : !doc || !s ? <Skeleton className='flex-1 rounded-2xl min-h-[420px]' />
-          : (
-            <Card className='flex-1 min-h-[460px] flex rounded-2xl overflow-hidden'>
-              <aside className='w-[260px] shrink-0 flex flex-col border-r border-line'>
-                <div className='flex items-center justify-between px-5 pt-5 pb-3'>
-                  <span className='text-[11px] font-semibold tracking-[0.14em] uppercase text-muted'>Sections</span>
-                  <Button size='sm' variant='primary' icon={FiPlus} onClick={addSection}>New</Button>
-                </div>
-                <div className='px-4 pb-3'>
-                  <div className='relative'>
-                    <FiSearch className='absolute left-3.5 top-1/2 -translate-y-1/2 text-muted pointer-events-none z-10' />
-                    <Input className='!pl-9 !rounded-full' value={q} onChange={e => setQ(e.target.value)} placeholder='Search sections' />
-                  </div>
-                </div>
-                <div className='flex-1 overflow-y-auto px-3 pb-3 flex flex-col gap-1'>
-                  {shown.map(x => (
-                    <div key={x.id} onClick={() => { setCur(x.id); setRenaming(false) }}
-                      className={cx('group flex items-center gap-3 h-12 px-2.5 rounded-xl cursor-pointer transition-colors', x.id === s.id ? 'accent-soft' : 'hover:bg-surface-2')}>
-                      <SectionIcon s={x} size='w-8 h-8 text-[14px]' />
-                      <span className={cx('flex-1 min-w-0 truncate text-[13px] font-semibold', x.id === s.id ? 'text-text' : 'text-muted group-hover:text-text')}>{x.name}</span>
-                      {count > 1 && (
-                        <button title='Delete section' onClick={e => { e.stopPropagation(); setConfirm({ kind: 'section', id: x.id, name: x.name }) }}
-                          className='w-7 h-7 rounded-full flex items-center justify-center text-muted opacity-0 group-hover:opacity-100 hover:text-bad hover:bg-bad/15 transition-all'><FiTrash2 size={13} /></button>
-                      )}
-                    </div>
-                  ))}
-                  {!shown.length && <p className='px-3 py-6 text-center text-[12px] text-muted'>No sections match.</p>}
-                </div>
-              </aside>
-
-              <section className='flex-1 min-w-0 flex flex-col'>
-                <div className='flex items-start justify-between gap-4 px-6 pt-5'>
-                  <div className='flex items-center gap-3.5 min-w-0'>
-                    <SectionIcon s={s} size='w-11 h-11 text-[18px]' />
+      bodyClassName={SPLIT_BODY}>
+      <SplitView list={list} listWidth={300}>
+        {nb.error && !doc ? <ErrorState error={nb.error} onRetry={nb.reload} />
+          : !doc || !s ? <Skeleton className='h-full rounded-3xl min-h-[420px]' />
+            : (
+              <Card className='relative h-full min-h-[460px] flex flex-col rounded-3xl overflow-hidden'>
+                <span className={cx('halo -top-32 -right-24 w-96 h-96 opacity-50')} />
+                <div className='relative flex items-start justify-between gap-4 px-7 pt-6'>
+                  <div className='flex items-center gap-4 min-w-0'>
+                    <SectionIcon s={s} size='w-12 h-12 text-[20px] rounded-2xl' />
                     <div className='min-w-0'>
-                      <div className='text-[11px] font-semibold tracking-[0.14em] uppercase text-muted'>Current section</div>
+                      <div className='eyebrow'>Section</div>
                       {renaming
                         ? <input autoFocus value={s.name} maxLength={40} onFocus={e => e.target.select()}
-                          className='glass-field mt-1 h-9 w-[280px] rounded-lg px-3 font-display text-xl font-bold tracking-tight text-text outline-none'
+                          className='glass-field mt-1 h-10 w-[300px] rounded-xl px-3 display text-[24px] text-text outline-none'
                           onChange={e => update({ name: e.target.value })}
                           onBlur={() => { if (!s.name.trim()) update({ name: 'Untitled' }); setRenaming(false) }}
                           onKeyDown={e => { if (e.key === 'Enter' || e.key === 'Escape') e.currentTarget.blur() }} />
                         : <button title='Rename' onClick={() => setRenaming(true)}
-                          className='block max-w-full truncate font-display text-[26px] font-bold tracking-tight text-text hover:text-accent transition-colors text-left'>{s.name}</button>}
+                          className='block max-w-full truncate display text-[28px] text-text hover:text-accent transition-colors text-left mt-1'>{s.name}</button>}
                     </div>
                   </div>
-                  <div className='flex items-center gap-2 shrink-0'>
+                  <div className='flex items-center gap-1.5 shrink-0'>
                     <Appearance s={s} onChange={update} />
-                    <Button size='sm' variant='ghost' title='Delete section' disabled={count < 2}
+                    <Button size='icon' variant='ghost' title='Delete section' disabled={count < 2}
                       onClick={() => setConfirm({ kind: 'section', id: s.id, name: s.name })}><FiTrash2 /></Button>
                   </div>
                 </div>
-                <div className='px-6 pt-4 pb-4 border-b border-line'>
-                  <Tabs tabs={TABS} value={tab} onChange={setTab} />
+                <div className='relative px-7 pt-5 pb-4'>
+                  <SegmentedTabs tabs={TABS.map(t => ({ ...t, count: t.value === 'notes' ? undefined : s[t.value]?.length || undefined }))} value={tab} onChange={setTab} layoutId='notes-tabs' />
                 </div>
+                <div className='hairline' />
 
-                <div className='flex-1 min-h-0 overflow-y-auto p-6 flex flex-col'>
-                  {tab === 'notes' && (
-                    <div key={s.id} className='anim-fade flex-1 flex flex-col min-h-0'>
-                      <Textarea className='flex-1 min-h-[280px] !p-4 text-[14px] leading-relaxed' maxLength={NOTES_MAX}
-                        value={s.notes} onChange={e => update({ notes: e.target.value })}
-                        placeholder='Write details, lineups, setups or strat notes here...' />
-                      <div className='flex items-center justify-between mt-3 text-[12px]'>
-                        <span className={cx('inline-flex items-center gap-1.5', saving ? 'text-muted' : 'text-good')}>
-                          {saving ? <><FiLoader className='animate-spin' /> Saving...</> : <><FiCheck /> Autosaved locally</>}
-                        </span>
-                        <span className={cx('tabular-nums', s.notes.length >= NOTES_MAX ? 'text-warn' : 'text-muted')}>{s.notes.length} / {NOTES_MAX} characters</span>
+                <div className='relative flex-1 min-h-0 overflow-y-auto px-7 py-6 flex flex-col'>
+                  <Swap id={s.id + tab} className='flex-1 flex flex-col min-h-0'>
+                    {tab === 'notes' && (
+                      <div className='flex-1 flex flex-col min-h-0'>
+                        <Textarea className='flex-1 min-h-[280px] !p-5 !rounded-2xl text-[14px] leading-relaxed' maxLength={NOTES_MAX}
+                          value={s.notes} onChange={e => update({ notes: e.target.value })}
+                          placeholder='Write details, lineups, setups or strat notes here...' />
+                        <div className='flex items-center justify-between mt-3 text-[12px]'>
+                          <span className={cx('inline-flex items-center gap-1.5', saving ? 'text-muted' : 'text-good')}>
+                            {saving ? <><FiLoader className='animate-spin' /> Saving...</> : <><FiCheck /> Autosaved locally</>}
+                          </span>
+                          <span className={cx('tabular-nums', s.notes.length >= NOTES_MAX ? 'text-warn' : 'text-muted')}>{s.notes.length} / {NOTES_MAX}</span>
+                        </div>
                       </div>
-                    </div>
-                  )}
-                  {tab === 'crosshairs' && (
-                    <ItemList key={s.id} items={s.crosshairs} icon={FiCrosshair}
-                      empty={{ title: 'No crosshairs yet', hint: 'Save crosshair profile codes here and copy them into VALORANT.' }}
-                      fields={[{ key: 'name', placeholder: 'Name', max: 60, className: '!w-[180px] shrink-0' }, { key: 'code', placeholder: 'Crosshair code (0;P;c;5;...)', max: 400 }]}
-                      onAdd={v => update({ crosshairs: [...s.crosshairs, { id: uid(), ...v }] })}
-                      onRemove={id => update({ crosshairs: s.crosshairs.filter(x => x.id !== id) })}
-                      row={c => (
-                        <div className='flex items-center gap-3'>
-                          <div className='min-w-0 flex-1'>
-                            <div className='text-[13px] font-semibold text-text truncate'>{c.name}</div>
-                            <div className='text-[12px] text-muted font-mono truncate'>{c.code}</div>
+                    )}
+                    {tab === 'crosshairs' && (
+                      <ItemList items={s.crosshairs} icon={FiCrosshair}
+                        empty={{ title: 'No crosshairs yet', hint: 'Save crosshair profile codes here and copy them into VALORANT.' }}
+                        fields={[{ key: 'name', placeholder: 'Name', max: 60, className: '!w-[180px] shrink-0' }, { key: 'code', placeholder: 'Crosshair code (0;P;c;5;...)', max: 400 }]}
+                        onAdd={v => update({ crosshairs: [...s.crosshairs, { id: uid(), ...v }] })}
+                        onRemove={id => update({ crosshairs: s.crosshairs.filter(x => x.id !== id) })}
+                        row={c => (
+                          <div className='flex items-center gap-3'>
+                            <div className='min-w-0 flex-1'>
+                              <div className='text-[13px] font-semibold text-text truncate'>{c.name}</div>
+                              <div className='text-[11.5px] text-muted font-mono truncate mt-0.5'>{c.code}</div>
+                            </div>
+                            <Button size='sm' icon={FiCopy} onClick={() => copy(c.code, 'Crosshair code')}>Copy</Button>
                           </div>
-                          <Button size='sm' icon={FiCopy} onClick={() => copy(c.code, 'Crosshair code')}>Copy</Button>
-                        </div>
-                      )} />
-                  )}
-                  {tab === 'links' && (
-                    <ItemList key={s.id} items={s.links} icon={FiLink}
-                      empty={{ title: 'No links yet', hint: 'Keep lineup videos, guides and tracker pages one click away.' }}
-                      fields={[{ key: 'title', placeholder: 'Title', max: 60, className: '!w-[200px] shrink-0' }, { key: 'url', placeholder: 'https://...', max: 500 }]}
-                      onAdd={v => {
-                        const url = /^https?:\/\//i.test(v.url) ? v.url : `https://${v.url}`
-                        update({ links: [...s.links, { id: uid(), title: v.title, url }] })
-                      }}
-                      onRemove={id => update({ links: s.links.filter(x => x.id !== id) })}
-                      row={l => (
-                        <div className='flex items-center gap-3'>
-                          <div className='min-w-0 flex-1'>
-                            <div className='text-[13px] font-semibold text-text truncate'>{l.title}</div>
-                            <div className='text-[12px] text-muted truncate'>{l.url}</div>
+                        )} />
+                    )}
+                    {tab === 'links' && (
+                      <ItemList items={s.links} icon={FiLink}
+                        empty={{ title: 'No links yet', hint: 'Keep lineup videos, guides and tracker pages one click away.' }}
+                        fields={[{ key: 'title', placeholder: 'Title', max: 60, className: '!w-[200px] shrink-0' }, { key: 'url', placeholder: 'https://...', max: 500 }]}
+                        onAdd={v => {
+                          const url = /^https?:\/\//i.test(v.url) ? v.url : `https://${v.url}`
+                          update({ links: [...s.links, { id: uid(), title: v.title, url }] })
+                        }}
+                        onRemove={id => update({ links: s.links.filter(x => x.id !== id) })}
+                        row={l => (
+                          <div className='flex items-center gap-3'>
+                            <div className='min-w-0 flex-1'>
+                              <div className='text-[13px] font-semibold text-text truncate'>{l.title}</div>
+                              <div className='text-[11.5px] text-muted truncate mt-0.5'>{l.url}</div>
+                            </div>
+                            <Button size='sm' icon={FiExternalLink} onClick={() => openExternal(l.url)}>Open</Button>
                           </div>
-                          <Button size='sm' icon={FiExternalLink} onClick={() => openExternal(l.url)}>Open</Button>
-                        </div>
-                      )} />
-                  )}
-                  {tab === 'snippets' && (
-                    <ItemList key={s.id} items={s.snippets} icon={FiMessageSquare}
-                      empty={{ title: 'No chat snippets yet', hint: 'Save messages you send often, like callouts or a GG, and copy them in one click.' }}
-                      fields={[{ key: 'text', placeholder: 'Message', max: 300 }]}
-                      onAdd={v => update({ snippets: [...s.snippets, { id: uid(), ...v }] })}
-                      onRemove={id => update({ snippets: s.snippets.filter(x => x.id !== id) })}
-                      row={t => (
-                        <div className='flex items-center gap-3'>
-                          <p className='min-w-0 flex-1 text-[13px] text-text break-words'>{t.text}</p>
-                          <Button size='sm' icon={FiCopy} onClick={() => copy(t.text, 'Snippet')}>Copy</Button>
-                        </div>
-                      )} />
-                  )}
+                        )} />
+                    )}
+                    {tab === 'snippets' && (
+                      <ItemList items={s.snippets} icon={FiMessageSquare}
+                        empty={{ title: 'No chat snippets yet', hint: 'Save messages you send often, like callouts or a GG, and copy them in one click.' }}
+                        fields={[{ key: 'text', placeholder: 'Message', max: 300 }]}
+                        onAdd={v => update({ snippets: [...s.snippets, { id: uid(), ...v }] })}
+                        onRemove={id => update({ snippets: s.snippets.filter(x => x.id !== id) })}
+                        row={t => (
+                          <div className='flex items-center gap-3'>
+                            <p className='min-w-0 flex-1 text-[13px] text-text break-words'>{t.text}</p>
+                            <Button size='sm' icon={FiCopy} onClick={() => copy(t.text, 'Snippet')}>Copy</Button>
+                          </div>
+                        )} />
+                    )}
+                  </Swap>
                 </div>
-              </section>
-            </Card>
-          )}
+              </Card>
+            )}
+      </SplitView>
 
       <Modal open={!!confirm} onClose={() => setConfirm(null)} width={400}
         title={confirm?.kind === 'reset' ? 'Reset all notes?' : `Delete ${confirm?.name || 'section'}?`}

@@ -243,7 +243,7 @@ export default function Strategies({ active }) {
   const mapOptions = (maps || []).map(m => ({ value: m.uuid, label: m.displayName }))
 
   return (
-    <div className='h-full flex min-h-0 gap-3 p-3 anim-fade'>
+    <div className='h-full flex min-h-0 gap-4 px-5 pb-5 pt-1 anim-fade'>
       <div className='w-[236px] shrink-0 min-h-0'>
         {loadErr ? <ErrorState error={loadErr} onRetry={loadPlaybooks} /> : (
           <Library playbooks={playbooks} loading={!playbooks} maps={maps} sel={sel} onSelect={selectStrategy}
@@ -251,7 +251,7 @@ export default function Strategies({ active }) {
         )}
       </div>
 
-      <div className='glass flex-1 min-w-0 flex flex-col rounded-2xl overflow-hidden'>
+      <div className='glass flex-1 min-w-0 flex flex-col rounded-[28px] overflow-hidden'>
         {contentErr ? <ErrorState error={contentErr} onRetry={loadContent} /> : !strat ? (
           <div className='flex-1 grid place-items-center'>
             {!playbooks || !maps ? <Skeleton className='h-64 w-64 rounded-2xl' /> : (
@@ -264,18 +264,22 @@ export default function Strategies({ active }) {
           </div>
         ) : (
           <>
-            <div className='flex flex-wrap items-center gap-2.5 px-4 py-3 border-b border-line'>
-              <Input value={strat.name} onChange={e => updateStrat(s => ({ ...s, name: e.target.value }))} className='w-52 font-semibold rounded-full px-4' />
-              <Select value={strat.mapId} options={mapOptions} onChange={e => updateStrat(s => ({ ...s, mapId: e.target.value }))} className='w-36 rounded-full pl-4' />
-              <Tabs tabs={[{ value: 'attack', label: 'Attack' }, { value: 'defense', label: 'Defense' }]} value={strat.side} onChange={side => updateStrat(s => ({ ...s, side }))} />
-              <div className='flex-1' />
-              <span className={`flex items-center gap-1.5 px-2 text-[12px] font-medium transition-colors ${saveState === 'error' ? 'text-bad' : 'text-muted'}`}>
-                {saveState === 'saved' ? <><FiCheck className='text-good' />Saved</> : saveState === 'saving' ? 'Saving...' : 'Not saved'}
+            <div className='relative flex flex-wrap items-center gap-x-2 gap-y-2 pl-5 pr-3 py-3'>
+              <div className='min-w-[110px] flex-1 basis-0'>
+                <div className='eyebrow mb-0.5 truncate'>{pb?.name || 'Playbook'}</div>
+                <input value={strat.name} onChange={e => updateStrat(s => ({ ...s, name: e.target.value }))} spellCheck={false} aria-label='Strategy name'
+                  className='w-full bg-transparent outline-none display text-[24px] leading-tight text-text placeholder:text-muted rounded-lg focus:bg-surface-2/60 -ml-1.5 px-1.5 transition-colors' />
+              </div>
+              <Select value={strat.mapId} options={mapOptions} onChange={e => updateStrat(s => ({ ...s, mapId: e.target.value }))} className='!w-32 !h-9 rounded-full pl-4' />
+              <Tabs tabs={[{ value: 'attack', label: 'Attack' }, { value: 'defense', label: 'Defense' }]} value={strat.side} onChange={side => updateStrat(s => ({ ...s, side }))} layoutId='strat-side' size='sm' />
+              <span className={`flex items-center gap-1.5 px-1 text-[12px] font-medium transition-colors ${saveState === 'error' ? 'text-bad' : 'text-muted'}`}>
+                {saveState === 'saved' ? <><FiCheck className='text-good' /><span className='hidden min-[1440px]:inline'>Saved</span></> : saveState === 'saving' ? 'Saving...' : 'Not saved'}
               </span>
               <Button variant='ghost' size='sm' icon={FiRotateCcw} onClick={onUndo} disabled={!hasPast || playing} title='Undo (Ctrl+Z)' />
               <Button variant='ghost' size='sm' icon={FiRotateCw} onClick={onRedo} disabled={!hasFuture || playing} title='Redo (Ctrl+Y)' />
-              <Button variant='ghost' size='sm' icon={FiTrash2} onClick={() => step.items.length && onCommit([])} disabled={!step.items.length || playing}>Clear</Button>
-              <Button size='sm' icon={FiDownload} loading={exporting} onClick={doExport} disabled={playing}>Export PNG</Button>
+              <Button variant='ghost' size='sm' icon={FiTrash2} onClick={() => step.items.length && onCommit([])} disabled={!step.items.length || playing} title='Clear this step'><span className='hidden min-[1440px]:inline'>Clear</span></Button>
+              <Button size='sm' icon={FiDownload} loading={exporting} onClick={doExport} disabled={playing} title='Export this step as a PNG image'>PNG</Button>
+              <div className='hairline absolute inset-x-5 bottom-0' />
             </div>
 
             <div className='flex-1 min-h-0 relative'>
@@ -284,10 +288,11 @@ export default function Strategies({ active }) {
               <div className='absolute right-4 top-4 z-10 pointer-events-none'><Badge tone={strat.side === 'attack' ? 'bad' : 'accent'}>{map?.displayName || 'Map'} · {strat.side}</Badge></div>
             </div>
 
-            <div className='flex items-center gap-2.5 px-4 py-3 border-t border-line overflow-x-auto'>
+            <div className='relative flex items-center gap-2.5 px-4 py-3 overflow-x-auto'>
+              <div className='hairline absolute inset-x-5 top-0' />
               <Button size='sm' variant={playing ? 'danger' : 'primary'} icon={playing ? FiPause : FiPlay} onClick={play}>{playing ? 'Stop' : 'Play'}</Button>
               <span className='w-px h-6 bg-line/60 mx-1 shrink-0' />
-              <div className='flex items-center gap-1.5 stagger'>
+              <div className='relative flex items-center gap-1.5 stagger'>
                 {strat.steps.map((st, i) => (
                   stepEdit?.i === i ? (
                     <Input key={st.id} autoFocus value={stepEdit.value} onChange={e => setStepEdit({ i, value: e.target.value })} onBlur={renameStep}
@@ -295,7 +300,7 @@ export default function Strategies({ active }) {
                   ) : (
                     <button key={st.id} onClick={() => !playing && setStepIdx(i)} onDoubleClick={() => !playing && setStepEdit({ i, value: st.name })} style={{ '--i': i }}
                       title='Double-click to rename'
-                      className={`anim-rise h-8 pl-1 pr-3.5 rounded-full flex items-center gap-2 text-xs font-semibold whitespace-nowrap transition-all duration-200 ${i === idx ? 'accent-soft text-text' : 'glass text-muted hover:text-text hover:bg-surface-2'}`}>
+                      className={`anim-rise relative h-8 pl-1 pr-3.5 rounded-full flex items-center gap-2 text-xs font-semibold whitespace-nowrap transition-colors duration-200 ${i === idx ? 'accent-soft text-text' : 'glass text-muted hover:text-text hover:bg-surface-2'}`}>
                       <span className={`h-6 w-6 rounded-full grid place-items-center text-[10px] font-bold tabular-nums ${i === idx ? 'accent-fill text-bg' : 'bg-surface-2 border border-line'}`}>{i + 1}</span>{st.name}
                     </button>
                   )
@@ -310,7 +315,7 @@ export default function Strategies({ active }) {
         )}
       </div>
 
-      <div className='w-[268px] shrink-0 min-h-0'>
+      <div className='w-[260px] shrink-0 min-h-0'>
         <Palette agents={agents} side={strat?.side || 'attack'} placed={placed} notes={strat?.notes || ''}
           onNotes={notes => strat && updateStrat(s => ({ ...s, notes }))}
           onPlace={payload => strat && !playing && boardRef.current?.addItem(payload)} />

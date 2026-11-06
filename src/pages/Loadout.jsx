@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
-import { FiCheck, FiPlus, FiRotateCcw, FiTrash2, FiUser } from 'react-icons/fi'
-import { Badge, Button, Card, Empty, ErrorState, Input, Modal, Page, RequireRiot, SectionTitle, Skeleton, toast, withToast } from '../ui'
+import { FiCheck, FiEdit3, FiPlus, FiRotateCcw, FiTrash2 } from 'react-icons/fi'
+import { Badge, Button, Card, Empty, ErrorState, Heading, Input, Item, Modal, Page, RequireRiot, SectionTitle, SegmentedTabs, Skeleton, Stagger, Swap, cx, toast, withToast } from '../ui'
 import { useRiot } from '../lib/riot'
 import { invoke, useInvoke } from '../lib/ipc'
 import { useContent } from '../lib/content'
@@ -9,7 +9,6 @@ import SkinPicker, { selectionImage } from './tools/SkinPicker'
 import BuddyPicker from './tools/BuddyPicker'
 import { CATEGORIES, NO_TITLE, catKey, isStandard, lc, skinImage, useContentTiers, tierColor, useOwned, useWeapons } from './tools/gear'
 
-const cx = (...c) => c.filter(Boolean).join(' ')
 
 export default function Loadout({ active }) {
   const riot = useRiot()
@@ -45,6 +44,7 @@ function LoadoutView({ active }) {
   const [presetName, setPresetName] = useState('')
   const [confirmPreset, setConfirmPreset] = useState(null)
   const [applyingPreset, setApplyingPreset] = useState(false)
+  const [filter, setFilter] = useState('all')
 
   const buddyIcon = useMemo(() => {
     const m = {}
@@ -104,127 +104,145 @@ function LoadoutView({ active }) {
   const identity = loadout?.Identity
   const card = cards?.find(c => lc(c.uuid) === lc(identity?.PlayerCardID))
   const title = titles?.find(t => lc(t.uuid) === lc(identity?.PlayerTitleID))
+  const riot = useRiot()
+
+  const tile = (g, w, index) => {
+    const x = eff(g)
+    const skin = w.skins.find(s => lc(s.uuid) === lc(x.SkinID))
+    const li = skin ? skin.levels.findIndex(l => lc(l.uuid) === lc(x.SkinLevelID)) : 0
+    const ci = skin ? skin.chromas.findIndex(c => lc(c.uuid) === lc(x.ChromaID)) : 0
+    const chroma = skin?.chromas[ci]
+    const tier = tiers[lc(skin?.contentTierUuid)]
+    const color = tierColor(tier)
+    const pending = !!edits[lc(g.ID)]
+    return (
+      <Item key={g.ID} index={index}>
+        <Card hover onClick={() => open(w)} className={cx('group relative overflow-hidden h-[208px] flex flex-col', pending && '!border-warn/60')}>
+          <div className='absolute inset-0 pointer-events-none' style={color ? { background: `radial-gradient(70% 60% at 50% 42%, ${color}2e, transparent 70%)` } : undefined} />
+          {color && <div className='absolute inset-x-6 top-0 h-px' style={{ background: `linear-gradient(90deg, transparent, ${color}, transparent)` }} />}
+          <div className='relative flex items-center justify-between px-5 pt-4'>
+            <span className='eyebrow'>{w.displayName}</span>
+            {pending ? <Badge tone='warn'>Pending</Badge> : x.CharmLevelID && buddyIcon[lc(x.CharmLevelID)] && <img src={buddyIcon[lc(x.CharmLevelID)]} className='w-7 h-7 object-contain' title='Buddy' />}
+          </div>
+          <div className='relative flex-1 min-h-0 flex items-center justify-center px-6'>
+            <img src={selectionImage(skin, x.ChromaID) || w.displayIcon} className='max-h-[92px] max-w-full object-contain drop-shadow-[0_10px_18px_rgb(0_0_0/0.35)] transition-transform duration-500 ease-out group-hover:scale-[1.06]' loading='lazy' />
+          </div>
+          <div className='relative px-5 pb-4'>
+            <div className='flex items-center gap-1.5'>
+              {tier && <img src={tier.displayIcon} className='w-3.5 h-3.5' />}
+              <span className='text-[14px] font-semibold tracking-tight truncate text-text'>{skin?.displayName || 'Standard'}</span>
+            </div>
+            <div className='flex items-center gap-1.5 mt-1.5 flex-wrap min-h-[20px]'>
+              {skin && skin.levels.length > 1 && <Badge>Lv {li + 1}/{skin.levels.length}</Badge>}
+              {ci > 0 && chroma && <Badge tone='accent'>Variant {ci + 1}</Badge>}
+              {skin && isStandard(w, skin) && <Badge>Standard</Badge>}
+              {pending && x.CharmLevelID && buddyIcon[lc(x.CharmLevelID)] && <img src={buddyIcon[lc(x.CharmLevelID)]} className='w-5 h-5 object-contain' title='Buddy' />}
+            </div>
+          </div>
+        </Card>
+      </Item>
+    )
+  }
+  const cats = CATEGORIES.map(cat => ({ ...cat, list: guns.map(g => ({ g, w: weaponById[lc(g.ID)] })).filter(x => x.w && catKey(x.w) === cat.key) })).filter(c => c.list.length)
+  const shownCats = filter === 'all' ? cats : cats.filter(c => c.key === filter)
 
   return (
-    <Page title='Loadout' subtitle='Your equipped weapons, buddies and identity. Pick a weapon to change its skin.'
+    <Page title='Loadout' subtitle='Your equipped arsenal. Pick any weapon to change its skin, variant and buddy.'
       actions={pendingCount > 0 && <>
         <Badge tone='warn'>{pendingCount} pending</Badge>
         <Button size='sm' variant='ghost' icon={FiRotateCcw} onClick={() => setEdits({})}>Discard</Button>
         <Button size='sm' variant='primary' icon={FiCheck} loading={saving} onClick={apply}>Apply changes</Button>
       </>}>
       {error && !loadout ? <ErrorState error={error} onRetry={reload} /> : (
-        <div className='grid grid-cols-[1fr_320px] gap-5 items-start'>
-          <div className='space-y-6 min-w-0'>
-            {!ready || loading && !loadout ? (
-              <div className='grid grid-cols-3 gap-4'>{Array.from({ length: 9 }).map((_, i) => <Skeleton key={i} className='h-40 rounded-xl' />)}</div>
-            ) : CATEGORIES.map(cat => {
-              const list = guns.map(g => ({ g, w: weaponById[lc(g.ID)] })).filter(x => x.w && catKey(x.w) === cat.key)
-              if (!list.length) return null
-              return (
-                <section key={cat.key}>
-                  <SectionTitle>{cat.label}</SectionTitle>
-                  <div className='grid grid-cols-3 gap-4 stagger'>
-                    {list.map(({ g, w }, i) => {
-                      const x = eff(g)
-                      const skin = w.skins.find(s => lc(s.uuid) === lc(x.SkinID))
-                      const li = skin ? skin.levels.findIndex(l => lc(l.uuid) === lc(x.SkinLevelID)) : 0
-                      const ci = skin ? skin.chromas.findIndex(c => lc(c.uuid) === lc(x.ChromaID)) : 0
-                      const chroma = skin?.chromas[ci]
-                      const tier = tiers[lc(skin?.contentTierUuid)]
-                      const pending = !!edits[lc(g.ID)]
-                      return (
-                        <Card key={g.ID} hover style={{ '--i': i }} onClick={() => open(w)}
-                          className={cx('anim-rise relative p-4 overflow-hidden', pending && '!border-warn/60')}>
-                          <div className='flex items-center justify-between'>
-                            <span className='text-[12px] font-semibold text-muted'>{w.displayName}</span>
-                            {pending && <Badge tone='warn'>Pending</Badge>}
-                          </div>
-                          <div className='h-20 my-2 flex items-center justify-center'>
-                            <img src={selectionImage(skin, x.ChromaID) || w.displayIcon} className='max-h-full max-w-full object-contain drop-shadow-lg transition-transform duration-300' loading='lazy' />
-                          </div>
-                          <div className='flex items-end justify-between gap-2'>
-                            <div className='min-w-0'>
-                              <div className='flex items-center gap-1.5'>
-                                {tier && <img src={tier.displayIcon} className='w-3.5 h-3.5' />}
-                                <span className='text-[13px] font-semibold truncate' style={{ color: tierColor(tier) }}>{skin?.displayName || 'Standard'}</span>
-                              </div>
-                              <div className='flex items-center gap-1.5 mt-1.5 flex-wrap'>
-                                {skin && skin.levels.length > 1 && <Badge>Lv {li + 1}/{skin.levels.length}</Badge>}
-                                {ci > 0 && chroma && <Badge tone='accent'>Variant {ci + 1}</Badge>}
-                                {skin && isStandard(w, skin) && <Badge>Standard</Badge>}
-                              </div>
-                            </div>
-                            {x.CharmLevelID && buddyIcon[lc(x.CharmLevelID)] && <img src={buddyIcon[lc(x.CharmLevelID)]} className='w-9 h-9 object-contain shrink-0' title='Buddy' />}
-                          </div>
-                        </Card>
-                      )
-                    })}
-                  </div>
-                </section>
-              )
-            })}
-          </div>
-
-          <div className='space-y-5 sticky top-0'>
-            <Card className='overflow-hidden anim-rise'>
-              <div className='h-28 bg-surface-2 relative'>
-                {card?.wideArt && <img src={card.wideArt} className='w-full h-full object-cover' />}
-                <div className='absolute inset-0 bg-gradient-to-t from-bg/80 via-bg/20 to-transparent' />
-              </div>
-              <div className='px-5 pb-5 -mt-5 relative'>
-                <SectionTitle right={<Button size='sm' variant='ghost' icon={FiUser} onClick={() => navigate('customize')}>Edit</Button>}>Identity</SectionTitle>
-                {!identity ? <Skeleton className='h-10' /> : (
-                  <div className='space-y-2 text-[13px]'>
-                    <div><span className='text-muted'>Card </span>{card?.displayName || 'Default'}</div>
-                    <div><span className='text-muted'>Title </span>{lc(identity.PlayerTitleID) === NO_TITLE ? 'No title' : (title?.titleText || title?.displayName || 'Unknown')}</div>
-                    <div><span className='text-muted'>Level </span>{identity.HideAccountLevel ? 'Hidden' : 'Visible'}</div>
-                  </div>
+        <div className='flex flex-col gap-8'>
+          <div className='bento'>
+            <Card className='col-span-12 xl:col-span-5 relative overflow-hidden rounded-3xl min-h-[210px]'>
+              {card?.wideArt && <img src={card.wideArt} className='absolute inset-0 w-full h-full object-cover' draggable={false} />}
+              {card?.wideArt ? <div className='absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/5' /> : <span className='halo -top-24 -left-20 w-80 h-80' />}
+              <div className='relative h-full p-6 flex flex-col justify-end'>
+                <div className={cx('eyebrow mb-2', card?.wideArt && '!text-white/70')}>Identity</div>
+                {!identity ? <Skeleton className='h-14 rounded-xl' /> : (
+                  <>
+                    <div className={cx('display text-[30px] truncate', card?.wideArt ? 'text-white' : 'text-text')}>{riot.gameName || 'Player'}</div>
+                    <div className={cx('mt-1.5 text-[12.5px] truncate', card?.wideArt ? 'text-white/75' : 'text-muted')}>
+                      {lc(identity.PlayerTitleID) === NO_TITLE ? 'No title' : (title?.titleText || title?.displayName || 'Unknown title')} · {card?.displayName || 'Default card'} · Level {identity.HideAccountLevel ? 'hidden' : 'visible'}
+                    </div>
+                  </>
                 )}
+                <Button size='sm' variant='subtle' icon={FiEdit3} className='absolute top-5 right-5' onClick={() => navigate('customize')}>Profile</Button>
               </div>
             </Card>
 
-            <Card className='p-5 anim-rise' style={{ animationDelay: '60ms' }}>
-              <SectionTitle>Sprays and expressions</SectionTitle>
-              {!loadout ? <Skeleton className='h-14' /> : (
-                <div className='grid grid-cols-4 gap-2'>
-                  {loadout.ActiveExpressions.map((e, i) => {
+            <Card className='col-span-12 md:col-span-5 xl:col-span-3 p-5 rounded-3xl'>
+              <Heading hint='Your spray wheel'>Sprays</Heading>
+              {!loadout ? <Skeleton className='h-24 rounded-2xl' /> : (
+                <div className='grid grid-cols-2 gap-2'>
+                  {loadout.ActiveExpressions.slice(0, 4).map((e, i) => {
                     const sp = sprays?.find(s => lc(s.uuid) === lc(e.AssetID))
                     return (
-                      <div key={i} className='aspect-square rounded-xl bg-surface-2 border border-line flex items-center justify-center p-2' title={sp?.displayName || 'Expression'}>
+                      <div key={i} className='glass-inset h-[58px] rounded-2xl flex items-center justify-center p-2' title={sp?.displayName || 'Expression'}>
                         {sp ? <img src={sp.fullTransparentIcon || sp.displayIcon} className='max-h-full max-w-full object-contain' /> : <span className='text-[10px] text-muted'>Flex</span>}
                       </div>
                     )
                   })}
                 </div>
               )}
+              {loadout?.ActiveExpressions.length > 4 && (
+                <div className='flex gap-2 mt-2'>
+                  {loadout.ActiveExpressions.slice(4).map((e, i) => {
+                    const sp = sprays?.find(s => lc(s.uuid) === lc(e.AssetID))
+                    return <div key={i} className='glass-inset flex-1 h-10 rounded-xl flex items-center justify-center p-1.5' title={sp?.displayName || 'Expression'}>{sp ? <img src={sp.fullTransparentIcon || sp.displayIcon} className='max-h-full max-w-full object-contain' /> : <span className='text-[10px] text-muted'>Flex</span>}</div>
+                  })}
+                </div>
+              )}
             </Card>
 
-            <Card className='p-5 anim-rise' style={{ animationDelay: '120ms' }}>
-              <SectionTitle>Presets</SectionTitle>
+            <Card className='col-span-12 md:col-span-7 xl:col-span-4 p-5 rounded-3xl flex flex-col'>
+              <Heading hint='Save and switch whole loadouts'>Presets</Heading>
               <div className='flex gap-2 mb-3'>
-                <Input value={presetName} onChange={e => setPresetName(e.target.value)} placeholder='Name this loadout' onKeyDown={e => e.key === 'Enter' && savePreset()} />
-                <Button size='md' icon={FiPlus} onClick={savePreset} disabled={!loadout} title='Save the applied loadout as a preset' />
+                <Input value={presetName} onChange={e => setPresetName(e.target.value)} placeholder='Name this loadout' className='!rounded-full' onKeyDown={e => e.key === 'Enter' && savePreset()} />
+                <Button size='icon' variant='glow' className='!w-10 !h-10 shrink-0' icon={FiPlus} onClick={savePreset} disabled={!loadout} title='Save the applied loadout as a preset' />
               </div>
-              {presets.loading && !presets.data ? <Skeleton className='h-12' /> : !presets.data?.length ? (
-                <Empty title='No presets yet' hint='Save your applied loadout to switch back to it in one click.' className='py-5' />
+              {presets.loading && !presets.data ? <Skeleton className='h-12 rounded-2xl' /> : !presets.data?.length ? (
+                <p className='text-[12px] text-muted leading-relaxed py-2'>No presets yet. Save your applied loadout to switch back to it in one click.</p>
               ) : (
-                <div className='space-y-2 stagger'>
-                  {presets.data.map((p, i) => (
-                    <div key={p.id} style={{ '--i': i }} className='anim-rise rounded-xl border border-line bg-surface-2/60 hover:bg-surface-2 transition-colors p-3'>
-                      <div className='flex items-center justify-between gap-2'>
-                        <span className='text-[13px] font-semibold truncate'>{p.name}</span>
-                        <div className='flex items-center gap-1 shrink-0'>
-                          <Button size='sm' variant='subtle' onClick={() => setConfirmPreset(p)}>Apply</Button>
-                          <Button size='sm' variant='ghost' icon={FiTrash2} onClick={() => delPreset(p)} />
-                        </div>
+                <div className='flex flex-col gap-1.5 max-h-[118px] overflow-y-auto -mr-2 pr-2'>
+                  {presets.data.map(p => (
+                    <div key={p.id} className='group glass-inset rounded-2xl pl-3.5 pr-1.5 py-1.5 flex items-center gap-2'>
+                      <div className='min-w-0 flex-1'>
+                        <div className='text-[13px] font-semibold truncate'>{p.name}</div>
+                        <PresetThumbs preset={p} weaponById={weaponById} />
                       </div>
-                      <PresetThumbs preset={p} weaponById={weaponById} />
+                      <Button size='sm' variant='ghost' icon={FiTrash2} className='!px-2 opacity-0 group-hover:opacity-100' title='Delete preset' onClick={() => delPreset(p)} />
+                      <Button size='sm' variant='subtle' onClick={() => setConfirmPreset(p)}>Apply</Button>
                     </div>
                   ))}
                 </div>
               )}
             </Card>
           </div>
+
+          <section>
+            <div className='flex items-center justify-between gap-4 mb-5'>
+              <SegmentedTabs layoutId='loadout-filter' value={filter} onChange={setFilter}
+                tabs={[{ value: 'all', label: 'All', count: guns.length || undefined }, ...cats.map(c => ({ value: c.key, label: c.label, count: c.list.length }))]} />
+              <span className='text-[12px] text-muted'>Changes are applied in game when you press Apply</span>
+            </div>
+            {!ready || loading && !loadout ? (
+              <div className='grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4'>{Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className='h-[208px] rounded-2xl' />)}</div>
+            ) : (
+              <Swap id={filter} className='flex flex-col gap-8'>
+                {shownCats.map(cat => (
+                  <div key={cat.key}>
+                    {filter === 'all' && <SectionTitle right={<span className='text-[11px] text-muted tabular-nums'>{cat.list.length}</span>}>{cat.label}</SectionTitle>}
+                    <Stagger className='grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4'>
+                      {cat.list.map(({ g, w }, i) => tile(g, w, i))}
+                    </Stagger>
+                  </div>
+                ))}
+              </Swap>
+            )}
+          </section>
         </div>
       )}
 
@@ -239,7 +257,7 @@ function LoadoutView({ active }) {
                 <BuddyPicker owned={owned} value={tmp.buddy} usedInstances={usedElsewhere} onChange={b => setTmp(t => ({ ...t, buddy: b }))} />
               </div>
             )}
-            <p className='text-[11px] text-muted'>Only items you own are listed. Apply equips it in game right away.</p>
+            <p className='text-[11.5px] text-muted'>Only items you own are listed. Apply equips it in game right away.</p>
           </div>
         )}
       </Modal>
@@ -263,5 +281,5 @@ function PresetThumbs({ preset, weaponById }) {
     return w && s && !isStandard(w, s) ? skinImage(s) : null
   }).filter(Boolean).slice(0, 5)
   if (!items.length) return null
-  return <div className='flex gap-1.5 mt-2'>{items.map((src, i) => <img key={i} src={src} className='h-6 flex-1 min-w-0 object-contain opacity-80' />)}</div>
+  return <div className='flex gap-1.5 mt-1'>{items.map((src, i) => <img key={i} src={src} className='h-4 flex-1 min-w-0 object-contain opacity-70' />)}</div>
 }

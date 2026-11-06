@@ -13,9 +13,9 @@ const ROUND_LABEL = { elim: 'Elimination', defuse: 'Spike defused', detonate: 'S
 function Row({ p, me, agents, memo, onSearch, onMemo }) {
   const diff = p.kills - p.deaths
   return (
-    <div className={cx('grid items-center gap-2 px-4 h-12 text-[13px] tabular-nums border-t border-line transition-colors', COLS, p.puuid && p.puuid === me ? 'accent-soft' : 'hover:bg-surface-2')}>
+    <div className={cx('grid items-center gap-2 px-5 h-[52px] text-[13px] tabular-nums border-t border-line transition-colors', COLS, p.puuid && p.puuid === me ? 'accent-soft' : 'hover:bg-surface-2')}>
       <div className='flex items-center gap-2.5 min-w-0'>
-        <AgentIcon id={p.agent} agents={agents} size={30} />
+        <AgentIcon id={p.agent} agents={agents} size={34} className='!rounded-xl' />
         <div className='min-w-0'>
           <div title={p.hidden ? 'Name hidden by streamer mode' : undefined} className={cx('truncate font-semibold leading-tight', p.hidden && 'text-muted')}>{playerLabel(p, agents)}</div>
           <div className='flex items-center gap-1.5'>
@@ -45,12 +45,15 @@ function Row({ p, me, agents, memo, onSearch, onMemo }) {
 
 function Scoreboard({ title, tone, players, me, agents, memos, onSearch, onMemo }) {
   return (
-    <div className='glass rounded-xl overflow-hidden'>
-      <div className={cx('flex items-center justify-between px-4 h-11 bg-surface-2/60')}>
-        <span className={cx('font-display text-[14px] font-bold tracking-tight', tone)}>{title}</span>
-        <span className='text-[11px] text-muted'>{players.length} players</span>
+    <div className='glass rounded-2xl overflow-hidden'>
+      <div className='flex items-center justify-between px-5 h-12'>
+        <span className='flex items-center gap-2.5'>
+          <span className={cx('w-2 h-2 rounded-full shadow-[0_0_10px_currentColor]', tone === 'text-good' ? 'bg-good text-good' : tone === 'text-bad' ? 'bg-bad text-bad' : 'bg-muted text-muted')} />
+          <span className='font-display text-[15px] font-bold tracking-tight text-text'>{title}</span>
+        </span>
+        <span className='eyebrow !text-[10px]'>{players.length} players</span>
       </div>
-      <div className={cx('grid gap-2 px-4 h-8 items-center border-t border-line text-[10px] font-semibold uppercase tracking-[0.08em] text-muted', COLS)}>
+      <div className={cx('grid gap-2 px-5 h-8 items-center border-t border-line bg-surface-2/50 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted', COLS)}>
         {HEAD.map((h, i) => <span key={i}>{h}</span>)}
       </div>
       {players.map(p => <Row key={p.key} p={p} me={me} agents={agents} memo={memos[p.puuid]} onSearch={onSearch} onMemo={onMemo} />)}
@@ -64,7 +67,8 @@ function Timeline({ rounds, teams, myTeam }) {
   const lanes = [{ id: myTeam, label: 'You' }, { id: enemy, label: 'Enemy' }]
   const gap = i => (i === 12 || i === 24 ? 'ml-3' : '')
   return (
-    <div className='glass rounded-xl p-4 overflow-x-auto'>
+    <div className='glass rounded-2xl p-5 overflow-x-auto'>
+      <div className='eyebrow !text-[10px] mb-3'>Rounds</div>
       <div className='flex flex-col gap-1.5 min-w-max'>
         {lanes.map((lane, li) => (
           <div key={lane.id} className='flex items-center gap-1'>
@@ -119,16 +123,17 @@ export default function MatchDetail({ matchId, me, memos = {}, onSearch, onMemo 
     }))
   return (
     <div className='flex flex-col gap-4'>
-      <div className='glass relative overflow-hidden rounded-2xl h-24 flex items-center px-6'>
-        {map?.splash && <img src={map.splash} alt='' className='absolute inset-0 w-full h-full object-cover opacity-50' draggable={false} />}
+      <div className='glass relative overflow-hidden rounded-3xl h-32 flex items-center px-7'>
+        {map?.splash && <img src={map.splash} alt='' className='absolute inset-0 w-full h-full object-cover opacity-55' draggable={false} />}
         {/* Fades the map art into the modal's own fill so text stays readable on light and dark themes. */}
         <div className='absolute inset-0 bg-gradient-to-r from-panel via-panel/75 to-panel/10' />
         <div className='relative flex items-center gap-5 w-full'>
           <div>
-            <div className={cx('font-display text-[28px] font-bold tracking-tight leading-none', R.text)}>{R.label}</div>
-            <div className='text-[12px] text-muted mt-1.5'>{map?.displayName || 'Unknown map'} - {data.mode}</div>
+            <div className='eyebrow !text-[10px] mb-2'>{data.mode}</div>
+            <div className={cx('display text-[40px]', R.text)}>{R.label}</div>
+            <div className='text-[12px] text-muted mt-2'>{map?.displayName || 'Unknown map'}</div>
           </div>
-          {!ffa && <div className='font-display text-[34px] font-bold tracking-tight tabular-nums leading-none ml-3'>{team(myTeam)?.roundsWon ?? 0}<span className='text-muted mx-1.5'>:</span>{data.teams.find(t => t.id !== myTeam)?.roundsWon ?? 0}</div>}
+          {!ffa && <div className='display text-[48px] tabular-nums ml-6'>{team(myTeam)?.roundsWon ?? 0}<span className='text-muted mx-1.5'>:</span>{data.teams.find(t => t.id !== myTeam)?.roundsWon ?? 0}</div>}
           <div className='ml-auto text-right text-[12px] text-muted leading-relaxed'>
             <div>{fmtDate(data.start)}</div><div>{fmtLen(data.length)} long</div>
           </div>

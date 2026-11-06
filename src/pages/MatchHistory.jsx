@@ -5,7 +5,7 @@ import HistoryPanel from './history/HistoryPanel'
 export default function MatchHistory({ params }) {
   const other = params?.puuid
   return (
-    <Page title='Match History' subtitle={other ? 'Recent matches for the selected player' : 'Your recent matches, results and performance'}>
+    <Page title='Matches' subtitle={other ? 'Recent matches for the selected player' : 'Your recent matches, results and performance'}>
       <RequireRiot>
         <HistoryPanel key={other || 'me'} puuid={other} />
       </RequireRiot>

@@ -1,14 +1,13 @@
 import React, { useMemo, useState } from 'react'
-import { FiClock, FiEdit3, FiLogOut, FiMessageSquare, FiSearch, FiUserPlus, FiUsers, FiX, FiCheck, FiUserX } from 'react-icons/fi'
-import { Page, Card, SectionTitle, Button, Input, Toggle, Badge, Skeleton, Empty, ErrorState, RequireRiot, withToast } from '../ui'
+import { FiClock, FiEdit3, FiLogOut, FiMessageSquare, FiUserPlus, FiUsers, FiX, FiCheck, FiUserX, FiSearch, FiPlus } from 'react-icons/fi'
+import { Page, Card, Heading, Button, Input, Toggle, Badge, Skeleton, Empty, ErrorState, RequireRiot, withToast, cx, Stagger, Item, FadeIn } from '../ui'
 import { invoke, useInvoke } from '../lib/ipc'
 import { useRiot } from '../lib/riot'
 import { navigate } from '../nav'
 import { RankIcon, PlayerCard, StatusDot } from './live/parts'
 import { queueName, STATE_LABEL } from './live/util'
 import { Conversations, ChatPanel } from './friends/Chat'
-
-const cx = (...c) => c.filter(Boolean).join(' ')
+import { ListLabel, ListRow, Pane, SearchField, SPLIT_BODY, SplitView } from './friends/Layout'
 
 function statusLine(f) {
   const s = f.status
@@ -23,81 +22,114 @@ function statusLine(f) {
   }
 }
 
-function FriendRow({ f, i, canInvite, onInvite, onChat, chatOpen }) {
-  const s = f.status
-  const val = f.product === 'valorant'
+// Quick actions for one friend (row hover and the chat header).
+function FriendActions({ f, canInvite, onInvite, onChat }) {
+  const b = 'w-8 h-8 rounded-full flex items-center justify-center text-muted hover:text-text hover:bg-surface-2 transition-colors disabled:opacity-40 disabled:pointer-events-none'
   return (
-    <div onClick={() => onChat(f)} style={{ '--i': i }}
-      className={cx('group anim-rise flex items-center gap-3.5 rounded-xl border px-3.5 py-3 cursor-pointer transition-all duration-200',
-        chatOpen ? 'accent-soft border-transparent' : 'glass hover:border-accent/40 hover:bg-surface-2', !f.online && !chatOpen && 'opacity-60 hover:opacity-100')}>
-      <div className='relative'>
-        <PlayerCard id={s.card} name={f.gameName} size={42} />
-        {f.online && <StatusDot state={s.state} className='absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5' />}
-      </div>
-      <div className='min-w-0 flex-1'>
-        <div className='flex items-baseline gap-1.5 truncate'>
-          <span className='text-[14px] font-semibold tracking-tight text-text truncate'>{f.gameName}</span>
-          <span className='text-[11px] text-muted'>#{f.tagLine}</span>
-          {f.spectre && <Badge tone='accent' className='!h-4 !px-1.5 !text-[9px] self-center'>Spectre</Badge>}
-          {f.note && <span className='text-[11px] text-accent/80 truncate'>· {f.note}</span>}
-        </div>
-        <div className='text-[12px] text-muted truncate mt-0.5'>{statusLine(f)}</div>
-      </div>
-      {val && s.partySize > 1 && <Badge><FiUsers /> {s.partySize}/{s.maxPartySize}</Badge>}
-      {val && s.level != null && <span className='hidden xl:block text-[11px] text-muted w-10 text-right tabular-nums'>Lv {s.level}</span>}
-      {val && <RankIcon tier={s.rank} size={30} />}
-      <div className='flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity' onClick={e => e.stopPropagation()}>
-        <Button variant='ghost' size='sm' className='!px-2' title='Message' onClick={() => onChat(f)}><FiMessageSquare /></Button>
-        <Button variant='ghost' size='sm' className='!px-2' title='Invite to party' disabled={!canInvite || !f.online} onClick={() => onInvite(f)}><FiUserPlus /></Button>
-        <Button variant='ghost' size='sm' className='!px-2' title='Match history' onClick={() => navigate('history', { puuid: f.puuid })}><FiClock /></Button>
-        <Button variant='ghost' size='sm' className='!px-2' title='Add note' onClick={() => navigate('memo', { puuid: f.puuid, name: `${f.gameName}#${f.tagLine}` })}><FiEdit3 /></Button>
-      </div>
+    <div className='flex items-center gap-0.5' onClick={e => e.stopPropagation()}>
+      {onChat && <button className={b} title='Message' onClick={() => onChat(f)}><FiMessageSquare size={14} /></button>}
+      <button className={b} title='Invite to party' disabled={!canInvite || !f.online} onClick={() => onInvite(f)}><FiUserPlus size={14} /></button>
+      <button className={b} title='Match history' onClick={() => navigate('history', { puuid: f.puuid })}><FiClock size={14} /></button>
+      <button className={b} title='Add note' onClick={() => navigate('memo', { puuid: f.puuid, name: `${f.gameName}#${f.tagLine}` })}><FiEdit3 size={14} /></button>
     </div>
   )
 }
 
-function Group({ title, items, chatPuuid, ...rest }) {
+function FriendRow({ f, index, canInvite, onInvite, onChat, chatOpen }) {
+  const s = f.status
+  const val = f.product === 'valorant'
+  return (
+    <Item index={index}>
+      <ListRow selected={chatOpen} layoutId='squad-friend' onClick={() => onChat(f)} dim={!f.online}>
+        <div className='relative shrink-0'>
+          <PlayerCard id={s.card} name={f.gameName} size={38} />
+          {f.online && <StatusDot state={s.state} className='absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5' />}
+        </div>
+        <div className='relative min-w-0 flex-1'>
+          <div className='flex items-baseline gap-1 truncate'>
+            <span className='text-[13.5px] font-semibold tracking-tight text-text truncate'>{f.gameName}</span>
+            <span className='text-[11px] text-muted'>#{f.tagLine}</span>
+            {f.spectre && <span className='self-center ml-1 w-1.5 h-1.5 rounded-full bg-accent shadow-[0_0_8px_rgb(var(--accent))]' title='Uses Spectre' />}
+          </div>
+          <div className='text-[11.5px] text-muted truncate mt-0.5'>{f.note ? <span className='text-accent/90'>{f.note} · </span> : null}{statusLine(f)}</div>
+        </div>
+        <div className='relative flex items-center gap-2 shrink-0 group-hover:opacity-0 transition-opacity'>
+          {val && s.partySize > 1 && <span className='text-[10.5px] font-semibold text-muted tabular-nums inline-flex items-center gap-1'><FiUsers size={11} />{s.partySize}</span>}
+          {val && <RankIcon tier={s.rank} size={26} />}
+        </div>
+        <div className='absolute right-1.5 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity glass-strong rounded-full px-0.5'>
+          <FriendActions f={f} canInvite={canInvite} onInvite={onInvite} />
+        </div>
+      </ListRow>
+    </Item>
+  )
+}
+
+function Group({ title, items, chatPuuid, offset = 0, ...rest }) {
   if (!items.length) return null
   return (
-    <section className='mb-7'>
-      <SectionTitle right={<span className='text-[11px] text-muted tabular-nums'>{items.length}</span>}>{title}</SectionTitle>
-      <div className='grid gap-2.5 stagger'>{items.map((f, i) => <FriendRow key={f.puuid} f={f} i={i} chatOpen={chatPuuid === f.puuid} {...rest} />)}</div>
-    </section>
+    <>
+      <ListLabel count={items.length}>{title}</ListLabel>
+      <Stagger className='flex flex-col gap-0.5'>
+        {items.map((f, i) => <FriendRow key={f.puuid} f={f} index={offset + i} chatOpen={chatPuuid === f.puuid} {...rest} />)}
+      </Stagger>
+    </>
   )
 }
 
 function PartyPanel({ party, loading, error, reload }) {
   const [busy, setBusy] = useState(false)
   const act = async (p, ok) => { setBusy(true); await withToast(p, ok); setBusy(false); reload(true) }
-  if (loading && !party) return <Card className='p-5'><Skeleton className='h-14 w-full rounded-xl' /></Card>
-  if (error && !party) return <Card className='p-5 text-[13px] text-muted'>Party unavailable. Open VALORANT to use parties.</Card>
-  if (!party) return <Card className='p-5'><Empty icon={FiUsers} title='No party' hint='Start VALORANT to get a party.' className='!py-6' /></Card>
+  if (loading && !party) return <Skeleton className='h-[260px] rounded-3xl' />
+  if (error && !party) return <Card className='p-6 rounded-3xl'><Empty icon={FiUsers} title='Party unavailable' hint='Open VALORANT to use parties.' className='!py-8' /></Card>
+  if (!party) return <Card className='p-6 rounded-3xl'><Empty icon={FiUsers} title='No party' hint='Start VALORANT to get a party.' className='!py-8' /></Card>
+  const queued = party.state === 'MATCHMAKING'
+  const slots = Math.max(5, party.members.length)
   return (
-    <Card className='p-5 anim-fade'>
-      <div className='flex items-center justify-between mb-4'>
-        <div className='flex items-center gap-2'>
-          <Badge tone={party.state === 'MATCHMAKING' ? 'warn' : 'neutral'}>{party.state === 'MATCHMAKING' ? 'In queue' : 'Lobby'}</Badge>
-          {party.queueId && <span className='text-[12px] text-muted'>{queueName(party.queueId)}</span>}
-        </div>
-        <span className='text-[11px] text-muted tabular-nums'>{party.members.length}/5</span>
-      </div>
-      <div className='grid gap-1.5 mb-4 stagger'>
-        {party.members.map((m, i) => (
-          <div key={m.puuid} className='anim-rise flex items-center gap-3 rounded-xl px-2 py-1.5 -mx-2 hover:bg-surface-2 transition-colors' style={{ '--i': i }}>
-            <PlayerCard id={m.card} name={m.hidden ? null : m.gameName} size={34} />
-            <div className='min-w-0 flex-1'>
-              <div className='text-[13px] font-semibold tracking-tight text-text truncate'>{m.hidden ? 'Hidden player' : m.gameName || '...'}{m.tagLine && <span className='text-[11px] text-muted font-normal'> #{m.tagLine}</span>}</div>
-              <div className='text-[11px] text-muted'>{m.owner ? 'Leader' : 'Member'}{m.level != null && ` · Lv ${m.level}`}{m.self && ' · You'}</div>
-            </div>
-            <RankIcon tier={m.rank} size={26} />
-            {party.iOwn && !m.self && <Button variant='ghost' size='sm' className='!px-2' title='Kick' disabled={busy} onClick={() => act(invoke('social:partyRemove', m.puuid), 'Removed from party')}><FiUserX /></Button>}
+    <Card className='relative overflow-hidden p-6 rounded-3xl'>
+      <span className='halo -top-32 -left-24 w-96 h-96 opacity-70' />
+      <div className='relative flex items-start justify-between gap-4 mb-6'>
+        <div>
+          <div className='eyebrow mb-2'>Your party</div>
+          <div className='flex items-baseline gap-3'>
+            <span className='display text-[30px]'>{queued ? 'In queue' : 'Lobby'}</span>
+            {party.queueId && <span className='text-[13px] text-muted'>{queueName(party.queueId)}</span>}
           </div>
-        ))}
+        </div>
+        <div className='flex items-center gap-2'>
+          <Badge tone={queued ? 'warn' : 'neutral'}>{party.members.length}/5</Badge>
+          {party.open && <Badge tone='good'>Open</Badge>}
+        </div>
       </div>
-      <div className='border-t border-line pt-4 flex items-center justify-between gap-3'>
-        <Toggle checked={party.open} disabled={!party.iOwn || busy} label='Open party' hint={party.iOwn ? 'Friends can join freely' : 'Only the leader can change this'}
-          onChange={v => act(invoke('social:partyAccess', v), v ? 'Party opened' : 'Party closed')} />
-        {party.members.length > 1 && <Button variant='danger' size='sm' icon={FiLogOut} disabled={busy} onClick={() => act(invoke('social:partyRemove', party.members.find(m => m.self).puuid), 'Left party')}>Leave</Button>}
+      <Stagger className='relative grid grid-cols-5 gap-3'>
+        {Array.from({ length: slots }, (_, i) => {
+          const mem = party.members[i]
+          if (!mem) return (
+            <Item key={'empty' + i} index={i} className='glass-inset rounded-2xl h-[148px] flex flex-col items-center justify-center gap-2 text-muted'>
+              <span className='w-10 h-10 rounded-full border border-dashed border-line flex items-center justify-center'><FiPlus size={14} /></span>
+              <span className='text-[11px] font-medium'>Open slot</span>
+            </Item>
+          )
+          return (
+            <Item key={mem.puuid} index={i} className={cx('group relative rounded-2xl h-[148px] px-3 pt-4 pb-3 flex flex-col items-center text-center', mem.self ? 'accent-soft' : 'glass')}>
+              <PlayerCard id={mem.card} name={mem.hidden ? null : mem.gameName} size={46} />
+              <div className='mt-2.5 w-full text-[12.5px] font-semibold tracking-tight text-text truncate'>{mem.hidden ? 'Hidden player' : mem.gameName || '...'}</div>
+              <div className='text-[10.5px] text-muted truncate w-full'>{mem.owner ? 'Leader' : 'Member'}{mem.level != null && ` · Lv ${mem.level}`}</div>
+              <div className='mt-auto'><RankIcon tier={mem.rank} size={24} /></div>
+              {party.iOwn && !mem.self && (
+                <button title='Kick' disabled={busy} onClick={() => act(invoke('social:partyRemove', mem.puuid), 'Removed from party')}
+                  className='absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center text-muted opacity-0 group-hover:opacity-100 hover:text-bad hover:bg-bad/15 transition-all'><FiUserX size={13} /></button>
+              )}
+            </Item>
+          )
+        })}
+      </Stagger>
+      <div className='relative mt-6 pt-5 border-t border-line flex items-center justify-between gap-6'>
+        <div className='flex-1 max-w-sm'>
+          <Toggle checked={party.open} disabled={!party.iOwn || busy} label='Open party' hint={party.iOwn ? 'Friends can join freely' : 'Only the leader can change this'}
+            onChange={v => act(invoke('social:partyAccess', v), v ? 'Party opened' : 'Party closed')} />
+        </div>
+        {party.members.length > 1 && <Button variant='danger' size='sm' icon={FiLogOut} disabled={busy} onClick={() => act(invoke('social:partyRemove', party.members.find(m => m.self).puuid), 'Left party')}>Leave party</Button>}
       </div>
     </Card>
   )
@@ -105,31 +137,33 @@ function PartyPanel({ party, loading, error, reload }) {
 
 function Requests({ data, reload }) {
   const [busy, setBusy] = useState('')
-  if (!data || (!data.incoming.length && !data.outgoing.length)) return null
+  const empty = !data || (!data.incoming.length && !data.outgoing.length)
   const run = async (key, channel, puuid, ok) => { setBusy(key); await withToast(invoke(channel, puuid), ok); setBusy(''); reload(true) }
   const Row = ({ r, children }) => (
-    <div className='anim-rise flex items-center gap-2 rounded-xl px-2 py-1.5 -mx-2 hover:bg-surface-2 transition-colors'>
+    <div className='flex items-center gap-2 rounded-xl px-2.5 py-2 -mx-1 hover:bg-surface-2/70 transition-colors'>
       <div className='min-w-0 flex-1 text-[13px] font-medium text-text truncate'>{r.gameName}<span className='text-[11px] text-muted'> #{r.tagLine}</span></div>
       {children}
     </div>
   )
   return (
-    <Card className='p-5 anim-fade'>
-      <SectionTitle>Friend requests</SectionTitle>
-      <div className='max-h-60 overflow-y-auto pr-1'>
-        {data.incoming.map(r => (
-          <Row key={r.puuid} r={r}>
-            <Button size='sm' variant='subtle' className='!px-2' title='Accept' loading={busy === 'a' + r.puuid} onClick={() => run('a' + r.puuid, 'social:acceptRequest', r.puuid, 'Friend added')}><FiCheck /></Button>
-            <Button size='sm' variant='ghost' className='!px-2' title='Decline' loading={busy === 'd' + r.puuid} onClick={() => run('d' + r.puuid, 'social:declineRequest', r.puuid, 'Declined')}><FiX /></Button>
-          </Row>
-        ))}
-        {data.outgoing.map(r => (
-          <Row key={r.puuid} r={r}>
-            <Badge>Sent</Badge>
-            <Button size='sm' variant='ghost' className='!px-2' title='Cancel' loading={busy === 'c' + r.puuid} onClick={() => run('c' + r.puuid, 'social:cancelRequest', r.puuid, 'Request cancelled')}><FiX /></Button>
-          </Row>
-        ))}
-      </div>
+    <Card className='p-5 rounded-3xl h-full'>
+      <Heading hint={empty ? 'Nothing pending' : `${data.incoming.length} incoming · ${data.outgoing.length} sent`}>Requests</Heading>
+      {!empty && (
+        <div className='max-h-60 overflow-y-auto -mr-2 pr-2'>
+          {data.incoming.map(r => (
+            <Row key={r.puuid} r={r}>
+              <Button size='icon' variant='glow' className='!w-8 !h-8' title='Accept' loading={busy === 'a' + r.puuid} onClick={() => run('a' + r.puuid, 'social:acceptRequest', r.puuid, 'Friend added')}><FiCheck /></Button>
+              <Button size='icon' variant='ghost' className='!w-8 !h-8' title='Decline' loading={busy === 'd' + r.puuid} onClick={() => run('d' + r.puuid, 'social:declineRequest', r.puuid, 'Declined')}><FiX /></Button>
+            </Row>
+          ))}
+          {data.outgoing.map(r => (
+            <Row key={r.puuid} r={r}>
+              <Badge>Sent</Badge>
+              <Button size='icon' variant='ghost' className='!w-8 !h-8' title='Cancel' loading={busy === 'c' + r.puuid} onClick={() => run('c' + r.puuid, 'social:cancelRequest', r.puuid, 'Request cancelled')}><FiX /></Button>
+            </Row>
+          ))}
+        </div>
+      )}
     </Card>
   )
 }
@@ -147,10 +181,10 @@ function AddFriend({ onDone }) {
     if (ok) { setId(''); onDone() }
   }
   return (
-    <Card className='p-5'>
-      <SectionTitle>Add friend</SectionTitle>
+    <Card className='p-5 rounded-3xl h-full'>
+      <Heading hint='Send a request by Riot ID'>Add a friend</Heading>
       <form onSubmit={submit} className='flex gap-2'>
-        <Input value={id} onChange={e => setId(e.target.value)} placeholder='Name#Tag' />
+        <Input value={id} onChange={e => setId(e.target.value)} placeholder='Name#Tag' className='!rounded-full' />
         <Button type='submit' variant='primary' icon={FiUserPlus} loading={busy} disabled={!id.includes('#')}>Add</Button>
       </form>
     </Card>
@@ -189,41 +223,45 @@ function FriendsBody({ active }) {
   const canInvite = !!party.data
   const invite = f => withToast(invoke('social:invite', f.gameName, f.tagLine), `Invited ${f.gameName}`)
   const online = groups.valorant.length + groups.elsewhere.length
+  const pending = requests.data?.incoming?.length || 0
+  const chatFriend = chat && byPuuid[chat.puuid]
+  const shared = { canInvite, onInvite: invite, onChat: chatWith, chatPuuid: chat?.puuid }
+
+  const list = (
+    <Pane title='Friends' right={friends.data && <span className='text-[11px] font-semibold text-muted tabular-nums'><span className='text-good'>{online}</span> / {friends.data.length}</span>}
+      header={<SearchField value={q} onChange={setQ} placeholder='Search friends or notes' />}>
+      {friends.loading && !friends.data ? (
+        <div className='flex flex-col gap-1.5 p-1'>{Array.from({ length: 8 }, (_, i) => <Skeleton key={i} className='h-[54px] rounded-2xl' />)}</div>
+      ) : friends.error && !friends.data ? <ErrorState error={friends.error} onRetry={friends.reload} />
+        : !friends.data?.length ? <Empty icon={FiUsers} title='No friends yet' hint='Add a friend by Riot ID.' />
+          : !(online || groups.offline.length) ? <Empty icon={FiSearch} title='No matches' hint='Try a different name or note.' />
+            : <>
+              {!q && <Conversations convs={convs.data} friends={byPuuid} selected={chat?.cid} onOpen={openChat} />}
+              <Group title='In VALORANT' items={groups.valorant} {...shared} />
+              <Group title='Elsewhere' items={groups.elsewhere} offset={groups.valorant.length} {...shared} />
+              <Group title='Offline' items={groups.offline} offset={online} {...shared} />
+            </>}
+    </Pane>
+  )
 
   return (
-    <Page title='Friends' subtitle={friends.data ? `${online} online of ${friends.data.length}` : 'Your Riot friends and party'}>
-      <div className={cx('grid gap-6 items-start', chat ? 'lg:grid-cols-[1fr_420px]' : 'lg:grid-cols-[1fr_330px]')}>
-        <div className='min-w-0'>
-          <div className='relative mb-5'>
-            <FiSearch className='absolute left-3.5 top-1/2 -translate-y-1/2 text-muted pointer-events-none z-10' />
-            <Input value={q} onChange={e => setQ(e.target.value)} placeholder='Search friends or notes' className='!pl-10 !h-10 !rounded-full' />
-          </div>
-          {friends.loading && !friends.data ? (
-            <div className='grid gap-2.5'>{Array.from({ length: 7 }, (_, i) => <Skeleton key={i} className='h-[66px] rounded-xl' />)}</div>
-          ) : friends.error && !friends.data ? <ErrorState error={friends.error} onRetry={friends.reload} />
-            : !friends.data?.length ? <Empty icon={FiUsers} title='No friends yet' hint='Add a friend by Riot ID on the right.' />
-              : !(online || groups.offline.length) ? <Empty icon={FiSearch} title='No matches' hint='Try a different name or note.' />
-                : <>
-                  {!q && <Conversations convs={convs.data} friends={byPuuid} selected={chat?.cid} onOpen={openChat} />}
-                  <Group title='Online in VALORANT' items={groups.valorant} canInvite={canInvite} onInvite={invite} onChat={chatWith} chatPuuid={chat?.puuid} />
-                  <Group title='Online elsewhere' items={groups.elsewhere} canInvite={canInvite} onInvite={invite} onChat={chatWith} chatPuuid={chat?.puuid} />
-                  <Group title='Offline' items={groups.offline} canInvite={canInvite} onInvite={invite} onChat={chatWith} chatPuuid={chat?.puuid} />
-                </>}
-        </div>
+    <Page title='Friends' subtitle={friends.data ? `${online} online of ${friends.data.length}${pending ? ` · ${pending} new ${pending === 1 ? 'request' : 'requests'}` : ''}` : 'Your Riot friends and party'}
+      bodyClassName={SPLIT_BODY}>
+      <SplitView list={list}>
         {chat ? (
-          <div className='lg:sticky lg:top-0'>
-            <ChatPanel key={chat.cid} cid={chat.cid} friend={byPuuid[chat.puuid]} statusLine={statusLine} active={active}
-              onClose={() => setChat(null)} onSent={() => convs.reload(true)} />
-          </div>
-        ) : <div className='grid gap-5 lg:sticky lg:top-0'>
-          <div>
-            <SectionTitle>Party</SectionTitle>
+          <ChatPanel key={chat.cid} cid={chat.cid} friend={chatFriend} statusLine={statusLine} active={active}
+            actions={chatFriend && <FriendActions f={chatFriend} canInvite={canInvite} onInvite={invite} />}
+            onClose={() => setChat(null)} onSent={() => convs.reload(true)} />
+        ) : (
+          <FadeIn className='flex flex-col gap-5'>
             <PartyPanel party={party.data} loading={party.loading} error={party.error} reload={party.reload} />
-          </div>
-          <AddFriend onDone={requests.reload} />
-          <Requests data={requests.data} reload={requests.reload} />
-        </div>}
-      </div>
+            <div className='grid grid-cols-1 xl:grid-cols-2 gap-5'>
+              <AddFriend onDone={requests.reload} />
+              <Requests data={requests.data} reload={requests.reload} />
+            </div>
+          </FadeIn>
+        )}
+      </SplitView>
     </Page>
   )
 }
