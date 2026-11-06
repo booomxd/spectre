@@ -1,4 +1,15 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Rajdhani:wght@600;700&display=swap');
+/* Inter is bundled (no Google Fonts call). It is registered as "Inter" so the font stack below stays exactly as before:
+   SF Pro when installed, then -apple-system, then Inter, then Segoe UI. Latin + Latin Ext cover every UI string. */
+@font-face {
+  font-family: 'Inter'; font-style: normal; font-display: swap; font-weight: 100 900;
+  src: url('@fontsource-variable/inter/files/inter-latin-wght-normal.woff2') format('woff2-variations');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Inter'; font-style: normal; font-display: swap; font-weight: 100 900;
+  src: url('@fontsource-variable/inter/files/inter-latin-ext-wght-normal.woff2') format('woff2-variations');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -24,6 +35,10 @@
   --bad: 248 113 113;
   --warn: 250 204 21;
   --orb-1: 255 70 85;  --orb-2: 255 140 120;  --orb-3: 70 60 160;  --orb-a: 0.32;
+  --glow-a: 0.55;            /* strength of accent glows (halo behind active pills, primary buttons) */
+  --noise-a: 0.045;          /* film-grain overlay on the backdrop */
+  --grid-a: 0.04;            /* faint backdrop grid */
+  --scrim: 0 0 0;            --scrim-a: 0.5;  /* modal / palette dim */
   color-scheme: dark;
 }
 [data-theme='onyx']     { --bg: 5 5 6;    --panel: 20 20 22; --accent: 235 235 240; --accent-2: 160 160 170; --orb-1: 120 120 135; --orb-2: 70 70 80;    --orb-3: 40 40 50;   --orb-a: 0.28; --muted: 145 145 155; }
@@ -52,73 +67,132 @@
   --bad: 220 38 38;
   --warn: 202 138 4;
   --orb-1: 140 130 255; --orb-2: 240 140 255; --orb-3: 80 200 255; --orb-a: 0.45;
+  --glow-a: 0.32;
+  --noise-a: 0.06;
+  --grid-a: 0.05;
+  --scrim: 30 32 60;         --scrim-a: 0.22;
   color-scheme: light;
+}
+
+:root {
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --font-ui: "SF Pro Text", "SF Pro Display", "SF Pro", -apple-system, BlinkMacSystemFont, Inter, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
 }
 
 * { box-sizing: border-box; user-select: none; }
 html, body, #root { height: 100%; margin: 0; overflow: hidden; }
 body {
-  font-family: "SF Pro Text", "SF Pro Display", "SF Pro", -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  font-family: var(--font-ui);
   background: rgb(var(--bg)); color: rgb(var(--text));
   -webkit-font-smoothing: antialiased; font-feature-settings: "cv11", "ss01";
+  text-rendering: optimizeLegibility;
 }
 input, textarea, select { user-select: text; font-family: inherit; }
 img { object-fit: contain; -webkit-user-drag: none; }
 ::selection { background: rgb(var(--accent) / 0.35); }
+button:focus-visible, a:focus-visible, [role='tab']:focus-visible { outline: 2px solid rgb(var(--accent) / 0.65); outline-offset: 2px; }
 
 .drag { -webkit-app-region: drag; }
 .no-drag, button, input, select, textarea, a { -webkit-app-region: no-drag; }
-/* Headings and numbers: SF Pro Display when installed, Inter otherwise. */
-.font-display { font-family: "SF Pro Display", "SF Pro", -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI Variable Display", "Segoe UI", sans-serif; letter-spacing: -0.015em; }
-/* The SPECTRE wordmark only. */
-.font-brand { font-family: 'Rajdhani', sans-serif; letter-spacing: 0.14em; }
 
-/* App backdrop: slow-drifting color orbs under a faint grid. Rendered once by the shell. */
-.backdrop { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; background: rgb(var(--bg)); }
+/* Type. One family everywhere (the stack above); headings are the same font, heavier and tighter.
+   .font-display  numbers and headings: tight tracking
+   .display       big page / hero titles
+   .font-brand    the SPECTRE wordmark (wide tracked caps)
+   .eyebrow       small caps label above a title or a group */
+.font-display { font-family: var(--font-ui); letter-spacing: -0.022em; font-feature-settings: "cv11", "ss01", "tnum"; }
+.display { font-family: var(--font-ui); font-weight: 750; letter-spacing: -0.038em; line-height: 0.98; }
+.font-brand { font-family: var(--font-ui); font-weight: 800; letter-spacing: 0.22em; text-transform: uppercase; }
+.eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: rgb(var(--muted)); }
+.text-grad { background: linear-gradient(120deg, rgb(var(--text)) 20%, rgb(var(--accent-2)) 60%, rgb(var(--accent)) 95%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+/* App backdrop, rendered once by the shell: one GPU layer of soft color fields (no blur filter), a faint grid that
+   fades from the top, and a static grain. Only the field layer moves, by transform. */
+.backdrop { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; background: rgb(var(--bg)); contain: strict; }
+.backdrop-fields {
+  position: absolute; inset: -25%;
+  background:
+    radial-gradient(38% 34% at 22% 18%, rgb(var(--orb-1) / var(--orb-a)), transparent 70%),
+    radial-gradient(30% 30% at 82% 38%, rgb(var(--orb-2) / calc(var(--orb-a) * 0.55)), transparent 70%),
+    radial-gradient(40% 36% at 50% 92%, rgb(var(--orb-3) / calc(var(--orb-a) * 0.85)), transparent 72%);
+  will-change: transform; transform: translate3d(0, 0, 0);
+  animation: fields 46s ease-in-out infinite alternate;
+}
+@keyframes fields {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  50%  { transform: translate3d(4%, 3%, 0) scale(1.06); }
+  100% { transform: translate3d(-3%, 5%, 0) scale(0.97); }
+}
 .backdrop::after {
   content: ""; position: absolute; inset: 0;
-  background-image: linear-gradient(rgb(var(--line) / 0.035) 1px, transparent 1px), linear-gradient(90deg, rgb(var(--line) / 0.035) 1px, transparent 1px);
-  background-size: 56px 56px;
-  -webkit-mask-image: radial-gradient(ellipse 75% 60% at 60% 0%, #000 15%, transparent 75%);
+  background-image: linear-gradient(rgb(var(--line) / var(--grid-a)) 1px, transparent 1px), linear-gradient(90deg, rgb(var(--line) / var(--grid-a)) 1px, transparent 1px);
+  background-size: 64px 64px;
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 20%, transparent 75%);
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 20%, transparent 75%);
 }
-.orb { position: absolute; border-radius: 50%; filter: blur(110px); will-change: transform; transition: background-color 0.8s ease; }
-.orb-1 { width: 46vmax; height: 46vmax; left: -10vmax; top: -22vmax; background: rgb(var(--orb-1) / var(--orb-a)); animation: drift-1 28s ease-in-out infinite alternate; }
-.orb-2 { width: 36vmax; height: 36vmax; right: -12vmax; top: 18vh; background: rgb(var(--orb-2) / calc(var(--orb-a) * 0.6)); animation: drift-2 34s ease-in-out infinite alternate; }
-.orb-3 { width: 42vmax; height: 42vmax; left: 22vw; bottom: -30vmax; background: rgb(var(--orb-3) / calc(var(--orb-a) * 0.9)); animation: drift-3 40s ease-in-out infinite alternate; }
-@keyframes drift-1 { to { transform: translate(16vw, 12vh) scale(1.08); } }
-@keyframes drift-2 { to { transform: translate(-14vw, 20vh) scale(0.92); } }
-@keyframes drift-3 { to { transform: translate(-10vw, -16vh) scale(1.12); } }
+.backdrop::before {
+  content: ""; position: absolute; inset: 0; z-index: 1; opacity: var(--noise-a);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+[data-theme='pearl'] .backdrop::before { filter: invert(1); }
 
-/* Glass surfaces.
-   .glass        translucent panel with a hairline border and top highlight (cards, rows, tiles)
-   .glass-strong denser, blurred panel for things that float over content (sidebar, modals, drawers, menus, toasts)
-   .glass-field  form controls */
+/* Surfaces.
+   .glass         card / tile: translucent fill, hairline border, 1px inner top highlight, layered soft shadow. No blur
+                  (the backdrop is already soft), so lists of cards stay cheap.
+   .glass-strong  floating chrome (dock, modals, palette, menus, toasts): denser fill + backdrop blur. Never nest it.
+   .glass-blur    opt-in blur for a single hero card that sits over busy art.
+   .glass-field   form controls
+   .glass-inset   recessed well inside a card (stat strips, code, empty slots) */
 .glass {
-  background: linear-gradient(180deg, rgb(var(--surface) / calc(var(--surface-a) * 1.5)), rgb(var(--surface) / calc(var(--surface-a) * 0.6)));
+  background: linear-gradient(180deg, rgb(var(--surface) / calc(var(--surface-a) * 1.7)), rgb(var(--surface) / calc(var(--surface-a) * 0.6)));
   border: 1px solid rgb(var(--line) / var(--line-a));
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / var(--hi-a)), 0 18px 40px -30px rgb(0 0 0 / var(--shadow-a));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / var(--hi-a)),
+    0 1px 2px rgb(0 0 0 / calc(var(--shadow-a) * 0.18)),
+    0 12px 28px -18px rgb(0 0 0 / calc(var(--shadow-a) * 0.7)),
+    0 36px 80px -52px rgb(0 0 0 / var(--shadow-a));
 }
 .glass-strong {
-  background: linear-gradient(180deg, rgb(var(--panel) / 0.78), rgb(var(--panel) / 0.68));
-  border: 1px solid rgb(var(--line) / calc(var(--line-a) * 1.3));
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / var(--hi-a)), 0 30px 70px -30px rgb(0 0 0 / var(--shadow-a));
-  -webkit-backdrop-filter: blur(28px) saturate(170%); backdrop-filter: blur(28px) saturate(170%);
+  background: linear-gradient(180deg, rgb(var(--panel) / 0.8), rgb(var(--panel) / 0.7));
+  border: 1px solid rgb(var(--line) / calc(var(--line-a) * 1.35));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / var(--hi-a)),
+    0 2px 6px rgb(0 0 0 / calc(var(--shadow-a) * 0.2)),
+    0 24px 60px -24px rgb(0 0 0 / var(--shadow-a));
+  -webkit-backdrop-filter: blur(24px) saturate(170%); backdrop-filter: blur(24px) saturate(170%);
 }
+.glass-blur { -webkit-backdrop-filter: blur(18px) saturate(150%); backdrop-filter: blur(18px) saturate(150%); }
 .glass-field {
   background: rgb(var(--surface-2) / var(--surface-2-a));
   border: 1px solid rgb(var(--line) / var(--line-a));
-  box-shadow: inset 0 1px 2px rgb(0 0 0 / calc(var(--shadow-a) * 0.25));
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / calc(var(--shadow-a) * 0.22));
 }
-.glass-field:focus, .glass-field:focus-within { border-color: rgb(var(--accent) / 0.6); box-shadow: 0 0 0 3px rgb(var(--accent) / 0.16); }
-/* Accent fill for primary actions and selected states. */
+.glass-field:focus, .glass-field:focus-within { border-color: rgb(var(--accent) / 0.6); box-shadow: 0 0 0 4px rgb(var(--accent) / 0.14); }
+.glass-inset { background: rgb(var(--line) / calc(var(--line-a) * 0.35)); border: 1px solid rgb(var(--line) / calc(var(--line-a) * 0.7)); box-shadow: inset 0 1px 3px rgb(0 0 0 / calc(var(--shadow-a) * 0.18)); }
+/* Hairline divider that fades at both ends. */
+.hairline { height: 1px; background: linear-gradient(90deg, transparent, rgb(var(--line) / calc(var(--line-a) * 1.6)), transparent); }
+
+/* Accent. Glows instead of filled blocks: .accent-soft is the default "selected" look, .accent-fill is kept for the one
+   primary action per view. */
 .accent-fill {
   background: linear-gradient(135deg, rgb(var(--accent)), rgb(var(--accent-2)));
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35), 0 8px 24px -10px rgb(var(--accent) / 0.75);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35), 0 0 0 1px rgb(var(--accent) / 0.25), 0 10px 30px -10px rgb(var(--accent) / var(--glow-a));
 }
+.accent-soft {
+  background: rgb(var(--accent) / 0.13);
+  box-shadow: inset 0 0 0 1px rgb(var(--accent) / 0.3), inset 0 1px 0 rgb(255 255 255 / 0.08), 0 0 22px -8px rgb(var(--accent) / var(--glow-a));
+}
+.accent-glow { box-shadow: 0 0 0 1px rgb(var(--accent) / 0.35), 0 10px 40px -10px rgb(var(--accent) / var(--glow-a)); }
+/* Soft accent halo behind an element (absolute, put inside a relative parent). */
+.halo { position: absolute; pointer-events: none; border-radius: 9999px; background: radial-gradient(closest-side, rgb(var(--accent) / calc(var(--glow-a) * 0.6)), transparent); }
 /* White single-color game icons (currencies) turn dark on light themes. */
 [data-theme='pearl'] .mono-icon { filter: invert(1) brightness(0.35); }
-/* Selected item (nav row, tab, chip): soft accent tint with an accent hairline. */
-.accent-soft { background: rgb(var(--accent) / 0.14); box-shadow: inset 0 0 0 1px rgb(var(--accent) / 0.3), inset 0 1px 0 rgb(255 255 255 / 0.08); }
+
+.kbd { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 6px; font-size: 11px; font-weight: 600; color: rgb(var(--muted)); background: rgb(var(--surface-2) / var(--surface-2-a)); border: 1px solid rgb(var(--line) / var(--line-a)); border-bottom-width: 2px; }
+
+/* Bento grid: 12 columns, dense packing. Children use col-span-* / row-span-*. */
+.bento { display: grid; gap: 16px; grid-template-columns: repeat(12, minmax(0, 1fr)); grid-auto-flow: dense; }
 
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -126,30 +200,44 @@ img { object-fit: contain; -webkit-user-drag: none; }
 ::-webkit-scrollbar-thumb:hover { background: rgb(var(--line) / 0.26); background-clip: padding-box; }
 ::-webkit-scrollbar-corner { background: transparent; }
 
-/* Motion. Pages, cards and lists use these; prefers-reduced-motion turns them off. */
-@keyframes page-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+/* CSS motion (for simple cases; React components use the helpers in src/ui/motion.jsx).
+   Only transform and opacity animate. Reduced motion (OS setting or Settings > Appearance) turns all of it off. */
+@keyframes page-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 @keyframes rise { from { opacity: 0; transform: translateY(8px) scale(0.985); } to { opacity: 1; transform: none; } }
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
-@keyframes shimmer { from { background-position: -400px 0; } to { background-position: 400px 0; } }
+@keyframes shimmer { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
 @keyframes pop { 0% { transform: scale(0.96); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
 @keyframes slide-in { from { opacity: 0; transform: translateX(32px); } to { opacity: 1; transform: none; } }
 
-.anim-page { animation: page-in 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
-.anim-rise { animation: rise 0.36s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
-.anim-fade { animation: fade 0.25s ease both; }
-.anim-pop { animation: pop 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.anim-page { animation: page-in 0.22s var(--ease-out) both; }
+.anim-rise { animation: rise 0.34s var(--ease-out) both; }
+.anim-fade { animation: fade 0.22s ease both; }
+.anim-pop { animation: pop 0.22s var(--ease-out) both; }
 .anim-pulse { animation: pulse-dot 1.6s ease-in-out infinite; }
-.anim-slide { animation: slide-in 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
-/* Stagger children: give each child style={{ '--i': index }}. */
-.stagger > * { animation: rise 0.36s cubic-bezier(0.2, 0.8, 0.2, 1) both; animation-delay: calc(var(--i, 0) * 35ms); }
-.skeleton {
-  background: linear-gradient(90deg, rgb(var(--line) / 0.05) 0%, rgb(var(--line) / 0.11) 50%, rgb(var(--line) / 0.05) 100%);
-  background-size: 800px 100%; animation: shimmer 1.2s linear infinite; border-radius: 10px;
+.anim-slide { animation: slide-in 0.28s var(--ease-out) both; }
+/* Stagger children: give each child style={{ '--i': index }}. Only the first 12 animate. */
+.stagger > * { animation: rise 0.34s var(--ease-out) both; animation-delay: calc(min(var(--i, 0), 12) * 32ms); }
+.stagger > *:nth-child(n+13) { animation: none; }
+/* Shimmer runs on a pseudo-element by transform (no background-position repaint). */
+.skeleton { position: relative; overflow: hidden; border-radius: 12px; background: rgb(var(--line) / 0.06); }
+.skeleton::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgb(var(--line) / 0.08), transparent); animation: shimmer 1.3s linear infinite; }
+.lift { transition: transform 0.25s var(--ease-out), border-color 0.2s ease, box-shadow 0.3s ease; }
+.lift:hover {
+  transform: translateY(-2px); border-color: rgb(var(--accent) / 0.35);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / var(--hi-a)), 0 0 0 1px rgb(var(--accent) / 0.12), 0 18px 44px -18px rgb(var(--accent) / calc(var(--glow-a) * 0.8));
 }
-.lift { transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.25s ease; }
-.lift:hover { transform: translateY(-2px); border-color: rgb(var(--accent) / 0.4); box-shadow: inset 0 1px 0 rgb(255 255 255 / var(--hi-a)), 0 14px 34px -16px rgb(var(--accent) / 0.45); }
+/* Pointer spotlight (cards with .spot): the shell sets --mx / --my on hover. */
+.spot { position: relative; }
+.spot::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity 0.3s ease;
+  background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 0%), rgb(var(--accent) / 0.09), transparent 45%);
+}
+.spot:hover::before { opacity: 1; }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: 0.01ms !important; animation-delay: 0ms !important; transition-duration: 0.01ms !important; }
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; animation-delay: 0ms !important; transition-duration: 0.01ms !important; }
+}
+html[data-reduce-motion] *, html[data-reduce-motion] *::before, html[data-reduce-motion] *::after {
+  animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; animation-delay: 0ms !important; transition-duration: 0.01ms !important;
 }

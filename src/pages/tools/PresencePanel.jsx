@@ -58,8 +58,12 @@ export function PresencePanel({ presence, draft = {} }) {
   const hasPremier = pr.rosterName || pr.rosterTag
   const overrideCount = Object.keys(data?.overrides || {}).length
 
-  const toggleKeep = async v => { setKeep(v); await withToast(invoke('tools:keep', v)) }
-  const reset = () => withToast(invoke('tools:reset'), 'Overrides cleared. Your real profile returns on the next game state change').then(() => presence.reload(true))
+  const toggleKeep = async v => {
+    setKeep(v)
+    await withToast(invoke('tools:keep', v), v ? undefined : 'Real profile restored')
+    if (!v) presence.reload(true)
+  }
+  const reset = () => withToast(invoke('tools:reset'), 'Real profile restored').then(() => presence.reload(true))
 
   return (
     <div className='space-y-4 sticky top-0'>

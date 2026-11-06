@@ -7,6 +7,7 @@ use crate::core::{js, truthy, Args, Ctx, Registry};
 use base64::Engine;
 use once_cell::sync::Lazy;
 use serde_json::{json, Map, Value};
+use std::collections::BTreeMap;
 use std::sync::Mutex;
 
 /// `p.split('.').reduce((o, k) => o?.[k], obj)`: None is JS undefined (a null leaf is Some(Null)).
@@ -105,10 +106,52 @@ fn queue_time() -> String {
     format!("{}.{}.{}-{}.{}.{}", d.year(), pad(d.month()), pad(d.day()), pad(d.hour()), pad(d.minute()), pad(d.second()))
 }
 
-struct Tools { overrides: Map<String, Value>, keep: bool }
-static STATE: Lazy<Mutex<Tools>> = Lazy::new(|| Mutex::new(Tools { overrides: Map::new(), keep: true }));
+// `originals`: each overridden path's real value before Spectre first changed it (None = the game had no such key),
+// so Reset / Keep off can put the real profile back instead of waiting for the game's next state change.
+// `gen` is bumped on every set / reset / keep change; an apply that started earlier drops its PUT.
+struct Tools { overrides: Map<String, Value>, keep: bool, originals: BTreeMap<String, Option<Value>>, gen: u64 }
+static STATE: Lazy<Mutex<Tools>> = Lazy::new(|| Mutex::new(Tools { overrides: Map::new(), keep: true, originals: BTreeMap::new(), gen: 0 }));
+// Serializes presence writes (the 5 s tick, edits, restores). Async lock: it is held across the network calls.
+static APPLY: Lazy<tokio::sync::Mutex<()>> = Lazy::new(|| tokio::sync::Mutex::new(()));
 
 fn overrides() -> Value { Value::Object(STATE.lock().unwrap().overrides.clone()) }
+
+/// Removes what `set_path` would have written for `p` (same nested / top-level fallback).
+fn remove_path(obj: &mut Value, p: &str) {
+    let mut keys: Vec<&str> = p.split('.').collect();
+    let last = keys.pop().unwrap_or_default();
+    let nested = !keys.is_empty() && matches!(get_path_keys(obj, &keys), Some(Value::Object(_)));
+    let mut cur = Some(&mut *obj);
+    if nested {
+        for k in &keys { cur = match cur { Some(Value::Object(o)) => o.get_mut(*k), _ => None }; }
+    }
+    if let Some(Value::Object(o)) = cur { o.shift_remove(last); }
+}
+
+/// Records the real (pre-override) value of every path not recorded yet, from presence data not yet overridden there.
+fn record_originals(originals: &mut BTreeMap<String, Option<Value>>, data: &Value, paths: impl IntoIterator<Item = String>) {
+    for p in paths {
+        if !originals.contains_key(&p) {
+            let v = get_path(data, &resolved_path(data, &p)).cloned();
+            originals.insert(p, v);
+        }
+    }
+}
+
+/// Puts the recorded real values back (dropping keys the game didn't have). A path is only restored while it still
+/// shows the value Spectre applied (`applied`); if the game already published something newer there, that is kept.
+fn restore_originals(data: &mut Value, originals: &BTreeMap<String, Option<Value>>, applied: &Map<String, Value>) {
+    for (p, orig) in originals {
+        if let Some(a) = applied.get(p) {
+            let current = get_path(data, &resolved_path(data, p)).cloned().map(normalize);
+            if current != Some(normalize(a.clone())) { continue; }
+        }
+        match orig {
+            Some(v) => set_path(data, p, v.clone()),
+            None => remove_path(data, p),
+        }
+    }
+}
 
 // Spectre marker: friends running Spectre see this key in the private presence. Re-read each tick, so toggling is picked up.
 fn marker_on(ctx: &Ctx) -> bool { crate::api::settings::load(ctx)["spectrePresence"] != json!(false) }
@@ -129,33 +172,62 @@ async fn get_my_presence(ctx: &Ctx) -> Res<(Value, Value)> {
     Ok((me, normalize(data)))
 }
 
+fn set_marker(ctx: &Ctx, data: &mut Value) {
+    let (marker, version) = (marker_on(ctx), marker_version(ctx));
+    if let Value::Object(o) = data {
+        if marker { o.insert("spectre".into(), json!({ "v": version })); } else { o.shift_remove("spectre"); }
+    }
+}
+
+async fn put_presence(ctx: &Ctx, presence: &Value, data: &Value) -> Res<()> {
+    let private = base64::engine::general_purpose::STANDARD.encode(serde_json::to_string(data)?);
+    ctx.riot.local("put", "chat/v2/me", Some(json!({
+        "state": presence["state"],
+        "private": private,
+        "shared": { "actor": "", "details": "", "location": "", "product": "valorant", "time": now_ms() + 35000 },
+    }))).await?;
+    Ok(())
+}
+
 async fn apply_presence(ctx: &Ctx, force: bool) -> Res<()> {
+    let _apply = APPLY.lock().await;
+    let gen = STATE.lock().unwrap().gen;
     let (presence, mut data) = get_my_presence(ctx).await?;
     let entries: Vec<(String, Value)> = {
-        let s = STATE.lock().unwrap();
-        if force || s.keep { s.overrides.iter().map(|(k, v)| (k.clone(), v.clone())).collect() } else { Vec::new() }
+        let mut s = STATE.lock().unwrap();
+        // A set / reset / keep change landed while the presence was read: this apply is stale.
+        if s.gen != gen { return Ok(()); }
+        let entries: Vec<(String, Value)> = if force || s.keep { s.overrides.iter().map(|(k, v)| (k.clone(), v.clone())).collect() } else { Vec::new() };
+        record_originals(&mut s.originals, &data, entries.iter().map(|(k, _)| k.clone()));
+        entries
     };
     let marker = marker_on(ctx);
     let version = marker_version(ctx);
     let marker_ok = if marker { data["spectre"]["v"] == json!(version) } else { data.get("spectre").is_none() };
     if !force && marker_ok && entries.iter().all(|(p, v)| strict_eq(get_path(&data, &resolved_path(&data, p)), v)) { return Ok(()); }
     for (p, v) in entries { set_path(&mut data, &p, v); }
-    if let Value::Object(o) = &mut data {
-        if marker { o.insert("spectre".into(), json!({ "v": version })); } else { o.shift_remove("spectre"); }
-    }
-    let private = base64::engine::general_purpose::STANDARD.encode(serde_json::to_string(&data)?);
-    ctx.riot.local("put", "chat/v2/me", Some(json!({
-        "state": presence["state"],
-        "private": private,
-        "shared": { "actor": "", "details": "", "location": "", "product": "valorant", "time": now_ms() + 35000 },
-    }))).await?;
+    set_marker(ctx, &mut data);
+    if STATE.lock().unwrap().gen != gen { return Ok(()); }
+    put_presence(ctx, &presence, &data).await?;
     ctx.emit("tools:applied", json!({ "overrides": overrides(), "at": now_ms() }));
     Ok(())
+}
+
+/// Puts the real values back with one forced PUT. `applied` is what Spectre last sent for each path.
+/// With the game closed there is nothing to restore, so the (already taken) record is just dropped.
+async fn restore_presence(ctx: &Ctx, originals: BTreeMap<String, Option<Value>>, applied: Map<String, Value>) -> Res<()> {
+    let _apply = APPLY.lock().await;
+    if originals.is_empty() { return Ok(()); }
+    let Ok((presence, mut data)) = get_my_presence(ctx).await else { return Ok(()) };
+    restore_originals(&mut data, &originals, &applied);
+    set_marker(ctx, &mut data);
+    put_presence(ctx, &presence, &data).await
 }
 
 async fn set(ctx: &Ctx, o: Vec<(&str, Value)>) -> Res<Value> {
     {
         let mut s = STATE.lock().unwrap();
+        s.gen += 1;
         for (k, v) in o { s.overrides.insert(k.to_string(), v); }
     }
     apply_presence(ctx, true).await?;
@@ -191,14 +263,29 @@ pub fn register(reg: &mut Registry, ctx: &Ctx) {
         Ok(json!({ "overrides": overrides(), "keep": keep, "current": current, "error": error }))
     });
 
-    reg.add("tools:keep", |_, a: Args| async move {
+    // Keep off puts the real values back (the overrides stay listed); keep on re-applies them on the next tick.
+    reg.add("tools:keep", |ctx, a: Args| async move {
         let keep = a.truthy(0);
-        STATE.lock().unwrap().keep = keep;
+        let restore = {
+            let mut s = STATE.lock().unwrap();
+            s.keep = keep;
+            s.gen += 1;
+            if keep { None } else { Some((std::mem::take(&mut s.originals), s.overrides.clone())) }
+        };
+        if let Some((originals, applied)) = restore {
+            restore_presence(&ctx, originals, applied).await?;
+            ctx.emit("tools:applied", json!({ "overrides": overrides(), "at": now_ms() }));
+        }
         Ok(json!({ "keep": keep }))
     });
 
     reg.add("tools:reset", |ctx, _| async move {
-        STATE.lock().unwrap().overrides = Map::new();
+        let (originals, applied) = {
+            let mut s = STATE.lock().unwrap();
+            s.gen += 1;
+            (std::mem::take(&mut s.originals), std::mem::take(&mut s.overrides))
+        };
+        restore_presence(&ctx, originals, applied).await?;
         ctx.emit("tools:applied", json!({ "overrides": overrides(), "at": now_ms() }));
         Ok(json!({ "overrides": overrides() }))
     });
@@ -289,4 +376,48 @@ pub fn register(reg: &mut Registry, ctx: &Ctx) {
             ("partyPresenceData.partyAccessibility", json!(if truthy(&s["open"]) { "OPEN" } else { "CLOSED" })),
         ]).await
     });
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn restores_originals_and_drops_added_keys() {
+        let real = json!({ "isIdle": false, "playerPresenceData": { "competitiveTier": 12, "accountLevel": 40 }, "partySize": 1 });
+        let mut originals = BTreeMap::new();
+        let paths = ["playerPresenceData.competitiveTier", "playerPresenceData.leaderboardPosition", "isIdle", "premierPresenceData.rosterName"];
+        record_originals(&mut originals, &real, paths.iter().map(|p| p.to_string()));
+        // A later record keeps the first (real) value.
+        record_originals(&mut originals, &json!({ "isIdle": true }), ["isIdle".to_string()]);
+        assert_eq!(originals["isIdle"], Some(json!(false)));
+        assert_eq!(originals["premierPresenceData.rosterName"], None);
+
+        let mut applied = Map::new();
+        applied.insert("playerPresenceData.competitiveTier".into(), json!(27));
+        applied.insert("playerPresenceData.leaderboardPosition".into(), json!(5));
+        applied.insert("isIdle".into(), json!(true));
+        applied.insert("premierPresenceData.rosterName".into(), json!("Sample Squad"));
+        let mut data = real.clone();
+        for (p, v) in &applied { set_path(&mut data, p, v.clone()); }
+        assert_eq!(data["rosterName"], json!("Sample Squad"));
+        assert_eq!(data["playerPresenceData"]["leaderboardPosition"], json!(5));
+
+        restore_originals(&mut data, &originals, &applied);
+        assert_eq!(data, real);
+    }
+
+    #[test]
+    fn keeps_newer_game_values() {
+        let mut originals = BTreeMap::new();
+        originals.insert("partySize".to_string(), Some(json!(1)));
+        originals.insert("queueId".to_string(), None);
+        let mut applied = Map::new();
+        applied.insert("partySize".into(), json!(5));
+        applied.insert("queueId".into(), json!("competitive"));
+        // The game already published newer real values: leave them.
+        let mut data = json!({ "partySize": 2, "queueId": "unrated" });
+        restore_originals(&mut data, &originals, &applied);
+        assert_eq!(data, json!({ "partySize": 2, "queueId": "unrated" }));
+    }
 }

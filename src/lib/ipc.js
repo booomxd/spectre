@@ -3,8 +3,14 @@ import { invoke as tauriInvoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 
+// Demo mode (screenshots / UI work): Vite dev server + plain browser + `?demo` answers every channel from sample
+// fixtures in ./demo. import.meta.env.DEV is false in builds, so the demo code is dropped from production bundles.
+const DEMO = import.meta.env.DEV && typeof window !== 'undefined' && !window.__TAURI_INTERNALS__ && new URLSearchParams(window.location.search).has('demo')
+const demo = DEMO ? import('./demo/index.js').then(m => { m.demoBoot(); return m }) : null
+
 // Calls a backend channel (one Rust `ipc` command routes them all); resolves with its data or throws its error message.
 export async function invoke(channel, ...args) {
+  if (DEMO) return (await demo).invoke(channel, ...args)
   try {
     return await tauriInvoke('ipc', { channel, args })
   } catch (e) {
@@ -18,6 +24,10 @@ export function useEvent(channel, fn) {
   ref.current = fn
   useEffect(() => {
     let off = null, gone = false
+    if (DEMO) {
+      demo.then(m => { if (!gone) off = m.listen(channel, p => ref.current(p)) })
+      return () => { gone = true; off?.() }
+    }
     listen(channel, e => ref.current(e.payload)).then(un => { if (gone) un(); else off = un })
     return () => { gone = true; off?.() }
   }, [channel])
@@ -48,5 +58,6 @@ export const openExternal = url => invoke('app:openExternal', url)
 
 // The in-game overlay is its own window running the same bundle.
 export function isOverlayWindow() {
+  if (DEMO) return new URLSearchParams(window.location.search).has('overlay')
   try { return getCurrentWindow().label === 'overlay' } catch (e) { return window.location.hash === '#/overlay' }
 }

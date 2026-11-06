@@ -27,7 +27,10 @@ export default {
       fontFamily: {
         sans: ['"SF Pro Text"', '"SF Pro Display"', '"SF Pro"', '-apple-system', 'BlinkMacSystemFont', 'Inter', '"Segoe UI Variable Text"', '"Segoe UI"', 'system-ui', 'sans-serif'],
       },
-      borderRadius: { lg: '10px', xl: '16px', '2xl': '22px' },
+      // Larger radii for the redesign: controls 12, tiles 18, cards 24, hero panels 28.
+      borderRadius: { lg: '12px', xl: '18px', '2xl': '24px', '3xl': '28px' },
+      transitionTimingFunction: { out: 'var(--ease-out)', spring: 'var(--ease-spring)' },
+      fontWeight: { 750: '750' },
       // Tailwind 3.3 stops at 10/20/25/30...; these also enable modifiers like bg-good/15.
       opacity: { 8: '0.08', 12: '0.12', 15: '0.15', 35: '0.35', 45: '0.45', 55: '0.55', 65: '0.65', 85: '0.85' },
     },
