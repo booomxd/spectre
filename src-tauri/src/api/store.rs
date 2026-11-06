@@ -1,4 +1,4 @@
-// Storefront, wallet and rank snapshot for the dashboard and shop. Port of public/api/store.js.
+// Storefront, wallet and rank snapshot for the dashboard and shop.
 use crate::core::error::Res;
 use crate::core::{js, truthy, Ctx, Registry};
 use serde_json::{json, Map, Value};

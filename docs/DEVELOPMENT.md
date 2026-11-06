@@ -2,60 +2,80 @@
 
 ## Setup
 
-Requirements: Windows, Node.js 18 or newer, and the Riot Client installed (sign in to test anything that talks to Riot).
+Requirements:
+- Windows 10 or 11, with the Riot Client installed (sign in to test anything that talks to Riot).
+- Node.js 18 or newer.
+- Rust (stable, `x86_64-pc-windows-msvc`) from [rustup](https://rustup.rs).
+- Visual Studio Build Tools with the "Desktop development with C++" workload (the MSVC linker and Windows SDK).
+- Microsoft Edge WebView2 Runtime (already installed on Windows 11 and up-to-date Windows 10).
 
 ```
 npm install
-npm run electron:dev
+npm run app
 ```
 
-This starts Vite on `http://localhost:5173` and opens Electron pointed at it. React changes hot-reload; backend changes in `public/` need an app restart.
+`npm run app` (`tauri dev`) starts Vite on `http://localhost:5173`, builds the Rust backend and opens the app pointed at
+Vite. React changes hot-reload; Rust changes rebuild and restart the app automatically.
 
 ## Architecture
 
 ```
-public/            Electron main process (Node)
-  main.js          Window, IPC wrapper, loads every module in api/
-  riot.js          Shared Riot client: lockfile, tokens, local/pd/glz/shared requests, JSON store
-  known.js         Self, friends and party puuids (shared cache)
-  api/*.js         One backend module per feature, each registering IPC channels
-src/               React UI (renderer)
-  nav.js           Page registry: sidebar groups, ids and components
-  lib/ipc.js       invoke() and useInvoke() for calling backend channels
-  lib/theme.js     Theme list; tokens live in index.css
-  ui/              Component kit (Button, Card, Badge, Page, ...)
-  pages/           One file per page, with sub-folders for larger pages
-scripts/try.js     Run a backend channel from the command line
+src/                 React UI
+  nav.js             Page registry: sidebar groups, ids and components
+  lib/ipc.js         invoke(), useInvoke() and useEvent() for talking to the backend
+  lib/theme.js       Theme list; tokens live in index.css
+  ui/                Component kit (Button, Card, Badge, Page, ...)
+  pages/             One file per page, with sub-folders for larger pages
+src-tauri/           Tauri 2 app (Rust)
+  tauri.conf.json    Window, bundle and installer settings
+  src/lib.rs         App setup (window, tray, plugins), the single `ipc` command, core channels
+  src/core/          Ctx/Args/Registry (mod.rs), errors, Riot client + JSON store (riot.rs), JS-style helpers (js.rs)
+  src/api/*.rs       One backend module per feature, each registering channels
+  src/bin/try.rs     spectre-try: call a backend channel from the command line
+  windows/           NSIS installer hooks (migration from the old Electron install)
+  BACKEND.md         Backend developer notes
 ```
+
+The UI never calls Tauri commands directly: `src/lib/ipc.js` sends every call through one Rust command,
+`ipc(channel, args)`, which looks the channel up in a registry. Backend events reach the UI with `useEvent(channel, fn)`.
 
 ### Backend modules
 
-Each file in `public/api/` exports a function that receives a context and registers channels:
+Each file in `src-tauri/src/api/` has a `register` function that adds channels; `api/mod.rs` > `register_all` calls them all.
 
-```js
-module.exports = ({ riot, handle, emit }) => {
-    handle('example:hello', async (name) => {
-        const me = riot.state.gameName;
-        return `Hello ${name}, from ${me}`;
+```rust
+use crate::core::error::Res;
+use crate::core::{Args, Ctx, Registry};
+use serde_json::{json, Value};
+
+pub fn register(reg: &mut Registry, _ctx: &Ctx) {
+    reg.add("example:hello", |ctx, a: Args| async move {
+        let name = a.str(0);
+        let me = ctx.riot.state().game_name.unwrap_or_default();
+        Ok(json!(format!("Hello {name}, from {me}")))
     });
-};
+}
 ```
 
-- `handle(channel, fn)` exposes `fn` to the renderer. Its return value arrives as `{ ok: true, data }`, and a thrown error arrives as `{ ok: false, error }`.
-- `emit(channel, payload)` pushes an event to every window.
-- `riot.local()` calls the Riot Client's local API. `riot.pd()`, `riot.glz()` and `riot.shared()` call Riot's game services with fresh tokens, retrying once if the token has expired.
-- `riot.valApi(path)` fetches public content from valorant-api.com, cached for the session.
-- `riot.readStore(name, fallback)` and `riot.writeStore(name, data)` persist JSON in the app's data folder.
+- A handler's `Ok(value)` arrives in the UI as the result of `invoke`; an `Err` is thrown there as an `Error` with its text.
+- `ctx.emit(channel, payload)` pushes an event to every window.
+- `ctx.riot.local()` calls the Riot Client's local API. `ctx.riot.pd()`, `glz()` and `shared()` call Riot's game services
+  with fresh tokens, retrying once if the token has expired.
+- `ctx.riot.val_api(path)` fetches public content from valorant-api.com, cached for the session.
+- `ctx.riot.read_store(name, fallback)` and `ctx.riot.write_store(name, &data)` persist JSON in `%APPDATA%\Spectre\store`.
 
-New files in `public/api/` are loaded automatically at startup.
+Adding a channel needs no Tauri command or capability change: add it with `reg.add` (a new module also goes into
+`api/mod.rs`), then call it from React. More detail (argument helpers, JSON semantics, Tauri plugins) is in
+[`src-tauri/BACKEND.md`](../src-tauri/BACKEND.md).
 
 ### Calling the backend from React
 
 ```jsx
-import { invoke, useInvoke } from '../lib/ipc'
+import { invoke, useInvoke, useEvent } from '../lib/ipc'
 
 const rank = useInvoke('store:rank', [], { poll: 30000 })  // { data, error, loading, reload }
 await invoke('tools:keep', true)                            // throws on error
+useEvent('settings:changed', s => setSettings(s))
 ```
 
 ### Adding a page
@@ -66,36 +86,51 @@ await invoke('tools:keep', true)                            // throws on error
 
 ### Privacy rules in code
 
-- Never pass the puuid of a streamer-mode (incognito) player to the renderer. `livematch.js` hands out per-match random tokens for those players instead.
+- Never pass the puuid of a streamer-mode (incognito) player to the UI. `api/livematch.rs` hands out per-match random
+  tokens for those players instead.
 - Never call the name service for incognito players.
 - Agent select (`pregame`) only looks up ranks for self, friends and party.
 
 ## Testing a backend channel
 
-`scripts/try.js` loads every backend module with a fake Electron context and calls one channel against the live Riot Client:
+`spectre-try` builds the backend without a window and calls one channel against the live Riot Client. From `src-tauri/`:
 
 ```
-node scripts/try.js --list              # list all channels
-node scripts/try.js store:rank          # call a channel
-node scripts/try.js search:lookup "\"Name#Tag\""
+cargo run -q --bin spectre-try -- --list                  # list all channels
+cargo run -q --bin spectre-try -- store:rank              # call a channel
+cargo run -q --bin spectre-try -- search:lookup '"Name#Tag"'
 ```
 
-Arguments are parsed as JSON when possible.
+Arguments are parsed as JSON when possible. It stores data in `%TEMP%\spectre-try\store`, never in your real app data.
+Don't call channels that change your account or send anything (equipping, friend and party actions, chat, profile
+tools); `src-tauri/BACKEND.md` has the full list.
+
+## Checks
+
+```
+npm run lint                    # ESLint on src/
+npm run build                   # Vite build into build/
+cd src-tauri && cargo check     # Rust backend
+```
 
 ## Building
 
 ```
-npm run electron:build
+npm run app:build
 ```
 
-Runs `vite build` into `build/`, then electron-builder packages `release/Spectre Setup x.y.z.exe` (NSIS, one-click, per-user) and `release/Spectre-x.y.z-win.zip` (portable). Builds aren't code-signed, so Windows SmartScreen warns on first launch.
+Runs `vite build` into `build/`, compiles the Rust app in release mode and packages
+`src-tauri/target/release/bundle/nsis/Spectre_x.y.z_x64-setup.exe` (NSIS, per-user). Builds aren't code-signed, so
+Windows SmartScreen warns on first launch. The installer also removes an old Electron install (2.4.x) and keeps its data;
+see `src-tauri/BACKEND.md` > Migration from Electron.
 
 ## Releasing
 
-1. Bump `version` in `package.json` and add an entry to `CHANGELOG.md`.
-2. Commit, then build with `npm run electron:build`.
-3. Publish the build as a GitHub release with the GitHub CLI:
+1. Bump `version` in `package.json` (`tauri.conf.json` reads it from there) and add an entry to `CHANGELOG.md`.
+2. Commit, then build with `npm run app:build`.
+3. Publish the build as a GitHub release with the GitHub CLI. The in-app updater installs the newest release asset whose
+   name matches `setup*.exe`:
 
 ```
-gh release create vX.Y.Z "release/Spectre Setup X.Y.Z.exe" "release/Spectre-X.Y.Z-win.zip" --repo booomxd/spectre --title "Spectre X.Y.Z" --notes-file notes.md
+gh release create vX.Y.Z "src-tauri/target/release/bundle/nsis/Spectre_X.Y.Z_x64-setup.exe" --repo booomxd/spectre --title "Spectre X.Y.Z" --notes-file notes.md
 ```

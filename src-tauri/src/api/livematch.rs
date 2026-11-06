@@ -1,7 +1,7 @@
 // Live match rosters. Players are named only if not incognito (streamer mode), otherwise they are just their agent;
 // their level, card and title stay hidden too. Ranks for everyone listed (agent select lists only your team). Once
 // the match is live every player can be scouted and have their loadout viewed through a random per-match token, so
-// the UI never holds a hidden player's puuid. Port of public/api/livematch.js.
+// the UI never holds a hidden player's puuid.
 use crate::api::{known, scout};
 use crate::core::error::{msg, Res};
 use crate::core::riot::now_ms;

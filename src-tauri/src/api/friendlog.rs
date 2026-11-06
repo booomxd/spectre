@@ -1,4 +1,4 @@
-// Friend activity: snapshots your friends list and records who was added, removed or renamed since the last look. Port of public/api/friendlog.js.
+// Friend activity: snapshots your friends list and records who was added, removed or renamed since the last look.
 // Stored per signed-in account in userData/friendlog.json as { [myPuuid]: { snapshot: { puuid: 'Name#Tag' }, events, lastScan } }.
 use crate::api::tools::js_string;
 use crate::core::error::{msg, Res};

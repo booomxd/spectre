@@ -14,7 +14,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 name = "spectre"
 path = "src/main.rs"
 
-# Dev helper: call any backend channel against the live Riot Client without a window (like scripts/try.js).
+# Dev helper: call any backend channel against the live Riot Client without a window.
 [[bin]]
 name = "spectre-try"
 path = "src/bin/try.rs"

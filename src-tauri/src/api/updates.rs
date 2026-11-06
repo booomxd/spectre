@@ -1,6 +1,6 @@
-// Spectre's own releases on GitHub: patch notes, update checks and one-click updates. Port of public/api/updates.js.
+// Spectre's own releases on GitHub: patch notes, update checks and one-click updates.
 // Installed copies download the new installer, verify it and run it (it closes Spectre, installs and relaunches).
-// Portable copies and dev builds just link to the release page.
+// Dev builds and loose exes (no uninstaller next to them) just link to the release page.
 use crate::core::error::{msg, Res};
 use crate::core::riot::{now_ms, send};
 use crate::core::{js, truthy, Ctx, Registry};
@@ -35,7 +35,7 @@ fn newer(a: &str, b: &str) -> bool {
     false
 }
 
-/// Installed by the installer (has an uninstaller next to the exe), as opposed to the portable zip.
+/// Installed by the installer (has an uninstaller next to the exe), as opposed to a dev build or a loose exe.
 /// Electron's NSIS build left "Uninstall Spectre.exe"; Tauri's NSIS installer leaves "uninstall.exe".
 fn installed(ctx: &Ctx) -> bool {
     if ctx.is_dev { return false; }

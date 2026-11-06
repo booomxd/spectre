@@ -102,7 +102,7 @@ Two tabs: **Spectre** release notes straight from GitHub, and the latest officia
 Send ideas, bug reports or anything else straight to the developer by email. Only your message, an optional contact and your Spectre version are sent.
 
 ### ⬆️ Updates
-Spectre checks for new releases on launch and every few hours. When one is out, it offers a one-click update that downloads and verifies the installer, installs it and restarts. Portable copies get a link to the new download. Check any time from **Settings → About**.
+Spectre checks for new releases on launch and every few hours. When one is out, it offers a one-click update that downloads and verifies the installer, installs it and restarts. Dev builds and copies run without the installer get a link to the new download instead. Check any time from **Settings → About**.
 
 ### 🎨 Settings
 Twelve glass themes (Midnight, Onyx, Ember, Glacier, Verdant, Amethyst, Gilded, Aurora, Sakura, Abyss, Sunset and the light Pearl), the start page, launch at login, minimize to tray, and overlay hotkeys, click-through, auto-show, opacity and size.

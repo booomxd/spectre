@@ -1,4 +1,4 @@
-// Match history, match details, player search/profile and recent-activity channels. Port of public/api/history.js.
+// Match history, match details, player search/profile and recent-activity channels.
 // Any player can be looked up by puuid (like any tracker). Hidden players are protected at the source:
 // puuids of streamer-mode players and of unnamed strangers in match data are never handed to the UI.
 use crate::api::known;

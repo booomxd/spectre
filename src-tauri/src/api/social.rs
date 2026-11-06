@@ -1,4 +1,4 @@
-// Friends, presences, friend requests and the current party. Port of public/api/social.js.
+// Friends, presences, friend requests and the current party.
 use crate::core::error::{msg, Res};
 use crate::core::riot::now_ms;
 use crate::core::{js, truthy, Args, Ctx, Registry};

@@ -1,5 +1,5 @@
 // Spectre's Tauri backend. The React app calls every backend channel through one `ipc` command, with the same
-// channel names and arguments the Electron app used, and listens for events with the same names.
+// channel names and arguments the Electron app used (2.4.x), and listens for events with the same names.
 pub mod api;
 pub mod core;
 mod migrate;
@@ -38,7 +38,7 @@ fn show_main(app: &tauri::AppHandle) {
     }
 }
 
-/// Channels main.js owned: the Riot connection, opening links, and the frameless window's buttons.
+/// App-level channels: the Riot connection, opening links, and the frameless window's buttons.
 pub fn register_core(reg: &mut Registry) {
     reg.add("riot:status", |ctx, _| async move { Ok(ctx.riot.status()) });
     reg.add("riot:connect", |ctx, _| async move { ctx.riot.connect().await });

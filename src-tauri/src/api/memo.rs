@@ -1,4 +1,4 @@
-// Player memos: notes, tags and a rating per puuid, stored in userData/memos.json. Port of public/api/memo.js.
+// Player memos: notes, tags and a rating per puuid, stored in userData/memos.json.
 use crate::api::tools::js_string;
 use crate::core::error::msg;
 use crate::core::riot::now_ms;

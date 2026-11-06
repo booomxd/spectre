@@ -11,7 +11,7 @@ Live match ranks, scouting, skins, your party, Discord presence and more, all th
 [![Latest release](https://img.shields.io/github/v/release/booomxd/spectre?style=for-the-badge&color=8b5cf6&label=release)](https://github.com/booomxd/spectre/releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/booomxd/spectre/total?style=for-the-badge&color=6d28d9)](https://github.com/booomxd/spectre/releases)
 ![Windows](https://img.shields.io/badge/Windows-10%20%7C%2011-2a1458?style=for-the-badge&logo=windows&logoColor=white)
-![Electron](https://img.shields.io/badge/Electron-33-2a1458?style=for-the-badge&logo=electron&logoColor=white)
+![Tauri](https://img.shields.io/badge/Tauri-2-2a1458?style=for-the-badge&logo=tauri&logoColor=white)
 ![React](https://img.shields.io/badge/React-18-2a1458?style=for-the-badge&logo=react&logoColor=white)
 
 **[🌐 Website](https://booomxd.github.io/spectre/)** · **[⬇️ Download](https://github.com/booomxd/spectre/releases/latest)** · **[✨ Features](docs/FEATURES.md)** · **[🔒 Privacy](docs/PRIVACY.md)** · **[🛠️ Development](docs/DEVELOPMENT.md)** · **[📜 Changelog](CHANGELOG.md)**
@@ -63,8 +63,7 @@ Grab the latest version from **[Releases](https://github.com/booomxd/spectre/rel
 
 | File | What it is |
 | --- | --- |
-| 📦 `Spectre.Setup.x.y.z.exe` | Installer. One click, installs for your user only, adds a desktop shortcut. |
-| 🗜️ `Spectre-x.y.z-win.zip` | Portable. Unzip anywhere and run `Spectre.exe`. |
+| 📦 `Spectre_x.y.z_x64-setup.exe` | Installer. One click, installs for your user only, adds a desktop shortcut. |
 
 **Requirements:** Windows 10 or 11 (64-bit), VALORANT installed, and the Riot Client open and signed in.
 
@@ -108,11 +107,11 @@ Spectre is **not a cheat** and never touches the game itself.
 
 ```bash
 npm install
-npm run electron:dev      # run with hot reload
-npm run electron:build    # installer + portable zip in release/
+npm run app          # run with hot reload
+npm run app:build    # installer in src-tauri/target/release/bundle/nsis/
 ```
 
-Requires Node.js 18+. Architecture, the backend test helper and the release process are in **[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)**.
+Requires Node.js 18+, Rust (stable, MSVC) and WebView2. Architecture, the backend test helper and the release process are in **[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)**.
 
 ## ❓ FAQ
 
@@ -137,7 +136,7 @@ VALORANT resets your presence when your party, queue or match changes. Turn on <
 <details>
 <summary><b>How do I uninstall?</b></summary>
 
-Windows Settings → Apps → Installed apps → Spectre. For the portable version, delete its folder. To remove saved data too, delete <code>%APPDATA%\Spectre</code>.
+Windows Settings → Apps → Installed apps → Spectre. To remove saved data too, delete <code>%APPDATA%\Spectre</code>.
 </details>
 
 ## ⚖️ Legal

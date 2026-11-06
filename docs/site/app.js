@@ -280,8 +280,8 @@ async function loadRelease() {
   const rel = all.find(r => !r.draft && !r.prerelease)
   if (!rel) return
   const isApp = a => /\.exe$|-win\.zip$/i.test(a.name)
-  const installer = rel.assets.find(a => /^Spectre[ .]Setup.*\.exe$/i.test(a.name))
-  const zip = rel.assets.find(a => /-win\.zip$/i.test(a.name))
+  // Tauri (Spectre_x.y.z_x64-setup.exe) and older Electron (Spectre.Setup.x.y.z.exe) installer names
+  const installer = rel.assets.find(a => /^Spectre([ .]Setup.*|_.*-setup)\.exe$/i.test(a.name))
   const total = all.reduce((n, r) => n + r.assets.filter(isApp).reduce((m, a) => m + a.count, 0), 0)
   const version = rel.tag.replace(/^v/, '')
 
@@ -296,10 +296,6 @@ async function loadRelease() {
     bind('installer-href').forEach(el => { el.href = installer.url })
     bind('installer-sub').forEach(el => { el.textContent = `v${version} · ${mb(installer.size)}` })
     fileMeta(bind('installer-meta')[0], installer)
-  }
-  if (zip) {
-    bind('zip-href').forEach(el => { el.href = zip.url })
-    fileMeta(bind('zip-meta')[0], zip)
   }
   bind('date').forEach(el => { el.textContent = new Date(rel.date).toLocaleDateString('en', { month: 'long', day: 'numeric', year: 'numeric' }) })
   const notes = renderNotes(rel.body)

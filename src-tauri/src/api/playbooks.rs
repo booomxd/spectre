@@ -1,4 +1,4 @@
-// Strategy playbooks: folders (playbooks) of strategies, each with steps of board items. Port of public/api/playbooks.js.
+// Strategy playbooks: folders (playbooks) of strategies, each with steps of board items.
 use crate::api::memo::slice16;
 use crate::core::error::{msg, Res};
 use crate::core::riot::now_ms;
