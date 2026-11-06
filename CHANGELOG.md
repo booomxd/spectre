@@ -1,5 +1,11 @@
 # 📜 Changelog
 
+## Unreleased
+
+### ⚙️ Under the hood
+- The app's backend is rewritten in Rust on Tauri 2, replacing Electron and Node
+- Updating from 2.4.x removes the old Electron install and keeps your settings, notes, playbooks and Launch at login
+
 ## 2.4.0
 
 ### 📝 Notes

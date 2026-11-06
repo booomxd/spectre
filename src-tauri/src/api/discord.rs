@@ -1,4 +1,4 @@
-// Discord Rich Presence over Discord's local IPC pipe (no dependencies). Port of public/api/discord.js.
+// Discord Rich Presence over Discord's local IPC pipe (no dependencies).
 // Frame = int32 LE opcode + int32 LE length + JSON. Opcodes: 0 handshake, 1 frame, 2 close, 3 ping, 4 pong.
 use crate::api::scout;
 use crate::api::settings::{load, merge};

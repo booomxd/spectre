@@ -1,4 +1,4 @@
-// Suggestions and bug reports from the Suggestions page. Port of public/api/feedback.js.
+// Suggestions and bug reports from the Suggestions page.
 // Emailed to the developer through Web3Forms. Its free plan only accepts browser requests, so the page itself
 // sends them; this module only hands over the settings. The access key can only send mail to the developer's
 // inbox, so it is safe to ship. Without a key the page falls back to a prefilled GitHub issue.

@@ -1,6 +1,6 @@
 // Rank and scouting for a player by puuid: current/peak rank and act history from the MMR endpoint, plus recent
 // competitive form from competitive updates and match details. Results carry no names, match ids or teammates, so
-// they are safe to show for streamer-mode players. One shared cache for every module. Port of public/scout.js.
+// they are safe to show for streamer-mode players. One shared cache for every module.
 use crate::core::error::Res;
 use crate::core::riot::now_ms;
 use crate::core::{js, truthy, Ctx};

@@ -1,4 +1,4 @@
-// Profile tools: presence overrides (rank, profile, Premier, status) on the private Valorant presence. Port of public/api/tools.js.
+// Profile tools: presence overrides (rank, profile, Premier, status) on the private Valorant presence.
 // Edits are kept as overrides (dotted path -> value). The game rewrites its presence on every party / queue /
 // match change, so while "keep applied" is on they are re-sent whenever the game resets them.
 use crate::core::error::{msg, Res};

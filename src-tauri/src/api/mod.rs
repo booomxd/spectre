@@ -1,4 +1,4 @@
-// Feature modules, one per public/api/*.js file. Each registers its channels (and any background tasks).
+// Feature modules, one per area of the app. Each registers its channels (and any background tasks).
 use crate::core::{Ctx, Registry};
 
 pub mod known;

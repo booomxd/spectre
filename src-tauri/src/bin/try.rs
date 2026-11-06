@@ -1,4 +1,4 @@
-// Dev helper: call any backend channel against the live Riot Client without a window. Port of scripts/try.js.
+// Dev helper: call any backend channel against the live Riot Client without a window.
 //   cargo run --bin spectre-try -- <channel> [jsonArg1] [jsonArg2] ...
 //   cargo run --bin spectre-try -- --list
 // Prints `{ "ok": true, "data": ... }` or `{ "ok": false, "error": ... }` as JSON. Data is stored in a temp folder,

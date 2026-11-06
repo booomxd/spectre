@@ -1,4 +1,4 @@
-// App settings (one JSON store) plus small app helpers used by the Settings page. Port of public/api/settings.js.
+// App settings (one JSON store) plus small app helpers used by the Settings page.
 use crate::core::error::{msg, Res};
 use crate::core::{Args, Ctx, Registry};
 use once_cell::sync::Lazy;

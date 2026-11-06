@@ -1,6 +1,6 @@
 // Always-on-top transparent overlay window (the app's own bundle; the React app detects it by the window label "overlay").
 // Shown without stealing focus from the game, toggled from the app or a global hotkey, optionally click-through
-// ("locked") and optionally shown automatically while you're in agent select or a match. Port of public/api/overlay.js.
+// ("locked") and optionally shown automatically while you're in agent select or a match.
 use crate::api::settings;
 use crate::core::error::{msg, Res};
 use crate::core::{js, truthy, Args, Ctx, Registry};

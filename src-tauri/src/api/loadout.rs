@@ -1,5 +1,4 @@
 // Loadout, ownership and presets. Everything that changes the loadout only touches items the player owns.
-// Port of public/api/loadout.js.
 use crate::core::error::{msg, Res};
 use crate::core::riot::now_ms;
 use crate::core::{js, truthy, Args, Ctx, Registry};

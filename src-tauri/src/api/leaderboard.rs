@@ -1,4 +1,4 @@
-// Competitive leaderboard for the player's shard and the current act. Port of public/api/leaderboard.js.
+// Competitive leaderboard for the player's shard and the current act.
 use crate::api::known;
 use crate::core::error::{msg, Res};
 use crate::core::riot::now_ms;

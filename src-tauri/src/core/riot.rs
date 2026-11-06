@@ -1,6 +1,6 @@
 // Shared Riot client used by every feature module in src/api.
 // Connects through the local Riot Client (lockfile), then talks to the pd / glz / shared endpoints with the tokens it
-// hands out. Port of public/riot.js.
+// hands out.
 use super::error::{msg, Error, Res};
 use base64::Engine;
 use once_cell::sync::Lazy;

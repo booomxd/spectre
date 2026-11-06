@@ -1,5 +1,4 @@
 // Patch notes list from playvalorant.com's public news page data (title, date, image, short blurb only).
-// Port of public/api/patchnotes.js.
 use crate::core::error::{msg, Res};
 use crate::core::{js, truthy, Args, Ctx, Registry};
 use futures::future::{BoxFuture, FutureExt, Shared};

@@ -47,7 +47,7 @@ export function General({ settings, save }) {
   )
 }
 
-// KeyboardEvent.code -> Electron accelerator key.
+// KeyboardEvent.code -> global-shortcut accelerator key.
 const CODE_KEYS = {
   Space: 'Space', Enter: 'Return', Tab: 'Tab', ArrowUp: 'Up', ArrowDown: 'Down', ArrowLeft: 'Left', ArrowRight: 'Right',
   Home: 'Home', End: 'End', PageUp: 'PageUp', PageDown: 'PageDown', Insert: 'Insert', Delete: 'Delete', Backquote: '`',
@@ -244,7 +244,7 @@ export function About() {
           <div>
             <div className='font-display text-[28px] font-bold tracking-tight leading-none'>Spectre <span className='text-accent'>{info.data?.version?.split('.').slice(0, 2).join('.') || ''}</span></div>
             <div className='text-[12px] text-muted mt-2 tabular-nums'>
-              {info.loading ? <Skeleton className='h-3 w-24' /> : `Version ${info.data?.version || '-'}${info.data?.electron ? ` · Electron ${info.data.electron}` : ''}`}
+              {info.loading ? <Skeleton className='h-3 w-24' /> : `Version ${info.data?.version || '-'}${info.data?.tauri ? ` · Tauri ${info.data.tauri}` : ''}`}
             </div>
           </div>
           <div className='flex flex-wrap gap-2'>

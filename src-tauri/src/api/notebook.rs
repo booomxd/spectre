@@ -1,4 +1,4 @@
-// Notes page notebook: sections, each with free notes, crosshair codes, links and chat snippets. Port of public/api/notebook.js.
+// Notes page notebook: sections, each with free notes, crosshair codes, links and chat snippets.
 // Stored in userData/notebook.json as { sections: [...] }. The page saves the whole notebook (it's small).
 use crate::api::memo::slice16;
 use crate::api::tools::js_string;

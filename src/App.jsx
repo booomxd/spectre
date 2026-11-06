@@ -11,7 +11,7 @@ import Overlay from './pages/Overlay'
 const cx = (...c) => c.filter(Boolean).join(' ')
 
 // New-release prompt: a dialog once per version, then an Update button that stays in the title bar.
-// Installed copies update in place; portable copies open the release page to download.
+// Installed copies update in place; dev builds and loose exes open the release page to download.
 function UpdateButton() {
   const [s, setS] = useState(null)
   const [pct, setPct] = useState(null)

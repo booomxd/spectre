@@ -1,4 +1,4 @@
-// Battle pass, agent contracts, account XP and competitive history. Port of public/api/progression.js.
+// Battle pass, agent contracts, account XP and competitive history.
 use crate::core::{js, truthy, Args, Ctx, Registry};
 use serde_json::{json, Map, Value};
 use std::collections::HashMap;

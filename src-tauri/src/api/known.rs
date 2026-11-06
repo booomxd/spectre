@@ -1,5 +1,5 @@
 // Puuids the VALORANT client itself lets the user see: self, friends and current party members, plus the
-// streamer-mode players of the user's current match. One shared cache for every module. Port of public/known.js.
+// streamer-mode players of the user's current match. One shared cache for every module.
 use crate::core::error::{msg, Res};
 use crate::core::riot::now_ms;
 use crate::core::{js, truthy, Ctx};
