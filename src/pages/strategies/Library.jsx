@@ -23,17 +23,21 @@ export default function Library({ playbooks, loading, maps, sel, onSelect, onNew
   }).filter(r => r.show)
 
   return (
-    <div className='glass h-full flex flex-col rounded-2xl overflow-hidden'>
-      <div className='p-4 pb-3 flex flex-col gap-3'>
-        <div className='flex items-center justify-between'>
-          <h2 className='font-display text-[17px] font-bold tracking-tight text-text'>Playbooks</h2>
-          <Button size='sm' variant='primary' icon={FiPlus} onClick={onNewPlaybook}>New</Button>
+    <div className='glass h-full flex flex-col rounded-[28px] overflow-hidden'>
+      <div className='p-5 pb-3 flex flex-col gap-3.5'>
+        <div className='flex items-end justify-between'>
+          <div>
+            <div className='eyebrow mb-1'>Library</div>
+            <h2 className='display text-[22px] text-text'>Playbooks</h2>
+          </div>
+          <Button size='sm' variant='glow' icon={FiPlus} onClick={onNewPlaybook}>New</Button>
         </div>
         <div className='relative'>
           <FiSearch className='absolute left-3 top-1/2 -translate-y-1/2 text-muted text-sm' />
-          <Input value={q} onChange={e => setQ(e.target.value)} placeholder='Search strategies' className='pl-8 rounded-full' />
+          <Input value={q} onChange={e => setQ(e.target.value)} placeholder='Search strategies' className='pl-8 !h-9 rounded-full' />
         </div>
       </div>
+      <div className='hairline mx-5 mb-2' />
       <div className='flex-1 overflow-y-auto px-2.5 pb-3'>
         {loading ? (
           <div className='flex flex-col gap-2 px-1'>{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className='h-9 rounded-xl' />)}</div>
@@ -66,8 +70,8 @@ export default function Library({ playbooks, loading, maps, sel, onSelect, onNew
                         const on = sel?.sid === s.id
                         return (
                           <div key={s.id} onClick={() => onSelect(pb.id, s.id)}
-                            className={`group flex items-center gap-2.5 h-11 px-1.5 rounded-xl cursor-pointer transition-all duration-150 ${on ? 'accent-soft' : 'hover:bg-surface-2'}`}>
-                            <div className='h-8 w-8 rounded-lg overflow-hidden bg-surface-2 border border-line shrink-0'>{m?.displayIcon && <img src={m.displayIcon} alt='' className='h-full w-full object-cover' />}</div>
+                            className={`group flex items-center gap-2.5 h-12 px-1.5 rounded-2xl cursor-pointer transition-colors duration-150 ${on ? 'accent-soft' : 'hover:bg-surface-2'}`}>
+                            <div className='h-9 w-9 rounded-xl overflow-hidden glass-inset shrink-0'>{m?.displayIcon && <img src={m.displayIcon} alt='' className='h-full w-full object-cover' />}</div>
                             <div className='flex-1 min-w-0'>
                               <p className={`truncate text-[12.5px] font-semibold leading-tight ${on ? 'text-text' : 'text-text/90'}`}>{s.name}</p>
                               <p className='truncate text-[11px] text-muted leading-tight mt-0.5'>{m?.displayName || 'Unknown map'} · {s.steps.length} step{s.steps.length === 1 ? '' : 's'}</p>
