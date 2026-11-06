@@ -26,4 +26,26 @@ export function setTheme(id) {
   document.documentElement.dataset.theme = id
   try { localStorage.setItem(KEY, id) } catch (e) { }
 }
-export function applySavedTheme() { document.documentElement.dataset.theme = getTheme() }
+
+// Reduce motion (Settings > Appearance). Stored per device like the theme. The OS setting
+// (prefers-reduced-motion) is honored on top of this; see MotionProvider in src/ui/motion.jsx.
+const MOTION_KEY = 'spectre.reduceMotion'
+const MOTION_EVENT = 'spectre:reduce-motion'
+export function getReduceMotion() {
+  try { return localStorage.getItem(MOTION_KEY) === '1' } catch (e) { return false }
+}
+export function setReduceMotion(on) {
+  if (on) document.documentElement.dataset.reduceMotion = ''
+  else delete document.documentElement.dataset.reduceMotion
+  try { localStorage.setItem(MOTION_KEY, on ? '1' : '0') } catch (e) { }
+  window.dispatchEvent(new CustomEvent(MOTION_EVENT, { detail: on }))
+}
+export function onReduceMotion(fn) {
+  const h = e => fn(e.detail)
+  window.addEventListener(MOTION_EVENT, h)
+  return () => window.removeEventListener(MOTION_EVENT, h)
+}
+export function applySavedTheme() {
+  document.documentElement.dataset.theme = getTheme()
+  if (getReduceMotion()) document.documentElement.dataset.reduceMotion = ''
+}

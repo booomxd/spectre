@@ -1,14 +1,13 @@
-import { useEffect, useState } from 'react'
-import { FiDownload, FiMinus, FiSquare, FiX } from 'react-icons/fi'
-import { GROUPS, PAGES, STRATEGIES, navigate } from './nav'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { FiDownload, FiMinus, FiSearch, FiSquare, FiX, FiDroplet, FiFeather } from 'react-icons/fi'
+import { EXPERIMENTAL_IDS, PAGES, SECTIONS, UTILITY, navigate, sectionOf } from './nav'
 import { invoke, isOverlayWindow, openExternal, useEvent } from './lib/ipc'
 import { RiotProvider, useRiot } from './lib/riot'
-import { applySavedTheme } from './lib/theme'
+import { THEMES, applySavedTheme, getReduceMotion, setReduceMotion, setTheme } from './lib/theme'
 import logo from './assets/spectre-logo.svg'
-import { Button, Modal, ToastHost, toast } from './ui'
+import { AnimatePresence, Button, CommandPalette, Modal, MotionProvider, PageContext, PageTransition, SPRING, SegmentedTabs, ToastHost, cx, m, toast, useReducedMotion } from './ui'
+import { SETTINGS_TABS } from './pages/Settings'
 import Overlay from './pages/Overlay'
-
-const cx = (...c) => c.filter(Boolean).join(' ')
 
 // New-release prompt: a dialog once per version, then an Update button that stays in the title bar.
 // Installed copies update in place; dev builds and loose exes open the release page to download.
@@ -34,7 +33,7 @@ function UpdateButton() {
   return (
     <>
       <button onClick={go} disabled={pct != null} title={s.canInstall ? 'Download, install and restart' : 'Open the download page'}
-        className='accent-fill h-7 mr-2 px-3.5 rounded-full text-xs font-semibold flex items-center gap-1.5 text-bg hover:brightness-110 disabled:opacity-80 transition-[filter,opacity]'>
+        className='accent-fill h-8 mr-1.5 px-3.5 rounded-full text-xs font-semibold flex items-center gap-1.5 text-bg hover:brightness-110 disabled:opacity-80 transition-[filter,opacity]'>
         <FiDownload size={13} />{pct != null ? `Updating ${pct}%` : `${s.canInstall ? 'Update' : 'Download'} ${s.latest}`}
       </button>
       <Modal open={prompt} onClose={() => setPrompt(false)} title={`Spectre ${s.latest} is here`} width={420}
@@ -48,114 +47,182 @@ function UpdateButton() {
   )
 }
 
-function TitleBar({ tab, setTab }) {
+function WindowControls() {
   return (
-    <div data-tauri-drag-region className='drag h-12 shrink-0 flex items-center justify-between pl-3 pr-1.5'>
-      <div className='glass flex items-center gap-0.5 p-1 rounded-full'>
-        {[{ id: 'home', label: 'Home' }, { id: 'strategies', label: 'Tactics' }].map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)}
-            className={cx('h-7 px-4 rounded-full text-xs font-semibold transition-all duration-200',
-              tab === t.id ? 'accent-soft text-text' : 'text-muted hover:text-text')}>
-            {t.label}
+    <div className='flex items-center'>
+      {[['win:minimize', FiMinus, 'hover:bg-surface-2 hover:text-text'], ['win:maximize', FiSquare, 'hover:bg-surface-2 hover:text-text'], ['win:close', FiX, 'hover:bg-bad hover:text-white']].map(([ch, Icon, hov]) => (
+        <button key={ch} onClick={() => invoke(ch)} aria-label={ch.slice(4)} className={cx('w-10 h-8 flex items-center justify-center text-muted rounded-full transition-colors', hov)}>
+          <Icon size={ch === 'win:maximize' ? 12 : 15} />
+        </button>
+      ))}
+    </div>
+  )
+}
+
+// Floating glass dock: the six sections, with a spring pill under the active one.
+function Dock({ section, onSection }) {
+  const reduce = useReducedMotion()
+  return (
+    <nav className='glass-strong flex items-center gap-0.5 p-1 rounded-full'>
+      {SECTIONS.map(s => {
+        const on = section === s.id
+        return (
+          <button key={s.id} onClick={() => onSection(s.id)} title={s.label}
+            className={cx('relative h-9 px-3.5 rounded-full flex items-center gap-2 text-[13px] font-semibold transition-colors duration-200', on ? 'text-text' : 'text-muted hover:text-text')}>
+            {on && <m.span layoutId='dock-pill' className='accent-soft absolute inset-0 rounded-full' transition={reduce ? { duration: 0 } : SPRING} />}
+            <s.icon className={cx('relative shrink-0', on && 'text-accent')} size={15} />
+            <span className='relative max-[1200px]:hidden'>{s.label}</span>
           </button>
-        ))}
-      </div>
-      <div className='flex items-center gap-0.5'>
-        <UpdateButton />
-        {[['win:minimize', FiMinus, 'hover:bg-surface-2 hover:text-text'], ['win:maximize', FiSquare, 'hover:bg-surface-2 hover:text-text'], ['win:close', FiX, 'hover:bg-bad hover:text-white']].map(([ch, Icon, hov]) => (
-          <button key={ch} onClick={() => invoke(ch)} className={cx('w-10 h-8 flex items-center justify-center text-muted rounded-full transition-colors', hov)}>
-            <Icon size={ch === 'win:maximize' ? 12 : 15} />
-          </button>
-        ))}
+        )
+      })}
+    </nav>
+  )
+}
+
+function Brand() {
+  const riot = useRiot()
+  return (
+    <div className='flex items-center gap-3 min-w-0'>
+      <img src={logo} alt='' className='w-8 h-8 rounded-[10px] shadow-[0_6px_18px_-6px_rgb(var(--accent)/0.6)]' draggable={false} />
+      <div className='min-w-0 leading-none'>
+        <div className='font-brand text-[13px] text-text'>Spectre</div>
+        <div className='mt-1 flex items-center gap-1.5 text-[11px] text-muted truncate max-[1200px]:hidden'>
+          <span className={cx('w-1.5 h-1.5 rounded-full shrink-0', riot.connected ? 'bg-good shadow-[0_0_8px_rgb(var(--good))]' : 'bg-warn anim-pulse')} />
+          <span className='truncate max-w-[160px]'>{riot.connected ? `${riot.gameName} #${riot.tagLine}` : 'Waiting for Riot Client'}</span>
+        </div>
       </div>
     </div>
   )
 }
 
-function Sidebar({ page, setPage }) {
-  const riot = useRiot()
+// Right side of the second row: palette trigger + utility pages.
+function Utilities({ page, onOpen, onPalette }) {
+  const reduce = useReducedMotion()
   return (
-    <aside className='glass-strong w-[220px] shrink-0 flex flex-col ml-3 mb-3 rounded-2xl overflow-hidden'>
-      <div className='px-4 pt-4 pb-3 flex items-center gap-2.5'>
-        <img src={logo} alt='' className='w-8 h-8 rounded-[10px] shadow-[0_6px_18px_-6px_rgb(var(--accent)/0.6)]' draggable={false} />
-        <div className='font-brand text-lg font-bold leading-none'>SPECTRE</div>
+    <div className='flex items-center gap-2'>
+      <button onClick={onPalette} title='Search (Ctrl+K)'
+        className='glass h-9 pl-3 pr-1.5 rounded-full flex items-center gap-2 text-[12px] text-muted hover:text-text transition-colors'>
+        <FiSearch size={14} /><span className='max-[1200px]:hidden'>Search</span><span className='kbd max-[1200px]:hidden'>Ctrl K</span>
+      </button>
+      <div className='glass flex items-center gap-0.5 p-1 rounded-full'>
+        {UTILITY.map(u => {
+          const on = page === u.id
+          return (
+            <button key={u.id} onClick={() => onOpen(u.id)} title={u.label} aria-label={u.label}
+              className={cx('relative w-8 h-7 rounded-full flex items-center justify-center transition-colors', on ? 'text-accent' : 'text-muted hover:text-text')}>
+              {on && <m.span layoutId='util-pill' className='accent-soft absolute inset-0 rounded-full' transition={reduce ? { duration: 0 } : SPRING} />}
+              <u.icon className='relative' size={14} />
+            </button>
+          )
+        })}
       </div>
-      <nav className='flex-1 overflow-y-auto px-2.5 pb-2'>
-        {GROUPS.map(g => (
-          <div key={g.label} className='mb-2.5'>
-            <div className='px-2.5 pb-1 pt-2 text-[11px] font-semibold text-muted/70'>{g.label}</div>
-            {g.pages.map(p => {
-              const active = page === p.id
-              return (
-                <button key={p.id} onClick={() => setPage(p.id)}
-                  className={cx('group relative w-full flex items-center gap-3 h-9 px-2.5 rounded-[10px] text-[13px] font-medium transition-all duration-200',
-                    active ? 'accent-soft text-text' : 'text-muted hover:text-text hover:bg-surface-2')}>
-                  <p.icon className={cx('shrink-0 transition-colors', active ? 'text-accent' : 'group-hover:text-text')} size={15} />
-                  {p.label}
-                </button>
-              )
-            })}
-          </div>
-        ))}
-      </nav>
-      <div className='glass m-2.5 p-3 rounded-xl flex items-center gap-3'>
-        <span className={cx('w-2 h-2 rounded-full shrink-0', riot.connected ? 'bg-good shadow-[0_0_10px_rgb(var(--good))]' : 'bg-warn anim-pulse')} />
-        <div className='min-w-0'>
-          <div className='text-[13px] font-semibold truncate'>{riot.connected ? riot.gameName : 'Not connected'}</div>
-          <div className='text-[11px] text-muted truncate'>{riot.connected ? `#${riot.tagLine} · ${String(riot.shard).toUpperCase()}` : 'Waiting for Riot Client'}</div>
-        </div>
-      </div>
-    </aside>
+    </div>
   )
 }
 
-// Keeps a page mounted after its first visit and only hides it, so its state survives navigation.
-function KeepAlive({ id, active, visited, children }) {
-  if (!visited.has(id)) return null
-  return <div className={cx('absolute inset-0', active ? 'anim-page' : 'hidden')}>{children}</div>
+// Page context per section (stable objects so pages do not re-render on every shell render).
+const CONTEXTS = Object.fromEntries(Object.values(PAGES).map(p => {
+  const s = p.section && SECTIONS.find(x => x.id === p.section)
+  return [p.id, { section: s ? s.label : null, embedded: false }]
+}))
+
+// Experimental tool ids open Settings > Experimental focused on that tool; unknown ids fall back to Home.
+function resolve(page, params) {
+  if (EXPERIMENTAL_IDS.has(page)) return ['settings', { tab: 'experimental', tool: page }]
+  if (!PAGES[page]) return ['dashboard', {}]
+  return [page, params || {}]
 }
 
 function Shell() {
-  const [tab, setTab] = useState('home')
   const [page, setPage] = useState('dashboard')
   const [params, setParams] = useState({})
+  const [palette, setPalette] = useState(false)
   const [visited] = useState(() => new Set())
+  const lastInSection = useRef({})
   visited.add(page)
+  const section = sectionOf(page)
+  if (section) lastInSection.current[section.id] = page
 
-  useEffect(() => {
-    invoke('settings:get').then(s => s?.startPage && PAGES[s.startPage] && setPage(s.startPage)).catch(() => { })
+  const go = useCallback((id, p) => {
+    const [to, prm] = resolve(id, p)
+    setPage(to)
+    setParams(x => ({ ...x, [to]: prm }))
   }, [])
 
   useEffect(() => {
-    const onNav = e => {
-      setTab('home')
-      setPage(e.detail.page)
-      setParams(p => ({ ...p, [e.detail.page]: e.detail.params || {} }))
-    }
+    invoke('settings:get').then(s => s?.startPage && go(s.startPage)).catch(() => { })
+  }, [go])
+
+  useEffect(() => {
+    const onNav = e => go(e.detail.page, e.detail.params)
     window.addEventListener('spectre:navigate', onNav)
     return () => window.removeEventListener('spectre:navigate', onNav)
+  }, [go])
+
+  useEffect(() => {
+    const onKey = e => {
+      if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'k') { e.preventDefault(); setPalette(o => !o) }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
   }, [])
 
-  const Strat = STRATEGIES.component
+  const openSection = id => {
+    const s = SECTIONS.find(x => x.id === id)
+    go(lastInSection.current[id] || s.pages[0].id)
+  }
+
+  const items = useMemo(() => [
+    ...SECTIONS.flatMap(s => s.pages.map(p => ({ id: 'p:' + p.id, label: p.label === s.label ? s.label : p.label, hint: s.pages.length > 1 ? s.label : '', group: 'Go to', icon: p.icon, keywords: s.label, run: () => go(p.id) }))),
+    ...UTILITY.map(u => ({ id: 'p:' + u.id, label: u.label, group: 'App', icon: u.icon, run: () => go(u.id) })),
+    ...SETTINGS_TABS.filter(t => t.value !== 'experimental').map(t => ({ id: 's:' + t.value, label: `Settings: ${t.label}`, group: 'Settings', icon: t.icon, keywords: 'preferences', run: () => go('settings', { tab: t.value }) })),
+    { id: 'a:motion', label: 'Toggle reduce motion', group: 'Actions', icon: FiFeather, keywords: 'animation accessibility', run: () => { const v = !getReduceMotion(); setReduceMotion(v); toast(v ? 'Reduced motion on' : 'Reduced motion off') } },
+    ...THEMES.map(t => ({ id: 't:' + t.id, label: `Theme: ${t.name}`, group: 'Themes', icon: FiDroplet, keywords: 'color appearance', run: () => setTheme(t.id) })),
+  ], [go])
+
+  const sub = section && section.pages.length > 1 ? section : null
   return (
     <div className='h-full flex flex-col relative'>
-      <div className='backdrop' aria-hidden='true'><div className='orb orb-1' /><div className='orb orb-2' /><div className='orb orb-3' /></div>
-      <div className='relative z-10'><TitleBar tab={tab} setTab={setTab} /></div>
-      <div className='flex-1 flex min-h-0 relative z-10'>
-        <div className={cx('flex-1 flex min-h-0', tab !== 'home' && 'hidden')}>
-          <Sidebar page={page} setPage={setPage} />
-          <main className='flex-1 relative min-w-0'>
-            {Object.values(PAGES).map(p => (
-              <KeepAlive key={p.id} id={p.id} active={page === p.id} visited={visited}>
-                <p.component params={params[p.id] || {}} active={tab === 'home' && page === p.id} />
-              </KeepAlive>
-            ))}
-          </main>
+      <div className='backdrop' aria-hidden='true'><div className='backdrop-fields' /></div>
+
+      {/* Row 1: brand, dock, update + window controls. The bar itself is the window drag region. */}
+      <header data-tauri-drag-region className='drag relative z-20 h-16 shrink-0 flex items-center justify-between pl-5 pr-2'>
+        <Brand />
+        <div className='absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2'>
+          <Dock section={section?.id} onSection={openSection} />
         </div>
-        <div className={cx('flex-1 min-h-0', tab !== 'strategies' ? 'hidden' : 'anim-page')}>
-          <Strat active={tab === 'strategies'} />
+        <div className='flex items-center'>
+          <UpdateButton />
+          <WindowControls />
         </div>
+      </header>
+
+      {/* Row 2: section sub-tabs (centered), search + utility pages (right). */}
+      <div data-tauri-drag-region className='drag relative z-20 h-12 shrink-0 flex items-center justify-end px-5'>
+        <div className='absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2'>
+          <AnimatePresence mode='wait' initial={false}>
+            {sub && (
+              <m.div key={sub.id} initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.16 }}>
+                <SegmentedTabs size='sm' layoutId={'sub-' + sub.id} value={page} onChange={go}
+                  tabs={sub.pages.map(p => ({ value: p.id, label: p.label, icon: p.icon }))} />
+              </m.div>
+            )}
+          </AnimatePresence>
+        </div>
+        <Utilities page={page} onOpen={go} onPalette={() => setPalette(true)} />
       </div>
+
+      <main className='flex-1 relative min-h-0 z-10'>
+        {Object.values(PAGES).map(p => visited.has(p.id) && (
+          <PageContext.Provider key={p.id} value={CONTEXTS[p.id]}>
+            <PageTransition active={page === p.id} className='absolute inset-0'>
+              <p.component params={params[p.id] || {}} active={page === p.id} />
+            </PageTransition>
+          </PageContext.Provider>
+        ))}
+      </main>
+
+      <CommandPalette open={palette} onClose={() => setPalette(false)} items={items} />
     </div>
   )
 }
@@ -165,9 +232,11 @@ export default function App() {
   // The overlay window loads the same bundle.
   const isOverlay = isOverlayWindow()
   return (
-    <RiotProvider>
-      {isOverlay ? <Overlay /> : <Shell />}
-      <ToastHost />
-    </RiotProvider>
+    <MotionProvider>
+      <RiotProvider>
+        {isOverlay ? <Overlay /> : <Shell />}
+        <ToastHost />
+      </RiotProvider>
+    </MotionProvider>
   )
 }

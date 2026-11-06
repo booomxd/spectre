@@ -1,38 +1,84 @@
 // Shared UI kit. Every page builds from these so spacing, color and motion stay consistent.
-// Colors come from theme tokens (see tailwind.config.js): bg, surface, surface-2, line, text, muted, accent, good, bad, warn.
-import React, { createContext, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react'
+// Colors come from theme tokens (see tailwind.config.js): bg, panel, surface, surface-2, line, text, muted, accent, accent-2, good, bad, warn.
+// Surfaces and type helpers are CSS classes in src/index.css (.glass, .glass-strong, .glass-inset, .accent-soft, .display, .eyebrow...).
+import React, { createContext, useContext, useEffect, useId } from 'react'
 import { createPortal } from 'react-dom'
 import { FiAlertTriangle, FiInbox, FiLoader, FiX } from 'react-icons/fi'
 import { useRiot } from '../lib/riot'
+import { AnimatePresence, EASE, SPRING, m, useReducedMotion } from './motion'
 
-const cx = (...c) => c.filter(Boolean).join(' ')
+export { MotionProvider, PageTransition, Stagger, Item, FadeIn, Swap, m, AnimatePresence, LayoutGroup, useReducedMotion, EASE, SPRING, SPRING_SOFT } from './motion'
+export { default as CommandPalette } from './CommandPalette'
 
-// Page frame: header (title, subtitle, actions) + scrolling body.
-export function Page({ title, subtitle, actions, children, className, bodyClassName }) {
+export const cx = (...c) => c.filter(Boolean).join(' ')
+
+// Set by the shell / Settings: `section` is the dock section a page belongs to (shown as the eyebrow over the title);
+// `embedded` renders a page inside another page (Settings > Experimental) without its own scroller or outer padding.
+export const PageContext = createContext({ section: null, embedded: false })
+
+// Page frame: eyebrow + display title + subtitle + actions, then a scrolling body.
+// Props are unchanged from v2 (title, subtitle, actions, children, className, bodyClassName); `eyebrow` overrides the section label.
+export function Page({ title, subtitle, actions, eyebrow, children, className, bodyClassName }) {
+  const { section, embedded } = useContext(PageContext)
+  const kicker = eyebrow ?? section
+  if (embedded) {
+    return (
+      <div className={className}>
+        {(title || actions) && (
+          <header className='flex items-end justify-between gap-4 pb-5'>
+            <div className='min-w-0'>
+              {title && <h2 className='display text-[26px] text-text'>{title}</h2>}
+              {subtitle && <p className='mt-2 text-[13px] text-muted'>{subtitle}</p>}
+            </div>
+            {actions && <div className='flex items-center gap-2 shrink-0'>{actions}</div>}
+          </header>
+        )}
+        <div className={bodyClassName}>{children}</div>
+      </div>
+    )
+  }
   return (
     <div className={cx('h-full flex flex-col', className)}>
       {(title || actions) && (
-        <header className='flex items-end justify-between gap-4 px-7 pt-6 pb-5'>
+        <header className='flex items-end justify-between gap-6 px-8 pt-7 pb-6'>
           <div className='min-w-0'>
-            {title && <h1 className='font-display text-[30px] font-bold leading-none tracking-tight text-text'>{title}</h1>}
-            {subtitle && <p className='mt-2 text-[13px] text-muted'>{subtitle}</p>}
+            {kicker && title && <div className='eyebrow mb-2.5 flex items-center gap-2'><span className='w-1.5 h-1.5 rounded-full bg-accent shadow-[0_0_10px_rgb(var(--accent))]' />{kicker}</div>}
+            {title && <h1 className='display text-[38px] text-text'>{title}</h1>}
+            {subtitle && <p className='mt-2.5 text-[13.5px] text-muted max-w-2xl'>{subtitle}</p>}
           </div>
           {actions && <div className='flex items-center gap-2 shrink-0'>{actions}</div>}
         </header>
       )}
-      <div className={cx('flex-1 overflow-y-auto px-7 pb-7', bodyClassName)}>{children}</div>
+      <div className={cx('flex-1 overflow-y-auto px-8 pb-8', bodyClassName)}>{children}</div>
     </div>
   )
 }
 
-export function Card({ className, hover, children, as: Tag = 'div', ...rest }) {
-  return <Tag className={cx('glass rounded-xl', hover && 'lift cursor-pointer', className)} {...rest}>{children}</Tag>
+// Card: glass surface, 24px radius by default (pages may still pass rounded-*).
+// hover = lift + pointer spotlight; glow = accent ring glow (selected / featured); blur = opt-in backdrop blur.
+export function Card({ className, hover, glow, blur, children, as: Tag = 'div', ...rest }) {
+  return (
+    <Tag className={cx('glass rounded-2xl', hover && 'lift spot cursor-pointer', glow && 'accent-glow', blur && 'glass-blur', className)} {...rest}>{children}</Tag>
+  )
 }
 
 export function SectionTitle({ children, right, className }) {
   return (
-    <div className={cx('flex items-center justify-between mb-3', className)}>
-      <h2 className='text-[11px] font-semibold tracking-[0.16em] uppercase text-muted'>{children}</h2>
+    <div className={cx('flex items-center justify-between gap-3 mb-3.5', className)}>
+      <h2 className='eyebrow'>{children}</h2>
+      {right}
+    </div>
+  )
+}
+
+// Section heading for bento tiles / larger groups: bold title + optional hint and right slot.
+export function Heading({ children, hint, right, className }) {
+  return (
+    <div className={cx('flex items-end justify-between gap-3 mb-4', className)}>
+      <div className='min-w-0'>
+        <h3 className='font-display text-[17px] font-bold tracking-tight text-text'>{children}</h3>
+        {hint && <p className='text-[12px] text-muted mt-1'>{hint}</p>}
+      </div>
       {right}
     </div>
   )
@@ -42,22 +88,24 @@ const BTN = {
   primary: 'accent-fill text-bg hover:brightness-110',
   subtle: 'glass text-text hover:border-accent/40 hover:bg-surface-2',
   ghost: 'text-muted hover:text-text hover:bg-surface-2',
-  danger: 'bg-bad/15 text-bad border border-bad/30 hover:bg-bad/25',
+  danger: 'bg-bad/12 text-bad border border-bad/30 hover:bg-bad/20',
+  glow: 'accent-soft text-text hover:bg-accent/20',
 }
 export function Button({ variant = 'subtle', size = 'md', loading, icon: Icon, className, children, disabled, ...rest }) {
-  const sz = size === 'sm' ? 'h-8 px-3.5 text-xs' : size === 'lg' ? 'h-11 px-6 text-sm' : 'h-9 px-4 text-[13px]'
+  const sz = size === 'sm' ? 'h-8 px-3.5 text-xs' : size === 'lg' ? 'h-11 px-6 text-sm' : size === 'icon' ? 'h-9 w-9 text-[15px]' : 'h-9 px-4 text-[13px]'
   return (
     <button disabled={disabled || loading}
-      className={cx('inline-flex items-center justify-center gap-2 rounded-full font-semibold transition-all duration-200 active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none', sz, BTN[variant], className)} {...rest}>
+      className={cx('inline-flex items-center justify-center gap-2 rounded-full font-semibold transition-[transform,filter,background-color,border-color,color,box-shadow] duration-200 ease-out active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none',
+        sz, BTN[variant] || BTN.subtle, className)} {...rest}>
       {loading ? <FiLoader className='animate-spin' /> : Icon && <Icon />}
       {children}
     </button>
   )
 }
 
-const FIELD = 'glass-field w-full h-9 rounded-lg px-3 text-[13px] text-text placeholder:text-muted/60 outline-none transition-[border-color,box-shadow] duration-200'
+const FIELD = 'glass-field w-full h-10 rounded-xl px-3.5 text-[13px] text-text placeholder:text-muted/60 outline-none transition-[border-color,box-shadow] duration-200'
 export const Input = React.forwardRef(({ className, ...rest }, ref) => <input ref={ref} className={cx(FIELD, className)} {...rest} />)
-export const Textarea = React.forwardRef(({ className, ...rest }, ref) => <textarea ref={ref} className={cx(FIELD, 'h-auto py-2 resize-none', className)} {...rest} />)
+export const Textarea = React.forwardRef(({ className, ...rest }, ref) => <textarea ref={ref} className={cx(FIELD, 'h-auto py-2.5 resize-none', className)} {...rest} />)
 export function Select({ className, options, ...rest }) {
   return (
     <select className={cx(FIELD, 'pr-8 cursor-pointer', className)} {...rest}>
@@ -69,65 +117,71 @@ export function Select({ className, options, ...rest }) {
 export function Label({ children, hint }) {
   return (
     <div className='mb-1.5'>
-      <span className='text-[12px] font-semibold text-muted'>{children}</span>
-      {hint && <p className='text-[11px] text-muted/70 mt-0.5'>{hint}</p>}
+      <span className='text-[12.5px] font-semibold text-text/90'>{children}</span>
+      {hint && <p className='text-[11.5px] text-muted mt-0.5'>{hint}</p>}
     </div>
   )
 }
 
+// Switch. The knob moves by transform.
 export function Toggle({ checked, onChange, label, hint, disabled }) {
   return (
     <label className={cx('flex items-center justify-between gap-4 cursor-pointer', disabled && 'opacity-50 pointer-events-none')}>
-      {(label || hint) && <span><span className='block text-[13px] text-text'>{label}</span>{hint && <span className='block text-[11px] text-muted'>{hint}</span>}</span>}
-      <button type='button' onClick={() => onChange(!checked)}
-        className={cx('relative w-11 h-6 rounded-full transition-all duration-300 shrink-0', checked ? 'accent-fill' : 'glass-field')}>
-        <span className={cx('absolute top-[3px] w-[18px] h-[18px] rounded-full bg-white shadow-[0_2px_6px_rgb(0_0_0/0.35)] transition-all duration-300', checked ? 'left-[23px]' : 'left-[3px]')} />
+      {(label || hint) && <span className='min-w-0'><span className='block text-[13px] font-medium text-text'>{label}</span>{hint && <span className='block text-[11.5px] text-muted mt-0.5'>{hint}</span>}</span>}
+      <button type='button' role='switch' aria-checked={!!checked} onClick={() => onChange(!checked)}
+        className={cx('relative w-11 h-6 rounded-full transition-[background-color,box-shadow] duration-300 shrink-0', checked ? 'accent-fill' : 'glass-field')}>
+        <span className={cx('absolute top-[3px] left-[3px] w-[18px] h-[18px] rounded-full bg-white shadow-[0_2px_6px_rgb(0_0_0/0.35)] transition-transform duration-300 ease-spring', checked && 'translate-x-5')} />
       </button>
     </label>
   )
 }
 
-// Segmented tabs with a sliding indicator.
-export function Tabs({ tabs, value, onChange, className }) {
-  const refs = useRef({})
-  const [bar, setBar] = useState({ left: 0, width: 0 })
-  useLayoutEffect(() => {
-    const el = refs.current[value]
-    if (el) setBar({ left: el.offsetLeft, width: el.offsetWidth })
-  }, [value, tabs.length])
+// Segmented control with a spring pill that slides under the active option (shared layoutId).
+// tabs: strings or { value, label, icon?, count? }. size: 'sm' | 'md' | 'lg'. variant: 'glass' (own container) | 'bare'.
+export function SegmentedTabs({ tabs, value, onChange, size = 'md', variant = 'glass', className, layoutId }) {
+  const auto = useId()
+  const id = layoutId || 'seg' + auto
+  const reduce = useReducedMotion()
+  const h = size === 'sm' ? 'h-7 px-3 text-[12px]' : size === 'lg' ? 'h-9 px-4 text-[13px]' : 'h-8 px-3.5 text-[12.5px]'
   return (
-    <div className={cx('glass relative inline-flex p-1 rounded-full', className)}>
-      <span className='accent-soft absolute top-1 bottom-1 rounded-full transition-all duration-300 ease-out' style={bar} />
+    <div role='tablist' className={cx('relative inline-flex items-center gap-0.5', variant === 'glass' && 'glass p-1 rounded-full', className)}>
       {tabs.map(t => {
-        const v = t.value ?? t
+        const v = t?.value ?? t
+        const on = value === v
+        const Icon = t?.icon
         return (
-          <button key={v} ref={el => (refs.current[v] = el)} onClick={() => onChange(v)}
-            className={cx('relative z-10 h-7 px-3.5 rounded-full text-xs font-semibold transition-colors', value === v ? 'text-text' : 'text-muted hover:text-text')}>
-            {t.label ?? t}
+          <button key={v} role='tab' aria-selected={on} onClick={() => onChange(v)}
+            className={cx('relative rounded-full font-semibold inline-flex items-center gap-1.5 whitespace-nowrap transition-colors duration-200', h, on ? 'text-text' : 'text-muted hover:text-text')}>
+            {on && <m.span layoutId={id} className='accent-soft absolute inset-0 rounded-full' transition={reduce ? { duration: 0 } : SPRING} />}
+            {Icon && <Icon className={cx('relative', on && 'text-accent')} size={13} />}
+            <span className='relative'>{t?.label ?? t}</span>
+            {t?.count != null && <span className='relative text-[10px] font-bold text-muted tabular-nums'>{t.count}</span>}
           </button>
         )
       })}
     </div>
   )
 }
+// v2 name, same API ({ tabs, value, onChange, className }).
+export function Tabs(props) { return <SegmentedTabs {...props} /> }
 
 const TONES = {
   neutral: 'bg-surface-2 text-muted border-line',
-  accent: 'bg-accent/15 text-accent border-accent/30',
-  good: 'bg-good/15 text-good border-good/30',
-  bad: 'bg-bad/15 text-bad border-bad/30',
-  warn: 'bg-warn/15 text-warn border-warn/30',
+  accent: 'bg-accent/12 text-accent border-accent/30',
+  good: 'bg-good/12 text-good border-good/30',
+  bad: 'bg-bad/12 text-bad border-bad/30',
+  warn: 'bg-warn/12 text-warn border-warn/30',
 }
 export function Badge({ tone = 'neutral', className, children }) {
-  return <span className={cx('inline-flex items-center gap-1 h-5 px-2 rounded-full border text-[10px] font-semibold tracking-wide uppercase', TONES[tone], className)}>{children}</span>
+  return <span className={cx('inline-flex items-center gap-1 h-5 px-2 rounded-full border text-[10px] font-semibold tracking-wide uppercase', TONES[tone] || TONES.neutral, className)}>{children}</span>
 }
 
-export function Stat({ label, value, sub, className }) {
+export function Stat({ label, value, sub, className, size = 'md' }) {
   return (
     <div className={className}>
-      <div className='text-[11px] font-medium text-muted'>{label}</div>
-      <div className='font-display text-2xl font-bold text-text leading-tight tabular-nums'>{value}</div>
-      {sub && <div className='text-[11px] text-muted'>{sub}</div>}
+      <div className='text-[11px] font-semibold text-muted'>{label}</div>
+      <div className={cx('font-display font-bold text-text leading-tight tabular-nums mt-0.5', size === 'lg' ? 'text-[34px] tracking-tight' : 'text-2xl')}>{value}</div>
+      {sub && <div className='text-[11px] text-muted mt-0.5'>{sub}</div>}
     </div>
   )
 }
@@ -138,11 +192,14 @@ export function Spinner({ className }) { return <FiLoader className={cx('animate
 
 export function Empty({ icon: Icon = FiInbox, title, hint, action, className }) {
   return (
-    <div className={cx('anim-fade flex flex-col items-center justify-center text-center gap-2 py-14', className)}>
-      <div className='accent-soft w-14 h-14 rounded-2xl flex items-center justify-center text-accent text-xl mb-1'><Icon /></div>
-      {title && <p className='text-sm font-semibold text-text'>{title}</p>}
-      {hint && <p className='text-xs text-muted max-w-xs'>{hint}</p>}
-      {action && <div className='mt-2'>{action}</div>}
+    <div className={cx('anim-fade flex flex-col items-center justify-center text-center gap-2 py-16', className)}>
+      <div className='relative mb-2'>
+        <span className='halo -inset-6' />
+        <div className='glass relative w-14 h-14 rounded-2xl flex items-center justify-center text-accent text-xl'><Icon /></div>
+      </div>
+      {title && <p className='text-[15px] font-semibold tracking-tight text-text'>{title}</p>}
+      {hint && <p className='text-[12.5px] text-muted max-w-xs leading-relaxed'>{hint}</p>}
+      {action && <div className='mt-3'>{action}</div>}
     </div>
   )
 }
@@ -159,6 +216,14 @@ export function RequireRiot({ children, hint }) {
   return <Empty icon={FiLoader} title='Waiting for the Riot Client' hint={hint || 'Open the Riot Client (and VALORANT for live features). Spectre connects automatically.'} />
 }
 
+// Dim layer under modals / the palette. No blur here: the panel above it blurs, so blur never stacks.
+export const Scrim = ({ onMouseDown, children, className }) => (
+  <m.div className={cx('fixed inset-0 z-50 flex bg-[rgb(var(--scrim)/var(--scrim-a))]', className)} onMouseDown={onMouseDown}
+    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}>
+    {children}
+  </m.div>
+)
+
 export function Modal({ open, onClose, title, children, footer, width = 480 }) {
   useEffect(() => {
     if (!open) return
@@ -166,29 +231,33 @@ export function Modal({ open, onClose, title, children, footer, width = 480 }) {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [open, onClose])
-  if (!open) return null
   return createPortal(
-    <div className='anim-fade fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-md' onMouseDown={onClose}>
-      <div className='glass-strong anim-pop rounded-2xl max-h-[85vh] flex flex-col' style={{ width }} onMouseDown={e => e.stopPropagation()}>
-        <div className='flex items-center justify-between px-6 pt-5 pb-3'>
-          <h3 className='font-display text-xl font-bold tracking-tight'>{title}</h3>
-          <button className='w-8 h-8 -mr-2 rounded-full flex items-center justify-center text-muted hover:text-text hover:bg-surface-2 transition-colors' onClick={onClose}><FiX /></button>
-        </div>
-        <div className='px-6 pb-6 overflow-y-auto'>{children}</div>
-        {footer && <div className='px-6 py-4 border-t border-line flex justify-end gap-2'>{footer}</div>}
-      </div>
-    </div>, document.body)
+    <AnimatePresence>
+      {open && (
+        <Scrim key='modal' className='items-center justify-center' onMouseDown={onClose}>
+          <m.div className='glass-strong rounded-3xl max-h-[85vh] flex flex-col' style={{ width }} onMouseDown={e => e.stopPropagation()}
+            initial={{ opacity: 0, scale: 0.96, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.98, y: 6 }} transition={SPRING}>
+            <div className='flex items-center justify-between px-7 pt-6 pb-3'>
+              <h3 className='display text-[22px]'>{title}</h3>
+              <button className='w-8 h-8 -mr-2 rounded-full flex items-center justify-center text-muted hover:text-text hover:bg-surface-2 transition-colors' onClick={onClose}><FiX /></button>
+            </div>
+            <div className='px-7 pb-6 overflow-y-auto'>{children}</div>
+            {footer && <div className='px-7 py-4 border-t border-line flex justify-end gap-2'>{footer}</div>}
+          </m.div>
+        </Scrim>
+      )}
+    </AnimatePresence>, document.body)
 }
 
 // Toasts: toast.success('Saved'), toast.error('Failed: ...'), toast('Info').
 const listeners = new Set()
 let nextId = 1
 export function toast(message, tone = 'neutral') { listeners.forEach(l => l({ id: nextId++, message, tone })) }
-toast.success = m => toast(m, 'good')
-toast.error = m => toast(m, 'bad')
+toast.success = msg => toast(msg, 'good')
+toast.error = msg => toast(msg, 'bad')
 
 export function ToastHost() {
-  const [items, setItems] = useState([])
+  const [items, setItems] = React.useState([])
   useEffect(() => {
     const add = t => {
       setItems(list => [...list, t])
@@ -198,14 +267,17 @@ export function ToastHost() {
     return () => listeners.delete(add)
   }, [])
   return createPortal(
-    <div className='fixed bottom-5 right-5 z-[60] flex flex-col gap-2 items-end'>
-      {items.map(t => (
-        <div key={t.id} className={cx('glass-strong anim-rise flex items-center gap-2.5 max-w-sm rounded-full px-4 py-2.5 text-[13px] font-medium',
-          t.tone === 'good' ? '!border-good/40' : t.tone === 'bad' ? '!border-bad/40' : '')}>
-          <span className={cx('w-2 h-2 rounded-full shadow-[0_0_10px_currentColor]', t.tone === 'good' ? 'bg-good text-good' : t.tone === 'bad' ? 'bg-bad text-bad' : 'bg-accent text-accent')} />
-          {t.message}
-        </div>
-      ))}
+    <div className='fixed bottom-5 right-5 z-[60] flex flex-col gap-2 items-end pointer-events-none'>
+      <AnimatePresence initial={false}>
+        {items.map(t => (
+          <m.div key={t.id} layout initial={{ opacity: 0, y: 14, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, x: 24, transition: { duration: 0.16 } }} transition={SPRING}
+            className={cx('glass-strong pointer-events-auto flex items-center gap-2.5 max-w-sm rounded-full px-4 py-2.5 text-[13px] font-medium',
+              t.tone === 'good' ? '!border-good/40' : t.tone === 'bad' ? '!border-bad/40' : '')}>
+            <span className={cx('w-2 h-2 rounded-full shrink-0 shadow-[0_0_10px_currentColor]', t.tone === 'good' ? 'bg-good text-good' : t.tone === 'bad' ? 'bg-bad text-bad' : 'bg-accent text-accent')} />
+            {t.message}
+          </m.div>
+        ))}
+      </AnimatePresence>
     </div>, document.body)
 }
 

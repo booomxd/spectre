@@ -5,10 +5,11 @@ import { invoke, openExternal, useEvent, useInvoke } from '../../lib/ipc'
 import { useRiot } from '../../lib/riot'
 
 const START_PAGES = [
-  ['dashboard', 'Dashboard'], ['friends', 'Friends'], ['live', 'Live Match'], ['progression', 'Progression'], ['loadout', 'Loadout'],
-  ['search', 'Player Search'], ['history', 'Match History'], ['memo', 'Notes'], ['friendlog', 'Activity'], ['activity', 'Encounters'], ['shop', 'Shop'],
-  ['discord', 'Discord'], ['weapons', 'Weapons'], ['leaderboard', 'Leaderboard'], ['rank', 'Rank Editor'],
-  ['customize', 'Customize'], ['premier', 'Premier'], ['status', 'Status'], ['patchnotes', 'Patch Notes'], ['settings', 'Settings'],
+  ['dashboard', 'Home'], ['live', 'Live Match'],
+  ['progression', 'Career: Progression'], ['history', 'Career: Matches'], ['activity', 'Career: Encounters'], ['leaderboard', 'Career: Leaderboard'],
+  ['friends', 'Squad: Friends'], ['friendlog', 'Squad: Feed'], ['memo', 'Squad: Notes'], ['search', 'Squad: Lookup'],
+  ['loadout', 'Arsenal: Loadout'], ['shop', 'Arsenal: Store'], ['weapons', 'Arsenal: Weapons'],
+  ['strategies', 'Playbook'], ['discord', 'Discord'], ['patchnotes', "What's new"], ['settings', 'Settings'],
 ].map(([value, label]) => ({ value, label }))
 
 const Row = ({ children }) => <div className='py-4 first:pt-0 last:pb-0 border-b border-line last:border-0'>{children}</div>

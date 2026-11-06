@@ -1,21 +1,21 @@
 import { useState } from 'react'
 import { FiCheck } from 'react-icons/fi'
-import { Card, SectionTitle } from '../../ui'
-import { THEMES, getTheme, setTheme } from '../../lib/theme'
+import { Card, SectionTitle, Toggle } from '../../ui'
+import { THEMES, getReduceMotion, getTheme, setReduceMotion, setTheme } from '../../lib/theme'
 
 // Mini glass app mock drawn with the theme's own tokens (data-theme scopes the CSS variables):
-// an opaque base with two blurred orbs in the theme's colors, a glass sidebar, glass cards and an accent pill.
+// an opaque base with two soft color fields in the theme's colors, a floating glass dock, glass cards and an accent pill.
 function Preview({ t }) {
   return (
     <div data-theme={t.id} className='relative isolate flex h-[104px] rounded-xl overflow-hidden border border-line bg-bg'>
-      <span className='absolute -left-6 -top-8 w-24 h-24 rounded-full blur-2xl opacity-[0.55] -z-10' style={{ background: t.swatch }} />
-      <span className='absolute -right-6 -bottom-10 w-24 h-24 rounded-full blur-2xl opacity-[0.4] -z-10' style={{ background: t.glow }} />
-      <div className='glass w-9 m-1.5 mr-0 rounded-lg flex flex-col items-center gap-1.5 pt-2'>
+      <span className='absolute -left-10 -top-12 w-36 h-36 opacity-[0.55] -z-10' style={{ background: `radial-gradient(closest-side, ${t.swatch}, transparent)` }} />
+      <span className='absolute -right-10 -bottom-14 w-36 h-36 opacity-[0.4] -z-10' style={{ background: `radial-gradient(closest-side, ${t.glow}, transparent)` }} />
+      <div className='glass h-4 mx-auto mt-1.5 px-1.5 rounded-full flex items-center gap-1 absolute left-1/2 -translate-x-1/2'>
         <span className='accent-fill w-4 h-1.5 rounded-full' />
         <span className='w-4 h-1.5 rounded-full bg-muted/40' />
         <span className='w-4 h-1.5 rounded-full bg-muted/40' />
       </div>
-      <div className='flex-1 p-2 flex flex-col gap-1.5'>
+      <div className='flex-1 p-2 pt-7 flex flex-col gap-1.5'>
         <span className='h-2 w-14 rounded-full bg-text/80' />
         <div className='flex gap-1.5 flex-1'>
           <span className='glass flex-1 rounded-lg' />
@@ -32,9 +32,18 @@ function Preview({ t }) {
 export default function Appearance() {
   const [theme, setCurrent] = useState(getTheme())
   const pick = id => { setTheme(id); setCurrent(id) }
+  const [reduce, setReduce] = useState(getReduceMotion)
   return (
-    <section>
-      <SectionTitle>Appearance</SectionTitle>
+    <section className='flex flex-col gap-8'>
+      <div>
+      <SectionTitle>Motion</SectionTitle>
+      <Card className='p-6'>
+        <Toggle checked={reduce} onChange={v => { setReduceMotion(v); setReduce(v) }} label='Reduce motion'
+          hint='Turns off page transitions, sliding indicators and the drifting backdrop. Your Windows animation setting is honored too.' />
+      </Card>
+      </div>
+      <div>
+      <SectionTitle>Theme</SectionTitle>
       <div className='grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-4 stagger'>
         {THEMES.map((t, i) => {
           const on = theme === t.id
@@ -52,6 +61,7 @@ export default function Appearance() {
             </Card>
           )
         })}
+      </div>
       </div>
     </section>
   )
