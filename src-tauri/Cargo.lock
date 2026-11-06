@@ -3698,6 +3698,7 @@ dependencies = [
  "tauri-plugin-opener",
  "tokio",
  "uuid",
+ "windows-registry",
 ]
 
 [[package]]

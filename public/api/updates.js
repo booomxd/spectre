@@ -8,7 +8,8 @@ const crypto = require('crypto');
 const { spawn } = require('child_process');
 const axios = require('axios');
 
-const REPO = 'booomxd/spectre';
+// SPECTRE_UPDATE_REPO=owner/name points update checks at another repo (testing an update without a public release).
+const REPO = /^[\w.-]+\/[\w.-]+$/.test(process.env.SPECTRE_UPDATE_REPO || '') ? process.env.SPECTRE_UPDATE_REPO : 'booomxd/spectre';
 const CHECK_EVERY = 6 * 60 * 60 * 1000;
 
 // "2.10.0" > "2.9.1"

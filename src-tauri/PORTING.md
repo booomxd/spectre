@@ -91,3 +91,23 @@ chat:send, tools:keep, tools:reset, tools:rank, tools:profile, tools:premier, to
 overlay:* , win:*, app:openExternal, app:openDataFolder, playbooks:exportPng. Read-only and temp-store channels are fine.
 Compare outputs structurally (same keys, types, array lengths, same values except time-varying ones like timestamps,
 countdowns, live presence). Treat every difference as a bug in the Rust port unless the JS output is itself time-dependent.
+
+## Migration from Electron
+Spectre 2.4.x (Electron, electron-builder NSIS oneClick, per-user) updates by downloading the newest GitHub release asset
+matching `/setup.*\.exe$/i` (Tauri names it `Spectre_<ver>_x64-setup.exe`), starting it with no arguments and quitting
+~800 ms later. `tauri.conf.json` > `bundle.windows.nsis.installerHooks` points at `src-tauri/windows/installer-hooks.nsh`:
+- `NSIS_HOOK_PREINSTALL` (start of Tauri's Install section, before any file is copied): reads
+  `HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall\30f18f89-1d16-50ed-ad44-867d3f1d6e05` (electron-builder's
+  UUIDv5 of appId `com.spectre.app`) and `HKCU\Software\30f18f89-...\InstallLocation` (normally
+  `%LOCALAPPDATA%\Programs\spectre`). If present: waits up to ~10 s for the old `Spectre.exe` to be released, copies
+  `Uninstall Spectre.exe` to `$PLUGINSDIR` and runs `/S /currentuser --updated /KEEP_APP_DATA _?=<dir>` with ExecWait
+  (up to 3 tries; falls back to running in place). `--updated` guarantees app data is kept and makes the old uninstaller
+  close a still-running Electron app without a prompt; no `--keep-shortcuts`, so the old Start-menu/desktop shortcuts and
+  the uninstall entry are removed. Failures are tolerated (the Tauri install continues). If the key is stale (exe and
+  uninstaller both gone) the two leftover keys are deleted. It refuses to target `$INSTDIR` or `%APPDATA%\Spectre`.
+- Autostart: Electron's `HKCU\...\Run "electron.app.Spectre"` (+ its `StartupApproved\Run` value) is deleted; if it was
+  present and not disabled in Task Manager, `NSIS_HOOK_POSTINSTALL` writes `Run "Spectre" = "<instdir>\spectre.exe "`,
+  the exact name/format tauri-plugin-autostart uses, so "Launch at login" survives.
+- User data (`%APPDATA%\Spectre\store`, `core/riot.rs data_dir()`) is never touched. Tauri's own keys
+  (`Uninstall\Spectre`, `$LOCALAPPDATA\Spectre`) differ from Electron's, so the hook is a no-op on clean machines and on
+  later Tauri -> Tauri updates.
