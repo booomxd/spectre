@@ -13,6 +13,11 @@ export const THEMES = [
   { id: 'abyss', name: 'Abyss', swatch: '#5c84ff', glow: '#78dcff' },
   { id: 'sunset', name: 'Sunset', swatch: '#ff5e8c', glow: '#ffb05c' },
   { id: 'pearl', name: 'Pearl', swatch: '#635bff', glow: '#d65cff', light: true },
+  // Aesthetic themes
+  { id: 'aero', name: 'Frutiger Aero', swatch: '#1ea0e6', glow: '#8be36a', light: true },
+  { id: 'vaporwave', name: 'Vaporwave', swatch: '#ff71ce', glow: '#01cdfe' },
+  { id: 'y2k', name: 'Y2K Chrome', swatch: '#78e6ff', glow: '#d68cff' },
+  { id: 'lofi', name: 'Lo-fi', swatch: '#ffaa78', glow: '#c8a0ff' },
 ]
 
 const KEY = 'spectre.theme'

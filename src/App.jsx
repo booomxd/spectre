@@ -138,13 +138,35 @@ function resolve(page, params) {
   return [page, params || {}]
 }
 
+// Frutiger Aero bubbles (CSS hides them in every other theme): size, start, speed, delay, sway.
+const BUBBLES = [[5, 8, 24, 0, 3], [9, 22, 31, -9, -4], [3.5, 37, 21, -4, 5], [7, 55, 28, -15, -3], [4.5, 68, 23, -7, 4], [11, 80, 36, -20, -5], [3, 91, 19, -2, 3]]
+  .map(([w, l, d, dl, sw]) => ({ width: w + 'vmax', height: w + 'vmax', left: l + '%', '--d': d + 's', '--dl': dl + 's', '--sway': sw + 'vmax' }))
+
 function Shell() {
   const [page, setPage] = useState('dashboard')
   const [params, setParams] = useState({})
   const [palette, setPalette] = useState(false)
   const [visited] = useState(() => new Set())
+  const [, bump] = useState(0)
   const lastInSection = useRef({})
   visited.add(page)
+  // Pre-draw every page in the background, one at a time while the app is idle, so the first visit to a page is
+  // as instant as switching back to it. Experimental tools are left out: they only open from Settings.
+  useEffect(() => {
+    const queue = Object.values(PAGES).map(p => p.id).filter(id => !EXPERIMENTAL_IDS.has(id))
+    let cancelled = false, timer = 0, idleId = 0
+    const idle = window.requestIdleCallback || (fn => setTimeout(fn, 60))
+    const unidle = window.cancelIdleCallback || clearTimeout
+    const step = () => {
+      if (cancelled) return
+      const next = queue.find(id => !visited.has(id))
+      if (!next) return
+      visited.add(next); bump(n => n + 1)
+      timer = setTimeout(() => { idleId = idle(step, { timeout: 400 }) }, 120)
+    }
+    timer = setTimeout(() => { idleId = idle(step, { timeout: 800 }) }, 1200)
+    return () => { cancelled = true; clearTimeout(timer); unidle(idleId) }
+  }, [visited])
   const section = sectionOf(page)
   if (section) lastInSection.current[section.id] = page
 
@@ -188,7 +210,7 @@ function Shell() {
   const sub = section && section.pages.length > 1 ? section : null
   return (
     <div className='h-full flex flex-col relative'>
-      <div className='backdrop' aria-hidden='true'><div className='backdrop-fields'><span className='orb orb-1' /><span className='orb orb-2' /><span className='orb orb-3' /></div></div>
+      <div className='backdrop' aria-hidden='true'><div className='backdrop-fields'><span className='orb orb-1' /><span className='orb orb-2' /><span className='orb orb-3' /><span className='orb orb-4' />{BUBBLES.map((b, i) => <span key={i} className='bubble' style={b} />)}</div></div>
 
       {/* Row 1: brand, dock, update + window controls. The bar itself is the window drag region. */}
       <header data-tauri-drag-region className='drag relative z-20 h-16 shrink-0 flex items-center justify-between pl-5 pr-2'>

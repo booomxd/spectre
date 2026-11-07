@@ -85,10 +85,12 @@ export function Pill({ layoutId, className = 'accent-soft absolute inset-0 round
 // without remounting the page (state survives). Inactive pages are display:none.
 const cx = (...c) => c.filter(Boolean).join(' ')
 export function PageTransition({ active = true, className, children }) {
-  // Keep-alive pages switch with a CSS opacity fade only (compositor-driven, no per-frame JS, no transform), so
-  // showing a large page with glass panels does not stall the frame.
+  // Every page stays drawn. Inactive ones use content-visibility: hidden, which skips their paint but keeps their
+  // layout and rendering state, so switching back is instant instead of re-laying-out the whole page from
+  // display: none. `inert` keeps hidden pages out of focus and clicks. The fade is CSS opacity only.
   return (
-    <div className={cx(className, active && 'page-in')} style={{ display: active ? undefined : 'none', contain: 'layout paint' }}>
+    <div className={cx(className, active && 'page-in')} inert={active ? undefined : ''} aria-hidden={active ? undefined : true}
+      style={{ contentVisibility: active ? 'visible' : 'hidden', pointerEvents: active ? undefined : 'none', zIndex: active ? 1 : 0, contain: 'layout paint style' }}>
       {children}
     </div>
   )
