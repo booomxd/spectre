@@ -57,7 +57,7 @@ function FriendRow({ f, index, canInvite, onInvite, onChat, chatOpen }) {
           {val && s.partySize > 1 && <span className='text-[10.5px] font-semibold text-muted tabular-nums inline-flex items-center gap-1'><FiUsers size={11} />{s.partySize}</span>}
           {val && <RankIcon tier={s.rank} size={26} />}
         </div>
-        <div className='absolute right-1.5 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity glass-strong rounded-full px-0.5'>
+        <div className='absolute right-1.5 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-panel border border-line shadow-lg rounded-full px-0.5'>
           <FriendActions f={f} canInvite={canInvite} onInvite={onInvite} />
         </div>
       </ListRow>
@@ -125,7 +125,7 @@ function PartyPanel({ party, loading, error, reload }) {
         })}
       </Stagger>
       <div className='relative mt-6 pt-5 border-t border-line flex items-center justify-between gap-6'>
-        <div className='flex-1 max-w-sm'>
+        <div className='w-60'>
           <Toggle checked={party.open} disabled={!party.iOwn || busy} label='Open party' hint={party.iOwn ? 'Friends can join freely' : 'Only the leader can change this'}
             onChange={v => act(invoke('social:partyAccess', v), v ? 'Party opened' : 'Party closed')} />
         </div>

@@ -2,11 +2,11 @@ import { FiClock } from 'react-icons/fi'
 import { CUR, fmt, fmtDuration, useCountdown } from './catalog'
 
 // Currency amount with its icon.
-export function Price({ amount, currencyId = CUR.vp, cat, size = 14, className = '' }) {
+export function Price({ amount, currencyId = CUR.vp, cat, size = 14, className = '', onArt = false }) {
   const icon = cat?.items.get(currencyId)?.icon
   return (
     <span className={'inline-flex items-center gap-1.5 font-display font-bold tracking-tight tabular-nums ' + className}>
-      {icon && <img src={icon} alt='' style={{ width: size, height: size }} className='mono-icon object-contain' />}
+      {icon && <img src={icon} alt='' style={{ width: size, height: size }} className={(onArt ? '' : 'mono-icon ') + 'object-contain'} />}
       {fmt(amount)}
     </span>
   )

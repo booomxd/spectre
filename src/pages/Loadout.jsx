@@ -120,7 +120,7 @@ function LoadoutView({ active }) {
         <Card hover onClick={() => open(w)} className={cx('group relative overflow-hidden h-[208px] flex flex-col', pending && '!border-warn/60')}>
           <div className='absolute inset-0 pointer-events-none' style={color ? { background: `radial-gradient(70% 60% at 50% 42%, ${color}2e, transparent 70%)` } : undefined} />
           {color && <div className='absolute inset-x-6 top-0 h-px' style={{ background: `linear-gradient(90deg, transparent, ${color}, transparent)` }} />}
-          <div className='relative flex items-center justify-between px-5 pt-4'>
+          <div className='relative flex items-center justify-between h-7 mt-4 px-5'>
             <span className='eyebrow'>{w.displayName}</span>
             {pending ? <Badge tone='warn'>Pending</Badge> : x.CharmLevelID && buddyIcon[lc(x.CharmLevelID)] && <img src={buddyIcon[lc(x.CharmLevelID)]} className='w-7 h-7 object-contain' title='Buddy' />}
           </div>

@@ -123,7 +123,7 @@ function Utilities({ page, onOpen, onPalette }) {
 // Page context per section (stable objects so pages do not re-render on every shell render).
 const CONTEXTS = Object.fromEntries(Object.values(PAGES).map(p => {
   const s = p.section && SECTIONS.find(x => x.id === p.section)
-  return [p.id, { section: s ? s.label : null, embedded: false }]
+  return [p.id, { section: s ? s.label : 'Spectre', embedded: false }]
 }))
 
 // Experimental tool ids open Settings > Experimental focused on that tool; unknown ids fall back to Home.

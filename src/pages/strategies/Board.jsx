@@ -308,7 +308,7 @@ const Board = forwardRef(function Board({ items, map, side, active, locked, onLi
       <div className='glass-strong absolute left-4 top-4 z-10 flex flex-col gap-1 p-1.5 rounded-2xl anim-fade'>
         {TOOLS.map(t => (
           <button key={t.id} title={t.label} onClick={() => setTool(t.id)} disabled={locked}
-            className={`h-9 w-9 rounded-xl grid place-items-center text-[17px] transition-all duration-150 active:scale-90 disabled:opacity-40 ${tool === t.id ? 'accent-fill text-bg' : 'text-muted hover:text-text hover:bg-surface-2'}`}>
+            className={`h-9 w-9 rounded-xl grid place-items-center text-[17px] transition duration-150 active:scale-90 disabled:opacity-40 ${tool === t.id ? 'accent-fill text-bg' : 'text-muted hover:text-text hover:bg-surface-2'}`}>
             <t.icon />
           </button>
         ))}

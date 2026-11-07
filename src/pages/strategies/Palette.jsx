@@ -66,7 +66,7 @@ export default function Palette({ agents, side, placed, onPlace, notes, onNotes 
           <div className='flex flex-wrap gap-1.5'>
             {(agents || []).map(a => (
               <button key={a.uuid} onClick={() => setAbilityAgent(a.uuid)} title={a.displayName}
-                className={`h-8 w-8 rounded-full overflow-hidden border bg-surface-2 transition-all duration-200 ${ag?.uuid === a.uuid ? 'border-accent ring-2 ring-accent/30 scale-110' : 'border-line opacity-60 hover:opacity-100'}`}>
+                className={`h-8 w-8 rounded-full overflow-hidden border bg-surface-2 transition duration-200 ${ag?.uuid === a.uuid ? 'border-accent ring-2 ring-accent/30 scale-110' : 'border-line opacity-60 hover:opacity-100'}`}>
                 <img src={a.displayIcon} alt='' draggable={false} className='w-full h-full object-cover' />
               </button>
             ))}

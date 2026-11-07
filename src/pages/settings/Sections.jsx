@@ -87,7 +87,7 @@ function Keybind({ value, onChange, ok }) {
     <div className='flex items-center gap-2 shrink-0'>
       {ok === false && !rec && <span className='text-[11px] text-bad'>In use by another app</span>}
       <button onClick={() => setRec(r => !r)} onBlur={() => setRec(false)}
-        className={'min-w-[160px] h-9 px-3.5 rounded-full text-[12px] font-semibold flex items-center justify-center gap-1 transition-all duration-200 ' +
+        className={'min-w-[160px] h-9 px-3.5 rounded-full text-[12px] font-semibold flex items-center justify-center gap-1 transition duration-200 ' +
           (rec ? 'accent-soft border border-transparent text-accent anim-pulse' : 'glass-field text-text hover:border-accent/40')}>
         {rec ? 'Press keys... (Esc to cancel)' : value
           ? value.split('+').map(k => <kbd key={k} className='min-w-[22px] px-1.5 py-0.5 rounded-md border border-line bg-surface-2 text-text font-sans text-[11px] text-center'>{k}</kbd>)

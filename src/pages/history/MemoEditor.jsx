@@ -32,7 +32,7 @@ export function MemoBadge({ memo, onClick }) {
 export function TagChip({ label, active, onClick }) {
   return (
     <button onClick={onClick}
-      className={cx('h-8 px-3.5 rounded-full border text-xs font-semibold transition-all duration-200 active:scale-95',
+      className={cx('h-8 px-3.5 rounded-full border text-xs font-semibold transition duration-200 active:scale-95',
         active ? 'accent-soft border-transparent text-accent' : 'glass text-muted hover:text-text hover:border-accent/30 hover:bg-surface-2')}>
       {label}
     </button>
@@ -94,7 +94,7 @@ export function MemoForm({ target, memo, onSaved, onDeleted, onCancel, allTags =
         <div className='flex gap-2'>
           {RATINGS.map(r => (
             <button key={r.value} onClick={() => setRating(r.value)}
-              className={cx('h-9 w-14 rounded-full border flex items-center justify-center transition-all duration-200 active:scale-95',
+              className={cx('h-9 w-14 rounded-full border flex items-center justify-center transition duration-200 active:scale-95',
                 rating === r.value ? r.active : 'glass text-muted hover:text-text hover:bg-surface-2')}>
               <r.icon />
             </button>

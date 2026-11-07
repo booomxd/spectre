@@ -95,8 +95,8 @@ export default function Discord({ active }) {
 
   return (
     <Page title='Discord' subtitle='Your session on your Discord profile. You choose what it shows.'>
-      {!d ? <div className='max-w-3xl mx-auto space-y-5'><Skeleton className='h-72 rounded-3xl' /><Skeleton className='h-80 rounded-3xl' /></div> : (
-        <div className='max-w-3xl mx-auto flex flex-col gap-10 pb-4'>
+      {!d ? <div className='max-w-3xl space-y-5'><Skeleton className='h-72 rounded-3xl' /><Skeleton className='h-80 rounded-3xl' /></div> : (
+        <div className='max-w-3xl flex flex-col gap-10 pb-4'>
           {/* Hero: status + switch + live profile preview */}
           <FadeIn>
             <Card className='relative overflow-hidden rounded-3xl'>

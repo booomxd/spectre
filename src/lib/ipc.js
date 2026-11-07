@@ -35,11 +35,17 @@ export function useEvent(channel, fn) {
 
 // Loads data from a handler. Re-runs when deps change, or on an interval if `poll` (ms) is set.
 // Pass `skip` to hold off (e.g. until connected).
+function sameJson(a, b) { try { return JSON.stringify(a) === JSON.stringify(b) } catch { return false } }
+
 export function useInvoke(channel, args = [], { deps = [], poll, skip } = {}) {
   const [state, setState] = useState({ data: null, error: null, loading: !skip })
   const reload = useCallback(async (quiet) => {
     if (!quiet) setState(s => ({ ...s, loading: true }))
-    try { setState({ data: await invoke(channel, ...args), error: null, loading: false }) }
+    try {
+      const data = await invoke(channel, ...args)
+      // Quiet polls that return the same payload keep the old state object, so the page does not re-render.
+      setState(s => (quiet && !s.error && !s.loading && s.data != null && sameJson(s.data, data)) ? s : { data, error: null, loading: false })
+    }
     catch (e) { setState(s => ({ ...s, error: e.message, loading: false })) }
   }, [channel, JSON.stringify(args)])
 

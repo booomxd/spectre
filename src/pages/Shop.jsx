@@ -128,7 +128,7 @@ function Bundle({ b, cat, onOpen }) {
             <BigCountdown seconds={b.secondsLeft} label='Leaves in' onArt />
             <div className='flex items-baseline gap-2.5 rounded-full bg-black/40 border border-white/15 px-5 h-11 items-center text-white'>
               {b.totalBase != null && b.totalBase !== b.totalDiscounted && <span className='text-[12px] text-white/60 line-through tabular-nums'>{fmt(b.totalBase)}</span>}
-              <Price amount={b.totalDiscounted ?? b.totalBase} cat={cat} size={17} className='text-[20px]' />
+              <Price amount={b.totalDiscounted ?? b.totalBase} cat={cat} size={17} onArt className='text-[20px]' />
             </div>
           </div>
         </div>

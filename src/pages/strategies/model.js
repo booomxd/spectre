@@ -1,6 +1,8 @@
 // Data model + geometry helpers + PNG rasterizer for the strategy board.
 // Board space is a 1000x1000 square (the map minimap); items store board coordinates.
 import { invoke } from '../../lib/ipc'
+// PNG export text uses the app's font stack.
+const FONT = '"SF Pro Text", "SF Pro Display", "SF Pro", -apple-system, BlinkMacSystemFont, Inter, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif'
 
 export const SIZE = 1000
 export const GRID = 10
@@ -116,7 +118,7 @@ export async function renderPng({ map, strat, step }) {
       g.globalAlpha = 0.18; g.fillRect(it.x, it.y, it.w, it.h); g.globalAlpha = 1
       g.strokeRect(it.x, it.y, it.w, it.h)
     } else if (it.type === 'text') {
-      g.font = `700 ${it.size || 28}px sans-serif`
+      g.font = `700 ${it.size || 28}px ${FONT}`
       g.lineWidth = 6; g.strokeStyle = 'rgba(0,0,0,.85)'; g.strokeText(it.text, it.x, it.y)
       g.fillText(it.text, it.x, it.y)
     } else if (isToken(it)) {
@@ -135,7 +137,7 @@ export async function renderPng({ map, strat, step }) {
 
   // caption
   g.fillStyle = 'rgba(11,11,15,.82)'; g.fillRect(0, SIZE - 46, SIZE, 46)
-  g.fillStyle = '#fff'; g.font = '700 22px sans-serif'; g.textBaseline = 'middle'
+  g.fillStyle = '#fff'; g.font = `700 22px ${FONT}`; g.textBaseline = 'middle'
   g.fillText(`${strat.name}  /  ${step.name}`, 20, SIZE - 23)
   g.textAlign = 'right'; g.fillStyle = '#ff4655'
   g.fillText(`${(map?.displayName || '').toUpperCase()}  ${strat.side.toUpperCase()}`, SIZE - 20, SIZE - 23)
