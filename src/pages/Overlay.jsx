@@ -100,7 +100,7 @@ export default function Overlay() {
   else body = ffa
     ? <Team label='Players' tone='text-accent' players={d.players} showPeak={showPeak} tiers={tiers} />
     : <>
-      <Team label={d.state === 'pregame' ? 'Your team' : 'Allies'} tone='text-accent' players={d.players.filter(p => !p.enemy)} showPeak={showPeak} tiers={tiers} />
+      <Team label={d.state === 'pregame' ? 'Your team' : 'Allies'} tone='text-good' players={d.players.filter(p => !p.enemy)} showPeak={showPeak} tiers={tiers} />
       {d.state === 'pregame'
         ? <div className='px-1 text-[10px] text-muted'>Enemies appear when the match starts.</div>
         : <Team label='Enemies' tone='text-bad' players={d.players.filter(p => p.enemy)} showPeak={showPeak} tiers={tiers} />}

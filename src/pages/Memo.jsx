@@ -103,7 +103,7 @@ function ItemList({ items, empty, icon, fields, onAdd, onRemove, row }) {
             <Item key={it.id} index={i} className='group glass-inset flex items-center gap-3 rounded-2xl px-4 py-3'>
               <div className='min-w-0 flex-1'>{row(it)}</div>
               <button title='Remove' onClick={() => onRemove(it.id)}
-                className='w-8 h-8 shrink-0 rounded-full flex items-center justify-center text-muted opacity-0 group-hover:opacity-100 hover:text-bad hover:bg-bad/15 transition-all'><FiTrash2 size={14} /></button>
+                className='w-8 h-8 shrink-0 rounded-full flex items-center justify-center text-muted opacity-0 group-hover:opacity-100 hover:text-bad hover:bg-bad/15 transition-[transform,opacity,background-color,border-color,color] duration-200'><FiTrash2 size={14} /></button>
             </Item>
           ))}
         </Stagger>}
@@ -181,7 +181,7 @@ export default function Memo({ params }) {
                 </span>
                 {count > 1 && (
                   <button title='Delete section' onClick={e => { e.stopPropagation(); setConfirm({ kind: 'section', id: x.id, name: x.name }) }}
-                    className='relative w-7 h-7 rounded-full flex items-center justify-center text-muted opacity-0 group-hover:opacity-100 hover:text-bad hover:bg-bad/15 transition-all'><FiTrash2 size={13} /></button>
+                    className='relative w-7 h-7 rounded-full flex items-center justify-center text-muted opacity-0 group-hover:opacity-100 hover:text-bad hover:bg-bad/15 transition-[transform,opacity,background-color,border-color,color] duration-200'><FiTrash2 size={13} /></button>
                 )}
               </ListRow>
             </Item>

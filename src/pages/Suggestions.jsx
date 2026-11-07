@@ -1,11 +1,10 @@
 import { useState } from 'react'
-import { FiGithub, FiSend } from 'react-icons/fi'
-import { Button, Card, Input, Label, Page, Textarea, toast } from '../ui'
+import { FiAlertCircle, FiGithub, FiMessageCircle, FiSend, FiShield, FiZap } from 'react-icons/fi'
+import { Button, Card, FadeIn, Input, Label, Page, SegmentedTabs, Swap, Textarea, toast } from '../ui'
 import { openExternal, useInvoke } from '../lib/ipc'
 import logo from '../assets/spectre-logo.svg'
 
-const cx = (...c) => c.filter(Boolean).join(' ')
-const KINDS = [['suggestion', '💡', 'Suggestion'], ['bug', '🐞', 'Bug report'], ['other', '💬', 'Something else']]
+const KINDS = [['suggestion', FiZap, 'Suggestion'], ['bug', FiAlertCircle, 'Bug report'], ['other', FiMessageCircle, 'Something else']]
 
 // Send ideas and bug reports to the developer: by email when it's set up, otherwise as a GitHub issue.
 export default function Suggestions() {
@@ -49,51 +48,61 @@ export default function Suggestions() {
   }
 
   return (
-    <Page title='Suggestions' subtitle='Ideas, bugs or anything else: it goes straight to the developer.'>
-      <div className='grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px] items-start max-w-5xl'>
-        <Card className='anim-rise p-6 rounded-2xl'>
-          {sent ? (
-            <div className='anim-fade flex flex-col items-center text-center gap-2.5 py-12'>
-              <span className='accent-soft w-20 h-20 rounded-2xl flex items-center justify-center mb-1'><img src={logo} alt='' className='w-12 h-12' draggable={false} /></span>
-              <div className='font-display text-2xl font-bold tracking-tight'>Thanks, got it 👻</div>
-              <p className='text-[13px] text-muted max-w-sm leading-relaxed'>Your {label.toLowerCase()} was sent. If you left a contact, you may hear back.</p>
-              <Button className='mt-2' onClick={() => setSent(false)}>Send another</Button>
-            </div>
-          ) : (
-            <div className='flex flex-col gap-5'>
-              <div className='flex flex-wrap gap-2'>
-                {KINDS.map(([id, emoji, text]) => (
-                  <button key={id} onClick={() => setKind(id)}
-                    className={cx('h-9 px-4 rounded-full text-[13px] font-semibold transition-all duration-200 active:scale-[0.97]',
-                      kind === id ? 'accent-soft border border-transparent text-text' : 'glass text-muted hover:text-text hover:bg-surface-2')}>
-                    {emoji} {text}
-                  </button>
-                ))}
-              </div>
-              <div>
-                <Label hint={kind === 'bug' ? 'What happened, and what did you expect? Steps to reproduce help a lot.' : 'Be as detailed as you like.'}>Message</Label>
-                <Textarea rows={8} value={message} onChange={e => setMessage(e.target.value)} maxLength={5000}
-                  placeholder={kind === 'bug' ? 'When I open Live Match during agent select...' : 'It would be great if Spectre could...'} />
-              </div>
-              <div>
-                <Label hint='Optional, only if you want a reply'>Discord or email</Label>
-                <Input value={contact} onChange={e => setContact(e.target.value)} maxLength={200} placeholder='yourname or you@example.com' />
-              </div>
-              <div className='flex flex-wrap items-center gap-3 pt-1'>
-                <Button variant='primary' icon={cfg?.key ? FiSend : FiGithub} loading={busy} disabled={tooShort} onClick={send}>
-                  {cfg?.key ? 'Send' : 'Send via GitHub'}
-                </Button>
-                {cfg?.key && <button className='text-xs font-medium text-muted hover:text-accent transition-colors disabled:opacity-50' disabled={tooShort} onClick={github}>or post it on GitHub</button>}
-                {tooShort && message && <span className='text-xs text-muted'>A little more, please (10+ characters)</span>}
-              </div>
-            </div>
-          )}
-        </Card>
-        <Card className='anim-rise p-6 rounded-2xl text-[12px] text-muted leading-relaxed' style={{ '--i': 1 }}>
-          <div className='font-display text-[15px] font-bold tracking-tight text-text mb-2.5'>What gets sent</div>
-          <p>Only your message, the contact you typed (if any) and your Spectre version. Nothing about your Riot account is included.</p>
-          <p className='mt-3'>{cfg?.key ? 'Messages are emailed to the developer.' : 'Messages open as an issue on Spectre’s GitHub, which needs a free GitHub account and is public.'}</p>
-        </Card>
+    <Page title='Feedback' subtitle='Ideas, bugs or anything else: it goes straight to the developer.'>
+      <div className='max-w-2xl mx-auto flex flex-col gap-6 pb-4'>
+        <FadeIn>
+          <Card className='relative overflow-hidden rounded-3xl'>
+            <span className='halo -top-32 -left-24 w-96 h-96' />
+            <Swap id={sent ? 'sent' : 'form'} className='relative'>
+              {sent ? (
+                <div className='flex flex-col items-center text-center gap-2.5 px-8 py-16'>
+                  <span className='accent-soft w-20 h-20 rounded-3xl flex items-center justify-center mb-2'><img src={logo} alt='' className='w-12 h-12' draggable={false} /></span>
+                  <div className='display text-[28px] text-text'>Thanks, got it</div>
+                  <p className='text-[13px] text-muted max-w-sm leading-relaxed'>Your {label.toLowerCase()} was sent. If you left a contact, you may hear back.</p>
+                  <Button className='mt-3' onClick={() => setSent(false)}>Send another</Button>
+                </div>
+              ) : (
+                <div className='flex flex-col gap-6 p-7'>
+                  <div>
+                    <div className='eyebrow mb-3'>What is it about?</div>
+                    <SegmentedTabs size='lg' layoutId='feedback-kind' value={kind} onChange={setKind}
+                      tabs={KINDS.map(([value, icon, text]) => ({ value, icon, label: text }))} />
+                  </div>
+                  <div>
+                    <Label hint={kind === 'bug' ? 'What happened, and what did you expect? Steps to reproduce help a lot.' : 'Be as detailed as you like.'}>Message</Label>
+                    <Textarea rows={8} value={message} onChange={e => setMessage(e.target.value)} maxLength={5000} className='rounded-2xl px-4 py-3.5 leading-relaxed'
+                      placeholder={kind === 'bug' ? 'When I open Live Match during agent select...' : 'It would be great if Spectre could...'} />
+                    <div className='mt-1.5 flex justify-between text-[11px] text-muted tabular-nums'>
+                      <span>{tooShort && message ? 'A little more, please (10+ characters)' : ''}</span>
+                      <span>{message.length} / 5000</span>
+                    </div>
+                  </div>
+                  <div>
+                    <Label hint='Optional, only if you want a reply'>Discord or email</Label>
+                    <Input value={contact} onChange={e => setContact(e.target.value)} maxLength={200} placeholder='yourname or you@example.com' />
+                  </div>
+                  <div className='hairline' />
+                  <div className='flex flex-wrap items-center justify-between gap-3'>
+                    {cfg?.key
+                      ? <button className='text-xs font-medium text-muted hover:text-accent transition-colors disabled:opacity-50 inline-flex items-center gap-1.5' disabled={tooShort} onClick={github}><FiGithub /> or post it on GitHub</button>
+                      : <span />}
+                    <Button variant='primary' size='lg' icon={cfg?.key ? FiSend : FiGithub} loading={busy} disabled={tooShort} onClick={send}>
+                      {cfg?.key ? 'Send' : 'Send via GitHub'}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </Swap>
+          </Card>
+        </FadeIn>
+        <FadeIn delay={0.08} className='flex gap-4 px-2'>
+          <span className='glass w-9 h-9 rounded-xl flex items-center justify-center text-accent shrink-0'><FiShield size={15} /></span>
+          <div className='text-[12px] text-muted leading-relaxed'>
+            <div className='text-[13px] font-semibold text-text mb-0.5'>What gets sent</div>
+            Only your message, the contact you typed (if any) and your Spectre version. Nothing about your Riot account is included.{' '}
+            {cfg?.key ? 'Messages are emailed to the developer.' : 'Messages open as an issue on Spectre’s GitHub, which needs a free GitHub account and is public.'}
+          </div>
+        </FadeIn>
       </div>
     </Page>
   )

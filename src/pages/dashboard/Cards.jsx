@@ -267,7 +267,7 @@ export function PassCard({ pass, cat, loading }) {
         <div className='flex-1 flex flex-col justify-end'>
           <div className='flex items-end justify-between gap-3'>
             <span className='display text-[52px] text-text tabular-nums'>{pass.progressionLevel}<span className='text-[16px] font-semibold tracking-normal text-muted'> / {flat.length}</span></span>
-            {nextReward?.icon && <img src={nextReward.icon} alt='' className='w-12 h-12 p-1.5 rounded-xl glass-inset object-contain shrink-0' />}
+            {nextReward?.icon && <span className='w-12 h-12 p-2 rounded-xl glass-inset shrink-0 grid place-items-center'><img src={nextReward.icon} alt='' className={'max-w-full max-h-full object-contain' + (nextReward.kind === 'currency' ? ' mono-icon' : '')} /></span>}
           </div>
           <div className='mt-1 truncate text-[12px] text-muted'>{pass.name}</div>
           <div className='mt-3 h-2 rounded-full glass-inset overflow-hidden'>

@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react'
 import { FiCheck } from 'react-icons/fi'
-import { Button, Card, Input, Label, Page, RequireRiot, Select, Toggle } from '../ui'
+import { Button, Input, Label, Page, RequireRiot, Select, SegmentedTabs, Toggle, cx } from '../ui'
 import { useRiot } from '../lib/riot'
 import { useContent } from '../lib/content'
 import { GAME_STATES, QUEUES } from './tools/gear'
 import { PresencePanel, runTool, usePresence } from './tools/PresencePanel'
+import { Panel, ToolLayout } from './tools/Layout'
 
 export default function Status({ active }) {
   const riot = useRiot()
@@ -34,46 +35,43 @@ export default function Status({ active }) {
 
   return (
     <Page title='Status' subtitle='Choose what your friends see you doing.'
-      actions={<Button variant='primary' icon={FiCheck} loading={busy} disabled={!riot.connected} onClick={apply}>Apply</Button>}>
+      actions={<Button variant='primary' size='sm' icon={FiCheck} loading={busy} disabled={!riot.connected} onClick={apply}>Apply</Button>}>
       <RequireRiot>
-        <div className='grid grid-cols-[1fr_320px] gap-5 items-start'>
-          <div className='space-y-5 min-w-0'>
-            <Card className='p-5 grid grid-cols-2 gap-5 anim-rise'>
-              <div><Label>Game state</Label><Select value={state} onChange={e => setState(e.target.value)} options={GAME_STATES} /></div>
-              <div><Label>Mode</Label><Select value={queue} onChange={e => setQueue(e.target.value)} options={QUEUES} /></div>
-            </Card>
+        <ToolLayout aside={<PresencePanel presence={presence} draft={{ status }} />}>
+          <Panel title='Activity'>
+            <SegmentedTabs size='sm' layoutId='status-state' value={state} onChange={setState} tabs={GAME_STATES} className='mb-4' />
+            <div className='max-w-xs'><Label>Mode</Label><Select value={queue} onChange={e => setQueue(e.target.value)} options={QUEUES} /></div>
+          </Panel>
 
-            <Card className='overflow-hidden anim-rise' style={{ animationDelay: '60ms' }}>
-              <div className='grid grid-cols-[1fr_220px]'>
-                <div className='p-5'>
-                  <Label hint='Shown during Agent Select and In Game'>Map</Label>
-                  <Select value={mapUrl} onChange={e => setMap(e.target.value)} options={maps.map(m => ({ value: m.mapUrl, label: m.displayName }))} />
-                </div>
-                <div className={`relative h-full min-h-[112px] bg-surface-2 transition-opacity duration-300 [mask-image:linear-gradient(to_right,transparent,black_55%)] ${showMap ? '' : 'opacity-30'}`}>
-                  {picked?.splash && <img key={picked.uuid} src={picked.splash} className='anim-fade absolute inset-0 w-full h-full object-cover' />}
-                </div>
-              </div>
-            </Card>
+          <Panel title='Map' hint='Shown during Agent Select and In Game' delay={0.04} className={cx('overflow-hidden relative transition-opacity duration-300', !showMap && 'opacity-50')}>
+            <div className='absolute inset-y-0 right-0 w-1/2 [mask-image:linear-gradient(to_right,transparent,black_60%)] pointer-events-none'>
+              {picked?.splash && <img key={picked.uuid} src={picked.splash} alt='' className='anim-fade absolute inset-0 w-full h-full object-cover' draggable={false} />}
+            </div>
+            <div className='relative max-w-xs'>
+              <Select value={mapUrl} onChange={e => setMap(e.target.value)} options={maps.map(m => ({ value: m.mapUrl, label: m.displayName }))} />
+            </div>
+          </Panel>
 
-            <Card className='p-5 anim-rise' style={{ animationDelay: '120ms' }}>
-              <Label>Score (your team vs enemy)</Label>
-              <div className='flex items-center gap-3 max-w-xs'>
-                <Input type='number' min='0' value={ally} onChange={e => setAlly(e.target.value)} className='text-center tabular-nums' />
-                <span className='font-display text-lg font-bold text-muted'>-</span>
-                <Input type='number' min='0' value={enemy} onChange={e => setEnemy(e.target.value)} className='text-center tabular-nums' />
+          <div className='grid grid-cols-2 gap-4'>
+            <Panel title='Score' hint='Your team vs enemy' delay={0.08}>
+              <div className='flex items-center gap-2.5'>
+                <Input type='number' min='0' value={ally} onChange={e => setAlly(e.target.value)} className='text-center tabular-nums font-semibold' />
+                <span className='text-[15px] font-bold text-muted'>-</span>
+                <Input type='number' min='0' value={enemy} onChange={e => setEnemy(e.target.value)} className='text-center tabular-nums font-semibold' />
               </div>
-            </Card>
-
-            <Card className='p-5 anim-rise' style={{ animationDelay: '180ms' }}>
-              <div className='grid grid-cols-2 gap-4 max-w-sm mb-5'>
-                <div><Label>Party size</Label><Input type='number' min='1' max='10' value={partySize} onChange={e => setPartySize(e.target.value)} /></div>
-                <div><Label>Max party size</Label><Input type='number' min='1' max='10' value={maxPartySize} onChange={e => setMaxPartySize(e.target.value)} /></div>
+            </Panel>
+            <Panel title='Party' hint='Size and max size' delay={0.1}>
+              <div className='flex items-center gap-2.5'>
+                <Input type='number' min='1' max='10' value={partySize} onChange={e => setPartySize(e.target.value)} className='text-center tabular-nums font-semibold' />
+                <span className='text-[13px] font-semibold text-muted'>of</span>
+                <Input type='number' min='1' max='10' value={maxPartySize} onChange={e => setMaxPartySize(e.target.value)} className='text-center tabular-nums font-semibold' />
               </div>
-              <Toggle checked={open} onChange={setOpen} label='Open party' hint='Friends can join without an invite' />
-            </Card>
+            </Panel>
           </div>
-          <PresencePanel presence={presence} draft={{ status }} />
-        </div>
+          <Panel delay={0.12}>
+            <Toggle checked={open} onChange={setOpen} label='Open party' hint='Friends can join without an invite' />
+          </Panel>
+        </ToolLayout>
       </RequireRiot>
     </Page>
   )

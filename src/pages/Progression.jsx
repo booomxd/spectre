@@ -32,8 +32,8 @@ function RewardTile({ tier, reward, cat, unlocked, free, current }) {
         {unlocked ? <FiCheck className='text-good' /> : <FiLock />}
       </div>
       <div className='h-[76px] flex items-center justify-center'>
-        {item?.icon ? <img src={item.icon} alt='' loading='lazy' className='max-h-16 max-w-full object-contain transition-transform duration-300 ease-out group-hover:scale-110' />
-          : <span className='text-[10px] text-muted text-center px-1'>{item?.kind || reward?.type}</span>}
+        {item?.icon ? <img src={item.icon} alt='' loading='lazy' className={cx('max-h-16 max-w-full object-contain transition-transform duration-300 ease-out group-hover:scale-110', item.kind === 'currency' && 'mono-icon')} />
+          : <span className='rounded-full glass-inset px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted'>{item?.kind || reward?.type || 'reward'}</span>}
       </div>
       <div className='mt-1 truncate text-[11px] font-semibold text-text text-center' title={label}>{label}{reward?.amount > 1 ? ` x${fmt(reward.amount)}` : ''}</div>
     </div>

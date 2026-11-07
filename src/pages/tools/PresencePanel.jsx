@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { FiInfo, FiRotateCcw } from 'react-icons/fi'
-import { Badge, Button, Card, SectionTitle, Skeleton, Toggle, withToast } from '../../ui'
+import { Badge, Button, FadeIn, Skeleton, Toggle, withToast } from '../../ui'
 import { invoke, useEvent, useInvoke } from '../../lib/ipc'
 import { useRiot } from '../../lib/riot'
 import { useContent, useTiers } from '../../lib/content'
@@ -66,44 +66,45 @@ export function PresencePanel({ presence, draft = {} }) {
   const reset = () => withToast(invoke('tools:reset'), 'Real profile restored').then(() => presence.reload(true))
 
   return (
-    <div className='space-y-4 sticky top-0'>
-      <Card className='overflow-hidden rounded-2xl anim-rise'>
-        <div className='h-32 relative bg-surface-2 [mask-image:linear-gradient(to_bottom,black_45%,transparent)]'>
-          {card?.wideArt && <img key={card.uuid} src={card.wideArt} className='anim-fade w-full h-full object-cover' />}
-          <div className='absolute top-3 left-3.5 right-3.5 flex items-center justify-between'>
-            <Badge tone='accent'>Live preview</Badge>
-            {data?.error && <Badge tone='warn'>Game not detected</Badge>}
+    <FadeIn y={6} delay={0.04} className='glass rounded-2xl overflow-hidden'>
+      {/* Friends-list preview: card banner, rank emblem, name */}
+      <div className='h-24 relative bg-surface-2 [mask-image:linear-gradient(to_bottom,black_40%,transparent)]'>
+        {card?.wideArt && <img key={card.uuid} src={card.wideArt} alt='' className='anim-fade w-full h-full object-cover' draggable={false} />}
+      </div>
+      <div className='px-4 -mt-9 relative'>
+        <div className='flex items-end gap-3'>
+          <div className='glass w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 bg-bg/60'>
+            {t?.largeIcon ? <img key={tier} src={t.largeIcon} alt='' className='anim-pop w-10 h-10 object-contain' draggable={false} /> : <Skeleton className='w-9 h-9 rounded-full' />}
+          </div>
+          <div className='min-w-0 pb-0.5'>
+            <div className='text-[15px] font-bold tracking-tight leading-tight text-text truncate'>{riot.gameName || 'Player'}<span className='text-muted font-medium text-[12px]'> #{riot.tagLine}</span></div>
+            <div className='text-[11.5px] font-medium text-muted mt-0.5'>{t?.tierName || '...'}{lb > 0 && <span className='text-accent tabular-nums'> #{lb}</span>}</div>
           </div>
         </div>
-        <div className='px-5 pb-5 -mt-10 relative'>
-          <div className='flex items-end gap-3'>
-            <div className='glass-strong w-16 h-16 rounded-2xl flex items-center justify-center shrink-0'>
-              {t?.largeIcon ? <img key={tier} src={t.largeIcon} className='anim-pop w-12 h-12 object-contain' /> : <Skeleton className='w-10 h-10 rounded-full' />}
-            </div>
-            <div className='min-w-0 pb-0.5'>
-              <div className='font-display text-lg font-bold tracking-tight leading-tight text-text truncate'>{riot.gameName || 'Player'}<span className='text-muted font-normal text-sm'> #{riot.tagLine}</span></div>
-              <div className='text-[12px] font-medium text-muted mt-0.5'>{t?.tierName || '...'}{lb > 0 && <span className='text-accent tabular-nums'> #{lb}</span>}</div>
-            </div>
-          </div>
-          <div className='mt-4 rounded-xl bg-surface-2 border border-line px-3.5 py-3 space-y-2 text-[12px]'>
-            <Row k='Level' v={level ?? '-'} />
-            <Row k='Title' v={title ? (title.titleText || title.displayName) : 'None'} />
-            <Row k='Premier' v={hasPremier ? `${pr.showTag !== false && pr.rosterTag ? `[${pr.rosterTag}] ` : ''}${pr.rosterName || ''} - ${divisionLabel(pr.division)}` : 'No team'} />
-            <Row k='Status' v={statusText(st, maps) || '-'} />
-          </div>
-          {loading && !data && <Skeleton className='h-4 mt-3 rounded-full' />}
-          {error && <p className='text-[11px] text-bad mt-2'>{error}</p>}
-          {data?.error && <p className='text-[11px] text-warn mt-2'>{data.error}</p>}
+        <div className='mt-3.5 flex items-center gap-1.5'>
+          <span className='eyebrow text-[10px]'>Friends see</span>
+          <span className='flex-1' />
+          {data?.error && <Badge tone='warn'>No game</Badge>}
+          {overrideCount > 0 && <Badge tone='accent'>{overrideCount} active</Badge>}
         </div>
-      </Card>
+        <div className='mt-2 rounded-xl glass-inset px-3 py-2.5 space-y-1.5 text-[11.5px]'>
+          <Row k='Level' v={level ?? '-'} />
+          <Row k='Title' v={title ? (title.titleText || title.displayName) : 'None'} />
+          <Row k='Premier' v={hasPremier ? `${pr.showTag !== false && pr.rosterTag ? `[${pr.rosterTag}] ` : ''}${pr.rosterName || ''} - ${divisionLabel(pr.division)}` : 'No team'} />
+          <Row k='Status' v={statusText(st, maps) || '-'} />
+        </div>
+        {loading && !data && <Skeleton className='h-3 mt-3 rounded-full' />}
+        {error && <p className='text-[11px] text-bad mt-2'>{error}</p>}
+        {data?.error && <p className='text-[11px] text-warn mt-2'>{data.error}</p>}
+      </div>
 
-      <Card className='p-5 rounded-2xl anim-rise' style={{ animationDelay: '60ms' }}>
-        <SectionTitle right={overrideCount > 0 && <Badge tone='accent'>{overrideCount} active</Badge>}>Presence</SectionTitle>
+      <div className='px-4 pt-4 pb-4'>
+        <div className='hairline mb-3.5' />
         <Toggle checked={keep} onChange={toggleKeep} label='Keep applied' hint='Re-sends your edits every 5s whenever the game resets them' />
-        <Button size='sm' variant='subtle' icon={FiRotateCcw} className='mt-4 w-full' onClick={reset} disabled={!overrideCount}>Reset overrides</Button>
-        <p className='mt-4 flex gap-2 text-[11px] leading-relaxed text-muted'><FiInfo className='shrink-0 mt-0.5 text-accent' />Only your friends see this. It changes how you appear in their friends list and never touches your real rank or account.</p>
-      </Card>
-    </div>
+        <Button size='sm' variant='subtle' icon={FiRotateCcw} className='mt-3.5 w-full' onClick={reset} disabled={!overrideCount}>Reset overrides</Button>
+        <p className='mt-3 flex gap-2 text-[11px] leading-relaxed text-muted'><FiInfo className='shrink-0 mt-0.5 text-accent' />Only your friends see this. It never touches your real rank or account.</p>
+      </div>
+    </FadeIn>
   )
 }
 
