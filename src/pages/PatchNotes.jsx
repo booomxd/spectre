@@ -131,7 +131,7 @@ export default function PatchNotes() {
   return (
     <Page title="What's new" subtitle={tab === 'spectre' ? 'Every Spectre release, newest first' : 'Recent VALORANT updates from the official site'}
       actions={<SegmentedTabs layoutId='whatsnew-tab' value={tab} onChange={setTab} tabs={[{ value: 'spectre', label: 'Spectre' }, { value: 'valorant', label: 'VALORANT' }]} />}>
-      <div className='max-w-3xl mx-auto pb-4'>
+      <div className='max-w-3xl pb-4'>
         <Swap id={tab}>{tab === 'spectre' ? <SpectreNotes /> : <ValorantNotes />}</Swap>
       </div>
     </Page>

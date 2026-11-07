@@ -188,6 +188,9 @@ button:focus-visible, a:focus-visible, [role='tab']:focus-visible { outline: 2px
 .halo { position: absolute; pointer-events: none; border-radius: 9999px; background: radial-gradient(closest-side, rgb(var(--accent) / calc(var(--glow-a) * 0.6)), transparent); }
 /* White single-color game icons (currencies) turn dark on light themes. */
 [data-theme='pearl'] .mono-icon { filter: invert(1) brightness(0.35); }
+/* Light theme: tone down card art behind text and give the Home hero stats a solid panel. */
+[data-theme='pearl'] .hero-art { opacity: 0.32; }
+[data-theme='pearl'] .hero-strip { background: rgb(var(--panel) / 0.82); }
 
 .kbd { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 6px; font-size: 11px; font-weight: 600; color: rgb(var(--muted)); background: rgb(var(--surface-2) / var(--surface-2-a)); border: 1px solid rgb(var(--line) / var(--line-a)); border-bottom-width: 2px; }
 

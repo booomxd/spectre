@@ -51,12 +51,12 @@ export function Hero({ riot, identity, account, rr }) {
   return (
     <Card className='relative overflow-hidden h-full min-h-[280px] !rounded-3xl flex flex-col'>
       {card?.wideArt && (
-        <img src={card.wideArt} alt='' draggable={false} className='absolute right-0 top-0 h-full w-[72%] object-cover opacity-60 pointer-events-none'
+        <img src={card.wideArt} alt='' draggable={false} className='hero-art absolute right-0 top-0 h-full w-[72%] object-cover opacity-60 pointer-events-none'
           style={{ WebkitMaskImage: 'linear-gradient(90deg, transparent, #000 60%)', maskImage: 'linear-gradient(90deg, transparent, #000 60%)' }} />
       )}
       <div className='absolute inset-0 bg-gradient-to-t from-bg/80 via-bg/10 to-transparent pointer-events-none' />
       <span className='halo -top-28 -left-20 w-80 h-80' />
-      <LiveClock className='absolute top-6 right-6' />
+      <LiveClock className='hero-strip absolute top-6 right-6' />
       <div className='relative px-8 pt-7 flex-1'>
         <div className='eyebrow flex items-center gap-2'>{greeting()}<span className='w-1 h-1 rounded-full bg-muted/60' />{new Date().toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long' })}</div>
         <h2 className='display mt-3 text-[64px] text-text truncate pb-1'>
@@ -67,7 +67,7 @@ export function Hero({ riot, identity, account, rr }) {
           {riot.region && <Badge>{riot.region}</Badge>}
         </div>
       </div>
-      <div className='relative m-3 mt-6 rounded-2xl glass-inset grid grid-cols-4 divide-x divide-line'>
+      <div className='hero-strip relative m-3 mt-6 rounded-2xl glass-inset grid grid-cols-4 divide-x divide-line'>
         {stats.map(([label, v, sub, tone]) => (
           <div key={label} className='px-5 py-3.5 min-w-0'>
             <div className='eyebrow !text-[10px] truncate'>{label}</div>

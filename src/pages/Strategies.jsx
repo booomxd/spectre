@@ -285,7 +285,7 @@ export default function Strategies({ active }) {
             <div className='flex-1 min-h-0 relative'>
               <Board ref={boardRef} items={shown} map={map} side={strat.side} active={active !== false} locked={playing}
                 onLive={onLive} onEnd={onEnd} onCommit={onCommit} onUndo={onUndo} onRedo={onRedo} />
-              <div className='absolute right-4 top-4 z-10 pointer-events-none'><Badge tone={strat.side === 'attack' ? 'bad' : 'accent'}>{map?.displayName || 'Map'} · {strat.side}</Badge></div>
+              <div className='absolute right-4 top-4 z-10 pointer-events-none max-[1440px]:hidden'><Badge tone={strat.side === 'attack' ? 'bad' : 'accent'}>{map?.displayName || 'Map'} · {strat.side}</Badge></div>
             </div>
 
             <div className='relative flex items-center gap-2.5 px-4 py-3 overflow-x-auto'>

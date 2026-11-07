@@ -49,7 +49,7 @@ export default function Suggestions() {
 
   return (
     <Page title='Feedback' subtitle='Ideas, bugs or anything else: it goes straight to the developer.'>
-      <div className='max-w-2xl mx-auto flex flex-col gap-6 pb-4'>
+      <div className='max-w-2xl flex flex-col gap-6 pb-4'>
         <FadeIn>
           <Card className='relative overflow-hidden rounded-3xl'>
             <span className='halo -top-32 -left-24 w-96 h-96' />

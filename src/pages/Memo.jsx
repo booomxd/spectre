@@ -252,7 +252,7 @@ export default function Memo({ params }) {
                           <div className='flex items-center gap-3'>
                             <div className='min-w-0 flex-1'>
                               <div className='text-[13px] font-semibold text-text truncate'>{c.name}</div>
-                              <div className='text-[11.5px] text-muted font-mono truncate mt-0.5'>{c.code}</div>
+                              <div className='text-[11.5px] text-muted tabular-nums tracking-tight truncate mt-0.5'>{c.code}</div>
                             </div>
                             <Button size='sm' icon={FiCopy} onClick={() => copy(c.code, 'Crosshair code')}>Copy</Button>
                           </div>

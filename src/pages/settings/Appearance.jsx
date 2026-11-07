@@ -49,14 +49,14 @@ export default function Appearance() {
           const on = theme === t.id
           return (
             <Card key={t.id} hover onClick={() => pick(t.id)} style={{ '--i': i }}
-              className={'anim-rise p-2.5 rounded-2xl transition-all duration-200 ' + (on ? 'accent-soft' : '')}>
+              className={'anim-rise p-2.5 rounded-2xl transition duration-200 ' + (on ? 'accent-soft' : '')}>
               <Preview t={t} />
               <div className='flex items-center justify-between mt-3 mb-0.5 px-1'>
                 <div className='flex items-center gap-2 min-w-0'>
                   <span className='w-3 h-3 rounded-full shrink-0 ring-1 ring-line' style={{ background: `linear-gradient(135deg, ${t.swatch}, ${t.glow})` }} />
                   <span className='text-[13px] font-semibold text-text truncate'>{t.name}</span>
                 </div>
-                <span className={'accent-fill w-5 h-5 rounded-full text-bg flex items-center justify-center text-[11px] shrink-0 transition-all duration-200 ' + (on ? 'scale-100 opacity-100' : 'scale-50 opacity-0')}><FiCheck /></span>
+                <span className={'accent-fill w-5 h-5 rounded-full text-bg flex items-center justify-center text-[11px] shrink-0 transition duration-200 ' + (on ? 'scale-100 opacity-100' : 'scale-50 opacity-0')}><FiCheck /></span>
               </div>
             </Card>
           )
