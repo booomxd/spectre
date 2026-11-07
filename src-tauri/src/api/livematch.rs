@@ -218,6 +218,23 @@ async fn spectre_set(ctx: &Ctx) -> HashSet<String> {
     out
 }
 
+// Party id per player from the VALORANT presences the local client can see. During agent select and in-game that
+// includes everyone in the match (streamer-mode players too), which is how premade groups are detected. Only the
+// grouping is used; no names come from here.
+async fn party_of(ctx: &Ctx) -> HashMap<String, String> {
+    let mut out = HashMap::new();
+    if let Ok(res) = ctx.riot.local("get", "chat/v4/presences", None).await {
+        for p in js::arr(&res["presences"]) {
+            if !truthy(&p["puuid"]) || p["product"] != "valorant" || !truthy(&p["private"]) { continue; }
+            let Ok(b) = node_base64(&js::s(&p["private"])) else { continue };
+            let Ok(v) = serde_json::from_str::<Value>(&String::from_utf8_lossy(&b)) else { continue };
+            let id = js::or(&v["partyPresenceData"]["partyId"], js::or(&v["partyId"], Value::Null));
+            if truthy(&id) { out.insert(js::s(&p["puuid"]), js::s(&id)); }
+        }
+    }
+    out
+}
+
 static POD_RE: Lazy<regex::Regex> = Lazy::new(|| regex::Regex::new(r"-gp-(.+)-\d+$").unwrap());
 fn server_name(pod: &Value) -> Value {
     let pod = if truthy(pod) { js::s(pod) } else { String::new() };
@@ -258,12 +275,13 @@ async fn resolve(ctx: &Ctx, kind: &str, id: &str) -> Res<Value> {
     let my_raw = raw.iter().find(|p| p["Subject"] == me.as_str());
     let my_team = if pregame { js::or(&m["AllyTeam"]["TeamID"], json!("Blue")) } else { js::or(&my_raw.map(|p| p["TeamID"].clone()).unwrap_or(Value::Null), json!("Blue")) };
 
-    let (known_set, party_set, spectres) = tokio::join!(known::known_puuids(ctx), known::party_puuids(ctx), spectre_set(ctx));
+    let (known_set, party_set, spectres, parties) = tokio::join!(known::known_puuids(ctx), known::party_puuids(ctx), spectre_set(ctx), party_of(ctx));
     let (known_set, party_set) = (known_set?, party_set?);
     let sub = |p: &Value| js::s(&p["Subject"]);
-    // Names exactly as the client shows them: everyone except streamer-mode (incognito) players.
+    // Names as the client shows them to you: everyone except streamer-mode (incognito) players, but always yourself
+    // and the friends in your own party (party_set leaves out incognito members who aren't friends).
     // Agent select only contains your own team, so enemies are never named before the match starts.
-    let nameable = |p: &Value| sub(p) == me || !truthy(&p["PlayerIdentity"]["Incognito"]);
+    let nameable = |p: &Value| { let s = sub(p); s == me || party_set.contains(&s) || !truthy(&p["PlayerIdentity"]["Incognito"]) };
     let need: Vec<String> = {
         let nc = NAME_CACHE.lock().unwrap();
         raw.iter().filter(|p| nameable(p)).map(sub).filter(|s| !nc.contains_key(s)).collect()
@@ -280,8 +298,28 @@ async fn resolve(ctx: &Ctx, kind: &str, id: &str) -> Res<Value> {
         .map(|s| async move { let v = mmr(ctx, &s).await; (s, v) })
         .buffer_unordered(4).collect().await;
 
-    // Party marker: only the user's own party, when 2+ of its members are in this match.
+    // Premade groups in this match. Your own party is group 0 (from the party API, falling back to presences); every
+    // other party with 2+ members here gets 1, 2, ... in roster order. Solo players get none.
     let mates = raw.iter().filter(|p| party_set.contains(&sub(p))).count();
+    let my_pid = parties.get(&me).cloned();
+    let mut size: HashMap<String, usize> = HashMap::new();
+    for p in &raw { if let Some(pid) = parties.get(&sub(p)) { *size.entry(pid.clone()).or_default() += 1; } }
+    let mut index: HashMap<String, usize> = HashMap::new();
+    let mut next = 1;
+    for p in &raw {
+        if let Some(pid) = parties.get(&sub(p)) {
+            if Some(pid) == my_pid.as_ref() || size[pid] < 2 || index.contains_key(pid) { continue; }
+            index.insert(pid.clone(), next); next += 1;
+        }
+    }
+    let group = |s: &String| -> (Value, Value) {
+        if party_set.contains(s) && mates > 1 { return (json!(0), json!(mates.max(my_pid.as_ref().map(|x| size[x]).unwrap_or(0)))); }
+        match parties.get(s) {
+            Some(pid) if Some(pid) == my_pid.as_ref() && size[pid] > 1 => (json!(0), json!(size[pid])),
+            Some(pid) => match index.get(pid) { Some(i) => (json!(i), json!(size[pid])), None => (Value::Null, Value::Null) },
+            None => (Value::Null, Value::Null),
+        }
+    };
 
     let names = NAME_CACHE.lock().unwrap().clone();
     let mut refs = REFS.lock().unwrap();
@@ -327,7 +365,8 @@ async fn resolve(ctx: &Ctx, kind: &str, id: &str) -> Res<Value> {
             ("scouted", refs.scouted.get(&s).cloned()),
             ("guns", guns),
             ("spectre", if !truthy(&idn["Incognito"]) && spectres.contains(&s) { Some(json!(true)) } else { None }),
-            ("party", Some(if party_set.contains(&s) && mates > 1 { json!(0) } else { Value::Null })),
+            ("party", Some(group(&s).0)),
+            ("partySize", Some(group(&s).1)),
         ])
     }).collect();
     drop(refs);

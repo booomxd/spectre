@@ -53,4 +53,7 @@ export function onReduceMotion(fn) {
 export function applySavedTheme() {
   document.documentElement.dataset.theme = getTheme()
   if (getReduceMotion()) document.documentElement.dataset.reduceMotion = ''
+  // Pause background motion while the window is hidden or minimized.
+  const vis = () => { if (document.hidden) document.documentElement.dataset.hidden = ''; else delete document.documentElement.dataset.hidden }
+  document.addEventListener('visibilitychange', vis); vis()
 }

@@ -18,13 +18,16 @@ export function Countdown({ seconds, className = '' }) {
   return <span className={'inline-flex items-center gap-1.5 font-medium tabular-nums ' + className}><FiClock className='text-[0.9em]' />{fmtDuration(left)}</span>
 }
 
-// Item art box tinted with the content tier color.
+// Item art box: a faint wash of the content tier color from the bottom, a soft floor shadow under the item and a thin
+// tier-colored edge. No blob glow.
 export function ItemArt({ item, className = '', imgClass = 'max-h-full max-w-full object-contain' }) {
   const color = item?.tier?.highlightColor ? '#' + item.tier.highlightColor.slice(0, 6) : null
   return (
     <div className={'relative flex items-center justify-center overflow-hidden ' + className}
-      style={color ? { background: `radial-gradient(circle at 50% 60%, ${color}33, transparent 70%)` } : undefined}>
-      {item?.icon ? <img src={item.icon} alt={item.name} loading='lazy' className={'p-2.5 drop-shadow-[0_6px_14px_rgb(0_0_0/0.25)] transition-transform duration-500 ease-out group-hover:scale-110 ' + imgClass} /> : <span className='text-[10px] text-muted'>{item?.name || '...'}</span>}
+      style={color ? { background: `linear-gradient(180deg, transparent 35%, ${color}14)` } : undefined}>
+      <span className='absolute bottom-2.5 left-1/2 -translate-x-1/2 w-3/5 h-3 rounded-[50%] bg-black/35 blur-md pointer-events-none' />
+      {color && <span className='absolute inset-x-6 bottom-0 h-px pointer-events-none' style={{ background: `linear-gradient(90deg, transparent, ${color}aa, transparent)` }} />}
+      {item?.icon ? <img src={item.icon} alt={item.name} loading='lazy' className={'relative p-2.5 transition-transform duration-500 ease-out group-hover:scale-105 ' + imgClass} /> : <span className='text-[10px] text-muted'>{item?.name || '...'}</span>}
     </div>
   )
 }

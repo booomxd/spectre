@@ -83,15 +83,14 @@ export function Pill({ layoutId, className = 'accent-soft absolute inset-0 round
 
 // Page enter: fade + 8px rise when `active` turns true. Kept-alive pages stay mounted, so this animates on every visit
 // without remounting the page (state survives). Inactive pages are display:none.
+const cx = (...c) => c.filter(Boolean).join(' ')
 export function PageTransition({ active = true, className, children }) {
-  const reduce = useReducedMotion()
+  // Keep-alive pages switch with a CSS opacity fade only (compositor-driven, no per-frame JS, no transform), so
+  // showing a large page with glass panels does not stall the frame.
   return (
-    <m.div className={className} style={{ display: active ? undefined : 'none' }}
-      initial={reduce ? false : { opacity: 0, y: 8 }}
-      animate={active ? { opacity: 1, y: 0 } : { opacity: 0, y: reduce ? 0 : 8 }}
-      transition={active && !reduce ? { duration: 0.22, ease: EASE } : { duration: 0 }}>
+    <div className={cx(className, active && 'page-in')} style={{ display: active ? undefined : 'none', contain: 'layout paint' }}>
       {children}
-    </m.div>
+    </div>
   )
 }
 

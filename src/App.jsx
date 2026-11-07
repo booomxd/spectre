@@ -188,7 +188,7 @@ function Shell() {
   const sub = section && section.pages.length > 1 ? section : null
   return (
     <div className='h-full flex flex-col relative'>
-      <div className='backdrop' aria-hidden='true'><div className='backdrop-fields' /></div>
+      <div className='backdrop' aria-hidden='true'><div className='backdrop-fields'><span className='orb orb-1' /><span className='orb orb-2' /><span className='orb orb-3' /></div></div>
 
       {/* Row 1: brand, dock, update + window controls. The bar itself is the window drag region. */}
       <header data-tauri-drag-region className='drag relative z-20 h-16 shrink-0 flex items-center justify-between pl-5 pr-2'>
@@ -205,9 +205,9 @@ function Shell() {
       {/* Row 2: section sub-tabs (centered), search + utility pages (right). */}
       <div data-tauri-drag-region className='drag relative z-20 h-12 shrink-0 flex items-center justify-end px-5'>
         <div className='absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2'>
-          <AnimatePresence mode='wait' initial={false}>
+          <AnimatePresence mode='popLayout' initial={false}>
             {sub && (
-              <m.div key={sub.id} initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.16 }}>
+              <m.div key={sub.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.12 }}>
                 <SegmentedTabs size='sm' layoutId={'sub-' + sub.id} value={page} onChange={go}
                   tabs={sub.pages.map(p => ({ value: p.id, label: p.label, icon: p.icon }))} />
               </m.div>

@@ -143,8 +143,8 @@ const tok = n => (0x9e3779b97f4a7c15n * BigInt(n + 7)).toString(16).slice(-16).p
 const LIVE_ROSTER = [
   // [player, agent, team, party]
   [ME, AGENT.jett, 'Blue', 0], [by('kairo'), AGENT.sova, 'Blue', 0], [by('Lumen'), AGENT.omen, 'Blue', null],
-  [by('Vexa'), AGENT.killjoy, 'Blue', null], [by('Tidecaller'), AGENT.breach, 'Blue', null],
-  [INCOGNITO, AGENT.reyna, 'Red', null], [by('nightjar'), AGENT.raze, 'Red', null], [by('Sorrel'), AGENT.viper, 'Red', null],
+  [by('Vexa'), AGENT.killjoy, 'Blue', 1], [by('Tidecaller'), AGENT.breach, 'Blue', 1],
+  [INCOGNITO, AGENT.reyna, 'Red', 2], [by('nightjar'), AGENT.raze, 'Red', 2], [by('Sorrel'), AGENT.viper, 'Red', 2],
   [by('b0nfire'), AGENT.fade, 'Red', null], [by('Marrow'), AGENT.cypher, 'Red', null],
 ]
 export const LIVE_MATCH_ID = 'b7e1c0de-5a3f-4c2e-9d10-4e2f6a7b8c90'
@@ -164,6 +164,7 @@ export function liveState() {
       known: KNOWN.has(p.puuid), ranked: true, canScout: true,
       guns: loadout.weapons.filter(w => w.weapon === 'Vandal' || w.weapon === 'Phantom'),
       party: party,
+      partySize: party == null ? null : LIVE_ROSTER.filter(r => r[3] === party).length,
     }
     if (isMe) o.rr = ME.rr
     if (scouted[ref] !== undefined) o.scouted = scouted[ref]

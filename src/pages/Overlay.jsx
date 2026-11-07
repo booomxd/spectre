@@ -30,7 +30,7 @@ function Row({ p, showPeak, tiers }) {
   const sub = [p.level != null && `Lv ${p.level}`, p.scouted && `${p.scouted.kd.toFixed(2)} KD`, p.scouted?.hs != null && `${p.scouted.hs}% HS`].filter(Boolean).join(' · ')
   return (
     <div className={cx('relative flex items-center gap-2 h-10 pl-1.5 pr-2 rounded-xl', p.self ? 'accent-soft' : 'bg-surface-2/60 border border-line/50')}>
-      {color && <span className='absolute left-0 top-2.5 bottom-2.5 w-[2px] rounded-r-full' style={{ background: color, boxShadow: `0 0 6px ${color}` }} title='Your party' />}
+      {color && <span className='absolute left-0 top-2.5 bottom-2.5 w-[2px] rounded-r-full' style={{ background: color }} title={p.party === 0 ? 'Your party' : 'Premade party'} />}
       <AgentIcon agent={p.agent} size={28} locked={p.locked} className='!rounded-[9px]' />
       <div className='flex-1 min-w-0 leading-tight'>
         <div className={cx('flex items-center gap-1 text-[12px] font-semibold', p.self ? 'text-accent' : 'text-text')}>

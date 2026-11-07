@@ -233,13 +233,16 @@ pub fn register(reg: &mut Registry, _ctx: &Ctx) {
         if !truthy(&id) { return Ok(Value::Null); }
         let p = ctx.riot.glz("get", &format!("parties/v1/parties/{}", js::s(&id)), None).await?;
         let members = js::arr(&p["Members"]);
-        let shown: Vec<String> = members.iter().filter(|m| !truthy(&m["PlayerIdentity"]["Incognito"])).map(|m| js::s(&m["Subject"])).collect();
+        // Streamer mode hides names, except yours and your friends' (the client shows those to you anyway).
+        let me = ctx.riot.puuid();
+        let friends = super::known::friend_puuids(&ctx).await.unwrap_or_default();
+        let visible = |m: &Value| { let s = js::s(&m["Subject"]); s == me || friends.contains(&s) || !truthy(&m["PlayerIdentity"]["Incognito"]) };
+        let shown: Vec<String> = members.iter().filter(|m| visible(m)).map(|m| js::s(&m["Subject"])).collect();
         let (names, ranks) = tokio::join!(
             ctx.riot.names(&shown),
             futures::future::join_all(members.iter().map(|m| rank_of(&ctx, js::s(&m["Subject"])))),
         );
         let names = names.unwrap_or_default();
-        let me = ctx.riot.puuid();
         let i_own = members.iter().any(|m| m["Subject"] == me.as_str() && truthy(&m["IsOwner"]));
         let mm = &p["MatchmakingData"];
         let rows: Vec<Value> = members.iter().enumerate().map(|(i, m)| {
@@ -250,7 +253,7 @@ pub fn register(reg: &mut Registry, _ctx: &Ctx) {
             o.insert("self".into(), json!(m["Subject"] == me.as_str()));
             o.insert("owner".into(), json!(truthy(&m["IsOwner"])));
             o.insert("ready".into(), json!(truthy(&m["IsReady"])));
-            o.insert("hidden".into(), json!(truthy(&pi["Incognito"])));
+            o.insert("hidden".into(), json!(!visible(m)));
             o.insert("gameName".into(), js::or(&n["gameName"], Value::Null));
             o.insert("tagLine".into(), js::or(&n["tagLine"], Value::Null));
             o.insert("card".into(), js::or(&pi["PlayerCardID"], Value::Null));

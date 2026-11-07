@@ -29,6 +29,8 @@ export const cardWide = id => id && `https://media.valorant-api.com/playercards/
 
 // Colors used to mark players sharing a party.
 export const PARTY_COLORS = ['#f5b942', '#4cc9f0', '#f472b6', '#a3e635', '#c084fc']
+// Premade size label: Duo, Trio, 4-stack, 5-stack.
+export const partyLabel = n => n >= 5 ? '5-stack' : n === 4 ? '4-stack' : n === 3 ? 'Trio' : n === 2 ? 'Duo' : null
 
 export const STATE_LABEL = { menus: 'In menus', queue: 'In queue', pregame: 'Agent select', ingame: 'In match', away: 'Away', offline: 'Offline' }
 

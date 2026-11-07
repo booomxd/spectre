@@ -67,6 +67,8 @@ static LIVE: Lazy<Mutex<(i64, Option<HashSet<String>>)>> = Lazy::new(|| Mutex::n
 
 async fn read_live(ctx: &Ctx, me: &str) -> Res<HashSet<String>> {
     let mut hidden = HashSet::new();
+    // Friends in your own party stay named, like in Live Match.
+    let party = load(ctx).await.map(|k| k.party).unwrap_or_default();
     for base in ["core-game", "pregame"] {
         let p = match ctx.riot.glz("get", &format!("{base}/v1/players/{me}"), None).await {
             Ok(p) => p,
@@ -78,7 +80,7 @@ async fn read_live(ctx: &Ctx, me: &str) -> Res<HashSet<String>> {
         let players = if base == "core-game" { &m["Players"] } else { &m["AllyTeam"]["Players"] };
         for x in js::arr(players) {
             let sub = js::s(&x["Subject"]);
-            if sub != me && truthy(&x["PlayerIdentity"]["Incognito"]) { hidden.insert(sub); }
+            if sub != me && truthy(&x["PlayerIdentity"]["Incognito"]) && !party.contains(&sub) { hidden.insert(sub); }
         }
         break;
     }

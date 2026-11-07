@@ -137,8 +137,10 @@ export default function Weapons() {
                       return (
                         <Item key={s.uuid} index={i}>
                           <Card hover onClick={() => setSkin(s)} className='group relative overflow-hidden h-full flex flex-col'>
-                            <div className='h-28 flex items-center justify-center px-6 pt-4' style={color ? { background: `radial-gradient(60% 70% at 50% 55%, ${color}26, transparent 70%)` } : undefined}>
-                              <img src={skinImage(s)} className='max-h-full max-w-full object-contain transition-transform duration-500 ease-out group-hover:scale-[1.06]' loading='lazy' />
+                            <div className='relative h-28 flex items-center justify-center px-6 pt-4' style={color ? { background: `linear-gradient(180deg, transparent 35%, ${color}14)` } : undefined}>
+                              <span className='absolute bottom-3 left-1/2 -translate-x-1/2 w-3/5 h-3 rounded-[50%] bg-black/35 blur-md pointer-events-none' />
+                              {color && <span className='absolute inset-x-8 bottom-0 h-px pointer-events-none' style={{ background: `linear-gradient(90deg, transparent, ${color}aa, transparent)` }} />}
+                              <img src={skinImage(s)} className='relative max-h-full max-w-full object-contain transition-transform duration-500 ease-out group-hover:scale-[1.04]' loading='lazy' />
                             </div>
                             <div className='px-4 pb-4 pt-2'>
                               <div className='flex items-center gap-1.5'>
