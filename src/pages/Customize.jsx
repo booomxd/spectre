@@ -72,7 +72,7 @@ export default function Customize({ active }) {
           <Swap id={tab}>
             {tab === 'profile' && (
               <Panel title='Identity'>
-                <div className='flex items-center justify-between gap-6'>
+                <div className='flex items-center justify-between gap-5'>
                   <Label hint='Shown in the lobby and friends list'>Account level</Label>
                   <Input type='number' min='1' max='2000' value={level === '' ? curLevel : level} onChange={e => setLevel(e.target.value)} className='w-[140px] text-right tabular-nums font-semibold' />
                 </div>
@@ -84,7 +84,7 @@ export default function Customize({ active }) {
               <Panel title='Player card' right={shownCards && <span className='text-[11px] text-muted tabular-nums'>{shownCards.length}</span>}>
                 {search}
                 {!shownCards ? <div className='grid grid-cols-5 gap-2'>{Array.from({ length: 10 }).map((_, i) => <Skeleton key={i} className='h-32 rounded-xl' />)}</div>
-                  : !shownCards.length ? <Empty title='No cards found' className='py-10' /> : (
+                  : !shownCards.length ? <Empty title='No cards found' className='py-8' /> : (
                     <div className='grid grid-cols-5 gap-2'>
                       {shownCards.map(c => (
                         <Choice key={c.uuid} on={lc(curCard) === lc(c.uuid)} onClick={() => setCardId(c.uuid)} title={c.displayName} className='p-1.5 text-left'>

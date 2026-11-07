@@ -145,6 +145,7 @@ body {
 input, textarea, select { user-select: text; font-family: inherit; }
 img { object-fit: contain; -webkit-user-drag: none; }
 ::selection { background: rgb(var(--accent) / 0.35); }
+input, textarea { caret-color: rgb(var(--accent)); }
 button:focus-visible, a:focus-visible, [role='tab']:focus-visible, [role='button']:focus-visible, summary:focus-visible, [tabindex='0']:focus-visible { outline: 2px solid rgb(var(--accent) / 0.65); outline-offset: 2px; }
 
 .drag { -webkit-app-region: drag; }

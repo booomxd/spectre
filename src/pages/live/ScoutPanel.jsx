@@ -45,8 +45,8 @@ function Performance({ r }) {
     <div className='glass rounded-[22px] p-5'>
       <Heading hint={`Last ${r.matches} competitive matches`}
         right={<span className='text-[12px] text-muted tabular-nums'><b className='text-good'>{r.wins}W</b> · <b className='text-bad'>{r.losses}L</b></span>}>Recent form</Heading>
-      <div className='flex items-end gap-5'>
-        <div className='display text-[46px] text-text tabular-nums'>{wr}<span className='text-[22px] text-muted'>%</span></div>
+      <div className='flex items-end gap-4'>
+        <div className='display text-[38px] text-text tabular-nums'>{wr}<span className='text-[22px] text-muted'>%</span></div>
         <div className='flex-1 pb-2'>
           <div className='text-[11px] text-muted mb-1.5'>Win rate</div>
           <div className='h-2 rounded-full bg-bad/25 overflow-hidden'>
@@ -54,7 +54,7 @@ function Performance({ r }) {
           </div>
         </div>
       </div>
-      <div className='grid grid-cols-3 gap-2.5 mt-5'>
+      <div className='grid grid-cols-3 2xl:grid-cols-6 gap-2.5 mt-5'>
         {stat(r.kda.toFixed(2), 'KDA ratio')}
         {stat(r.acs, 'Avg combat score')}
         {stat(r.hs != null ? `${r.hs}%` : '-', 'Headshot %')}
@@ -69,7 +69,7 @@ function Performance({ r }) {
 function RankHistory({ history, peak, seasons }) {
   const start = id => Date.parse(seasons[id]?.startTime) || 0
   const acts = [...history].sort((a, b) => start(b.seasonId) - start(a.seasonId))
-  if (!acts.length) return <Empty icon={FiActivity} title='No competitive acts' className='py-8' />
+  if (!acts.length) return <Empty icon={FiActivity} title='No competitive acts' className='py-6' />
   return (
     <Stagger className='grid gap-2.5 grid-cols-1 xl:grid-cols-2'>
       {acts.map((a, i) => {
@@ -93,7 +93,7 @@ function RankHistory({ history, peak, seasons }) {
 }
 
 function TopAgents({ list, agents }) {
-  if (!list.length) return <Empty icon={FiActivity} title='No recent agents' className='py-8' />
+  if (!list.length) return <Empty icon={FiActivity} title='No recent agents' className='py-6' />
   return (
     <Stagger className='grid gap-2.5'>
       {list.map((a, i) => {
@@ -168,14 +168,14 @@ export default function ScoutPanel({ player, onLoaded, onClose }) {
   return (
     <>
       <PanelHeader player={player} sub={['Player scout', top && `Mains ${top}`].filter(Boolean).join(' · ')} actions={profile} onClose={onClose} />
-      <div className='flex-1 overflow-y-auto px-7 py-6'>
+      <div className='flex-1 overflow-y-auto px-6 py-5'>
         {!d && !state.error ? (
           <div className='grid gap-3'>
             <div className='grid grid-cols-2 gap-3'><Skeleton className='h-[104px] rounded-[22px]' /><Skeleton className='h-[104px] rounded-[22px]' /></div>
             <Skeleton className='h-[230px] rounded-[22px]' /><Skeleton className='h-[140px] rounded-[22px]' />
           </div>
         ) : state.error ? <ErrorState error={state.error} onRetry={load} /> : (
-          <Stagger className='flex flex-col gap-6' step={0.05}>
+          <Stagger className='flex flex-col gap-5' step={0.05}>
             <Item index={0} className='grid grid-cols-2 gap-3'>
               <RankCard heading='Current rank' tier={d.current.tier} rr={d.current.rr}
                 sub={[seasonName(seasons, d.current.seasonId), d.current.games ? `${d.current.wins}W / ${d.current.games} games` : null].filter(Boolean).join(' · ')} />
@@ -184,7 +184,7 @@ export default function ScoutPanel({ player, onLoaded, onClose }) {
 
             <Item index={1}>
               {d.recent ? <Performance r={d.recent} />
-                : <Empty icon={FiActivity} title={d.historyPrivate ? 'Match history unavailable' : 'No recent competitive matches'} className='py-6' />}
+                : <Empty icon={FiActivity} title={d.historyPrivate ? 'Match history unavailable' : 'No recent competitive matches'} className='py-5' />}
             </Item>
 
             <Item index={2}>

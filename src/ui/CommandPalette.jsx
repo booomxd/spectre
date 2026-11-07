@@ -54,7 +54,7 @@ function Panel({ items, onClose }) {
         <span className='kbd'>Esc</span>
       </div>
       <div ref={list} className='flex-1 min-h-0 overflow-y-auto p-2'>
-        {!flat.length && <div className='py-10 text-center text-[13px] text-muted'>Nothing matches "{q}"</div>}
+        {!flat.length && <div className='py-8 text-center text-[13px] text-muted'>Nothing matches "{q}"</div>}
         {groups.map(([g, l]) => (
           <div key={g} className='mb-1'>
             <div className='eyebrow px-3 pt-2.5 pb-1.5 !text-[10px]'>{g}</div>

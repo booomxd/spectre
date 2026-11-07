@@ -6,10 +6,11 @@ import { Input, Pill, cx, pressable } from '../../ui'
 // Fills the page body. Use with <Page bodyClassName={SPLIT_BODY}>.
 export const SPLIT_BODY = '!overflow-hidden flex min-h-0'
 
-export function SplitView({ list, children, listWidth = 340, className }) {
+// The list narrows on small windows (down to 82%) so the detail side keeps its room.
+export function SplitView({ list, children, listWidth = 320, className }) {
   return (
-    <div className={cx('flex-1 min-h-0 flex gap-5', className)}>
-      <aside className='shrink-0 min-h-0 flex flex-col' style={{ width: listWidth }}>{list}</aside>
+    <div className={cx('flex-1 min-h-0 flex gap-4', className)}>
+      <aside className='shrink-0 min-h-0 flex flex-col' style={{ width: `clamp(${Math.round(listWidth * 0.82)}px, 26vw, ${listWidth}px)` }}>{list}</aside>
       <section className='flex-1 min-w-0 min-h-0 overflow-y-auto -mr-3 pr-3 pb-1'>{children}</section>
     </div>
   )
@@ -70,11 +71,11 @@ export function DetailHero({ art, eyebrow, title, meta, actions, children, class
       {art && <img src={art} alt='' draggable={false} className='absolute inset-0 w-full h-full object-cover' />}
       {art && <div className='absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/5' />}
       {!art && <span className='halo -top-28 -right-20 w-80 h-80' />}
-      <div className='relative p-6 flex flex-col gap-4'>
+      <div className='relative p-5 flex flex-col gap-4'>
         <div className='flex flex-wrap items-end justify-between gap-4'>
           <div className='min-w-0'>
             {eyebrow && <div className={cx('eyebrow mb-2', art && '!text-white/70')}>{eyebrow}</div>}
-            <h2 className={cx('display text-[34px] truncate', art ? 'text-white drop-shadow-[0_2px_12px_rgb(0_0_0/0.45)]' : 'text-text')}>{title}</h2>
+            <h2 className={cx('display text-[28px] truncate', art ? 'text-white drop-shadow-[0_2px_12px_rgb(0_0_0/0.45)]' : 'text-text')}>{title}</h2>
             {meta && <div className={cx('mt-2 text-[13px]', art ? 'text-white/75' : 'text-muted')}>{meta}</div>}
           </div>
           {actions && <div className='flex flex-wrap items-center gap-2'>{actions}</div>}

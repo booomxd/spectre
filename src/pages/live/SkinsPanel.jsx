@@ -12,11 +12,11 @@ export default function SkinsPanel({ player, onClose }) {
   return (
     <>
       <PanelHeader player={player} sub={sub} onClose={onClose} />
-      <div className='flex-1 overflow-y-auto px-7 py-6'>
+      <div className='flex-1 overflow-y-auto px-6 py-5'>
         {loading && !data ? (
           <div className='grid gap-3 grid-cols-2 xl:grid-cols-3'>{Array.from({ length: 9 }, (_, i) => <Skeleton key={i} className='h-[176px] rounded-[22px]' />)}</div>
         ) : error && !data ? <ErrorState error={error} onRetry={reload} /> : (
-          <div className='flex flex-col gap-8'>
+          <div className='flex flex-col gap-6'>
             {(data.card || data.sprays.length > 0) && (
               <div className='grid gap-3 lg:grid-cols-[1fr_auto] items-stretch'>
                 {data.card && (

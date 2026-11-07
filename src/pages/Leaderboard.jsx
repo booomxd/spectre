@@ -17,14 +17,15 @@ function Name({ p }) {
   return <>{p.prefix && <span className='text-muted'>{p.prefix} </span>}{p.gameName}<span className='text-muted'>#{p.tagLine}</span></>
 }
 
-function Entry({ p, cards, me, sticky, index }) {
+function Entry({ p, cards, me, sticky, index, right }) {
   const art = cards[p.cardId]?.smallArt || cards[p.cardId]?.displayIcon
   const secret = isSecret(p)
   const link = !secret && p.puuid
   return (
     <div style={{ '--i': index }} {...pressable(link ? () => openPlayer(p) : null)}
-      className={cx('grid items-center gap-3 px-6 h-[56px] text-[13px] transition-colors', COLS,
+      className={cx('grid items-center gap-3 px-5 h-[56px] text-[13px] transition-colors', COLS,
         sticky ? 'bg-panel/95 border-t border-accent/40 shadow-[0_-12px_30px_-16px_rgb(var(--accent)/0.5)]' : 'border-b border-line last:border-b-0',
+        right && '2xl:border-l',
         link && 'cursor-pointer', link && p.puuid !== me && 'hover:bg-surface-2', p.puuid === me && !sticky && 'accent-soft')}>
       <span className={cx('font-display text-[18px] font-bold tracking-tight tabular-nums', p.rank === 1 ? 'text-warn' : p.rank <= 3 ? 'text-text' : 'text-muted')}>#{p.rank}</span>
       <div className='flex items-center gap-3 min-w-0'>
@@ -47,7 +48,7 @@ function Entry({ p, cards, me, sticky, index }) {
 function Podium({ top, cards, me }) {
   const order = [top[1], top[0], top[2]].filter(Boolean)
   return (
-    <Stagger className='grid grid-cols-3 gap-4 mb-5 items-end'>
+    <Stagger className='grid grid-cols-3 gap-4 mb-4 items-end'>
       {order.map((p, i) => {
         const first = p.rank === 1
         const art = cards[p.cardId]?.wideArt || cards[p.cardId]?.largeArt
@@ -60,7 +61,7 @@ function Podium({ top, cards, me }) {
               {first && <span className='halo w-72 h-72 -top-36 left-1/2 -translate-x-1/2' />}
               <div className='relative h-full p-5 flex flex-col justify-between'>
                 <div className='flex items-center justify-between'>
-                  <span className={cx('display tabular-nums', first ? 'text-[44px] text-warn' : 'text-[34px] text-text')}>#{p.rank}</span>
+                  <span className={cx('display tabular-nums', first ? 'text-[36px] text-warn' : 'text-[28px] text-text')}>#{p.rank}</span>
                   <TierIcon tier={p.tier} size={first ? 40 : 32} />
                 </div>
                 <div className='min-w-0'>
@@ -110,6 +111,9 @@ function Content() {
   const mine = players.find(p => p.puuid === riot.puuid)
   const you = mine || (data?.you && { ...data.you, puuid: riot.puuid, cardId: null, gameName: riot.gameName, tagLine: riot.tagLine, anonymous: false })
   const podium = !q.trim() && tab === 'all' && players.length >= 3
+  // Very wide windows: long lists read as two side-by-side columns (ranks run down the left, then the right).
+  const split = filtered.length > 12
+  const rows = Math.ceil(filtered.length / 2)
 
   if (error && !data) return <ErrorState error={error} onRetry={() => load(0)} />
   if (!data) return <div className='flex flex-col gap-2'><Skeleton className='h-[98px] rounded-2xl mb-3' />{Array.from({ length: 10 }, (_, i) => <Skeleton key={i} className='h-[56px] rounded-xl' />)}</div>
@@ -137,11 +141,15 @@ function Content() {
       {podium && <Podium top={players.slice(0, 3)} cards={cards} me={riot.puuid} />}
 
       <Card className='overflow-hidden anim-rise'>
-        <div className={cx('grid gap-3 px-6 h-11 items-center border-b border-line eyebrow !text-[10px]', COLS)}>
-          <span>Rank</span><span>Player</span><span>Tier</span><span>RR</span><span>Wins</span>
+        <div className={cx('grid border-b border-line', split && '2xl:grid-cols-2')}>
+          {[0, 1].map(c => (
+            <div key={c} className={cx('gap-3 px-5 h-11 items-center eyebrow !text-[10px]', COLS, c ? cx('hidden border-l border-line', split && '2xl:grid') : 'grid')}>
+              <span>Rank</span><span>Player</span><span>Tier</span><span>RR</span><span>Wins</span>
+            </div>
+          ))}
         </div>
-        <div className='stagger'>
-          {filtered.length ? filtered.map((p, i) => <Entry key={p.rank} p={p} cards={cards} me={riot.puuid} index={Math.min(i, 12)} />)
+        <div className={cx('stagger', split && '2xl:grid 2xl:grid-flow-col 2xl:grid-cols-2 2xl:[grid-template-rows:repeat(var(--rows),auto)]')} style={split ? { '--rows': rows } : undefined}>
+          {filtered.length ? filtered.map((p, i) => <Entry key={p.rank} p={p} cards={cards} me={riot.puuid} index={Math.min(i, 12)} right={split && i >= rows} />)
             : <Empty icon={FiAward} title='No players match' hint={tab === 'known' ? 'No friends or party members in the loaded range. Load more to widen it.' : 'Search only covers the players loaded so far. Load more to widen it.'} />}
         </div>
         {you && (

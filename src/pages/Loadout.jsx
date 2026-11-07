@@ -124,7 +124,7 @@ function LoadoutView({ active }) {
             <span className='eyebrow'>{w.displayName}</span>
             {pending ? <Badge tone='warn'>Pending</Badge> : x.CharmLevelID && buddyIcon[lc(x.CharmLevelID)] && <img src={buddyIcon[lc(x.CharmLevelID)]} className='w-7 h-7 object-contain' title='Buddy' />}
           </div>
-          <div className='relative flex-1 min-h-0 flex items-center justify-center px-6'>
+          <div className='relative flex-1 min-h-0 flex items-center justify-center px-5'>
             <img src={selectionImage(skin, x.ChromaID) || w.displayIcon} className='max-h-[92px] max-w-full object-contain drop-shadow-[0_10px_18px_rgb(0_0_0/0.35)] transition-transform duration-500 ease-out group-hover:scale-[1.06]' loading='lazy' />
           </div>
           <div className='relative px-5 pb-4'>
@@ -154,16 +154,16 @@ function LoadoutView({ active }) {
         <Button size='sm' variant='primary' icon={FiCheck} loading={saving} onClick={apply}>Apply changes</Button>
       </>}>
       {error && !loadout ? <ErrorState error={error} onRetry={reload} /> : (
-        <div className='flex flex-col gap-8'>
+        <div className='flex flex-col gap-6'>
           <div className='bento'>
             <Card className='col-span-12 xl:col-span-5 relative overflow-hidden rounded-3xl min-h-[210px]'>
               {card?.wideArt && <img src={card.wideArt} className='absolute inset-0 w-full h-full object-cover' draggable={false} />}
               {card?.wideArt ? <div className='absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/5' /> : <span className='halo -top-24 -left-20 w-80 h-80' />}
-              <div className='relative h-full p-6 flex flex-col justify-end'>
+              <div className='relative h-full p-5 flex flex-col justify-end'>
                 <div className={cx('eyebrow mb-2', card?.wideArt && '!text-white/70')}>Identity</div>
                 {!identity ? <Skeleton className='h-14 rounded-xl' /> : (
                   <>
-                    <div className={cx('display text-[30px] truncate', card?.wideArt ? 'text-white' : 'text-text')}>{riot.gameName || 'Player'}</div>
+                    <div className={cx('display text-[26px] truncate', card?.wideArt ? 'text-white' : 'text-text')}>{riot.gameName || 'Player'}</div>
                     <div className={cx('mt-1.5 text-[12.5px] truncate', card?.wideArt ? 'text-white/75' : 'text-muted')}>
                       {lc(identity.PlayerTitleID) === NO_TITLE ? 'No title' : (title?.titleText || title?.displayName || 'Unknown title')} · {card?.displayName || 'Default card'} · Level {identity.HideAccountLevel ? 'hidden' : 'visible'}
                     </div>
@@ -223,23 +223,27 @@ function LoadoutView({ active }) {
           </div>
 
           <section>
-            <div className='flex items-center justify-between gap-4 mb-5'>
+            <div className='flex items-center justify-between gap-x-4 gap-y-2 mb-4 flex-wrap'>
               <SegmentedTabs layoutId='loadout-filter' value={filter} onChange={setFilter}
                 tabs={[{ value: 'all', label: 'All', count: guns.length || undefined }, ...cats.map(c => ({ value: c.key, label: c.label, count: c.list.length }))]} />
               <span className='text-[12px] text-muted'>Changes are applied in game when you press Apply</span>
             </div>
             {!ready || loading && !loadout ? (
-              <div className='grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4'>{Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className='h-[208px] rounded-2xl' />)}</div>
+              <div className='grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4'>{Array.from({ length: 10 }).map((_, i) => <Skeleton key={i} className='h-[208px] rounded-2xl' />)}</div>
             ) : (
-              <Swap id={filter} className='flex flex-col gap-8'>
-                {shownCats.map(cat => (
-                  <div key={cat.key}>
-                    {filter === 'all' && <SectionTitle right={<span className='text-[11px] text-muted tabular-nums'>{cat.list.length}</span>}>{cat.label}</SectionTitle>}
-                    <Stagger className='grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4'>
-                      {cat.list.map(({ g, w }, i) => tile(g, w, i))}
-                    </Stagger>
-                  </div>
-                ))}
+              <Swap id={filter} className={filter === 'all' ? 'flex flex-wrap gap-x-4 gap-y-6' : 'flex flex-col gap-6'}>
+                {shownCats.map(cat => {
+                  const n = cat.list.length
+                  // All view: small categories share a row instead of leaving most of it empty.
+                  return (
+                    <div key={cat.key} className='min-w-0 max-w-full' style={filter === 'all' ? { flex: `${n} 1 ${n * 220 + (n - 1) * 16}px` } : undefined}>
+                      {filter === 'all' && <SectionTitle right={<span className='text-[11px] text-muted tabular-nums'>{n}</span>}>{cat.label}</SectionTitle>}
+                      <Stagger className={filter === 'all' ? 'grid gap-4 grid-cols-[repeat(auto-fit,minmax(min(100%,220px),1fr))]' : 'grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 min-[1800px]:grid-cols-6 gap-4'}>
+                        {cat.list.map(({ g, w }, i) => tile(g, w, i))}
+                      </Stagger>
+                    </div>
+                  )
+                })}
               </Swap>
             )}
           </section>
@@ -249,7 +253,7 @@ function LoadoutView({ active }) {
       <Modal open={!!editing} onClose={() => setEditing(null)} width={760} title={editing ? `${editing.displayName} skin` : ''}
         footer={<><Button variant='ghost' onClick={() => setEditing(null)}>Cancel</Button><Button variant='primary' loading={saving} onClick={applyGun}>Apply</Button></>}>
         {editing && tmp && (
-          <div className='space-y-5'>
+          <div className='space-y-4'>
             <SkinPicker weapon={editing} owned={owned} value={tmp} onChange={v => setTmp(t => ({ ...t, ...v }))} />
             {catKey(editing) !== 'Melee' && (
               <div>

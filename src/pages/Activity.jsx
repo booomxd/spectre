@@ -56,7 +56,7 @@ function MatchCard({ m, people, memoMap, agents, maps, onMemo }) {
           <div className={cx('text-[11.5px] mt-1', map?.splash ? 'text-white/70' : 'text-muted')}>{m.mode} - {timeAgo(m.start)}</div>
         </div>
       </div>
-      <div className='flex-1 p-4 grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-2 content-start'>
+      <div className='flex-1 min-w-0 p-4 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-2 gap-2 content-start'>
         {m.players.map(p => <Chip key={p.key} p={p} people={people} memo={p.puuid ? memoMap[p.puuid] : null} agents={agents} onMemo={onMemo} />)}
       </div>
     </Card>
@@ -116,8 +116,9 @@ function Content() {
                       <AgentIcon id={f.agent} agents={agents} size={40} className='!rounded-xl' />
                       <div className='min-w-0 flex-1'>
                         <div className='truncate text-[13.5px] font-semibold tracking-tight text-text'>{f.name.gameName}<span className='text-muted font-normal'>#{f.name.tagLine}</span></div>
-                        <div className='text-[11px] text-muted mt-0.5'>{f.friend ? 'Friend' : 'Party'} - {total} games</div>
+                        <div className='truncate text-[11px] text-muted mt-0.5'>{f.friend ? 'Friend' : 'Party'} - {total} games{f.lastSeen ? ` - ${timeAgo(f.lastSeen)}` : ''}</div>
                       </div>
+                      {f.tier > 0 && <TierIcon tier={f.tier} size={24} />}
                     </div>
                     <div className='mt-3.5 h-1.5 rounded-full glass-inset overflow-hidden flex'>
                       <span className='h-full bg-good' style={{ flex: f.with }} />
@@ -135,9 +136,9 @@ function Content() {
       {groups.length > 0 && <Heading hint={`${groups.length} matches`} right={memos.length > 0 && <Badge>{memos.length} notes saved</Badge>}>Recent matches</Heading>}
       {!groups.length ? <Empty icon={FiActivity} title='Nobody to show' hint={filter === 'memo' ? 'Add notes to players and they show up here.' : 'No recent matches found.'} />
         : (
-          <div className='stagger flex flex-col gap-3'>
+          <div className='stagger grid grid-cols-1 2xl:grid-cols-2 gap-3'>
             {groups.map((m, i) => (
-              <div key={m.matchId} style={{ '--i': Math.min(i, 12) }}>
+              <div key={m.matchId} className='min-w-0' style={{ '--i': Math.min(i, 12) }}>
                 <MatchCard m={m} people={data.people} memoMap={memoMap} agents={agents} maps={maps} onMemo={openMemo} />
               </div>
             ))}

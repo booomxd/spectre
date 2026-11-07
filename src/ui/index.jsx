@@ -53,7 +53,7 @@ export function Page({ title, subtitle, actions, eyebrow, children, className, b
         {(title || actions) && (
           <header className='flex items-end justify-between gap-4 pb-5'>
             <div className='min-w-0'>
-              {title && <h2 className='display text-[26px] text-text'>{title}</h2>}
+              {title && <h2 className='display text-[22px] text-text'>{title}</h2>}
               {subtitle && <p className='mt-2 text-[13px] text-muted'>{subtitle}</p>}
             </div>
             {actions && <div className='flex items-center gap-2 shrink-0'>{actions}</div>}
@@ -66,16 +66,16 @@ export function Page({ title, subtitle, actions, eyebrow, children, className, b
   return (
     <div className={cx('h-full flex flex-col', className)}>
       {(title || actions) && (
-        <header className='flex items-end justify-between gap-6 px-8 pt-7 pb-6'>
+        <header className='flex items-end justify-between gap-5 px-6 pt-6 pb-5'>
           <div className='min-w-0'>
-            {kicker && title && <div className='eyebrow mb-2.5 flex items-center gap-2'><span className='w-1.5 h-1.5 rounded-full bg-accent shadow-[0_0_10px_rgb(var(--accent))]' />{kicker}</div>}
-            {title && <h1 className='display text-[38px] text-text'>{title}</h1>}
-            {subtitle && <p className='mt-2.5 text-[13.5px] text-muted max-w-2xl'>{subtitle}</p>}
+            {kicker && title && <div className='eyebrow mb-2 flex items-center gap-2'><span className='w-1.5 h-1.5 rounded-full bg-accent shadow-[0_0_10px_rgb(var(--accent))]' />{kicker}</div>}
+            {title && <h1 className='display text-[30px] text-text'>{title}</h1>}
+            {subtitle && <p className='mt-2.5 text-[13px] text-muted max-w-2xl'>{subtitle}</p>}
           </div>
           {actions && <div className='flex items-center gap-2 shrink-0'>{actions}</div>}
         </header>
       )}
-      <div className={cx('flex-1 overflow-y-auto px-8 pb-8', bodyClassName)}>{children}</div>
+      <div className={cx('flex-1 overflow-y-auto px-6 pb-6', bodyClassName)}>{children}</div>
     </div>
   )
 }
@@ -118,7 +118,7 @@ export function Heading({ children, hint, right, className }) {
   return (
     <div className={cx('flex items-end justify-between gap-3 mb-4', className)}>
       <div className='min-w-0'>
-        <h3 className='font-display text-[17px] font-bold tracking-tight text-text'>{children}</h3>
+        <h3 className='font-display text-[15px] font-bold tracking-tight text-text'>{children}</h3>
         {hint && <p className='text-[12px] text-muted mt-1'>{hint}</p>}
       </div>
       {right}
@@ -134,7 +134,7 @@ const BTN = {
   glow: 'accent-soft text-text hover:bg-accent/20',
 }
 export function Button({ variant = 'subtle', size = 'md', loading, icon: Icon, className, children, disabled, ...rest }) {
-  const sz = size === 'sm' ? 'h-8 px-3.5 text-xs' : size === 'lg' ? 'h-11 px-6 text-sm' : size === 'icon' ? 'h-9 w-9 text-[15px]' : 'h-9 px-4 text-[13px]'
+  const sz = size === 'sm' ? 'h-8 px-3.5 text-xs' : size === 'lg' ? 'h-11 px-5 text-sm' : size === 'icon' ? 'h-9 w-9 text-[15px]' : 'h-9 px-4 text-[13px]'
   return (
     <button disabled={disabled || loading}
       className={cx('inline-flex items-center justify-center gap-2 rounded-full font-semibold transition-[transform,filter,background-color,border-color,color,box-shadow] duration-200 ease-out active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none',
@@ -145,7 +145,7 @@ export function Button({ variant = 'subtle', size = 'md', loading, icon: Icon, c
   )
 }
 
-const FIELD = 'glass-field w-full h-10 rounded-xl px-3.5 text-[13px] text-text placeholder:text-muted/60 outline-none transition-[border-color,box-shadow] duration-200'
+const FIELD = 'glass-field w-full h-9 rounded-xl px-3 text-[13px] text-text placeholder:text-muted/60 outline-none transition-[border-color,box-shadow] duration-200'
 export const Input = React.forwardRef(({ className, ...rest }, ref) => <input ref={ref} className={cx(FIELD, className)} {...rest} />)
 export const Textarea = React.forwardRef(({ className, ...rest }, ref) => <textarea ref={ref} className={cx(FIELD, 'h-auto py-2.5 resize-none', className)} {...rest} />)
 export function Select({ className, options, ...rest }) {
@@ -221,7 +221,7 @@ export function Stat({ label, value, sub, className, size = 'md' }) {
   return (
     <div className={className}>
       <div className='text-[11px] font-semibold text-muted'>{label}</div>
-      <div className={cx('font-display font-bold text-text leading-tight tabular-nums mt-0.5', size === 'lg' ? 'text-[34px] tracking-tight' : 'text-2xl')}>{value}</div>
+      <div className={cx('font-display font-bold text-text leading-tight tabular-nums mt-0.5', size === 'lg' ? 'text-[28px] tracking-tight' : 'text-[21px]')}>{value}</div>
       {sub && <div className='text-[11px] text-muted mt-0.5'>{sub}</div>}
     </div>
   )
@@ -236,7 +236,7 @@ export function Empty({ icon: Icon = FiInbox, title, hint, action, className }) 
     <div className={cx('anim-fade flex flex-col items-center justify-center text-center gap-2 py-16', className)}>
       <div className='relative mb-2'>
         <span className='halo -inset-6' />
-        <div className='glass relative w-14 h-14 rounded-2xl flex items-center justify-center text-accent text-xl'><Icon /></div>
+        <div className='glass relative w-12 h-12 rounded-xl flex items-center justify-center text-accent text-lg'><Icon /></div>
       </div>
       {title && <p className='text-[15px] font-semibold tracking-tight text-text'>{title}</p>}
       {hint && <p className='text-[12.5px] text-muted max-w-xs leading-relaxed'>{hint}</p>}
@@ -287,12 +287,12 @@ export function Modal({ open, onClose, title, children, footer, width = 480 }) {
           <m.div ref={panel} role='dialog' aria-modal='true' aria-label={typeof title === 'string' ? title : undefined} tabIndex={-1}
             className='glass-strong rounded-3xl max-h-[85vh] max-w-[calc(100vw-32px)] flex flex-col outline-none' style={{ width }} onMouseDown={e => e.stopPropagation()}
             initial={{ opacity: 0, scale: 0.96, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.98, y: 6 }} transition={SPRING}>
-            <div className='flex items-center justify-between px-7 pt-6 pb-3'>
-              <h3 className='display text-[22px] min-w-0'>{title}</h3>
+            <div className='flex items-center justify-between px-6 pt-5 pb-3'>
+              <h3 className='display text-[19px] min-w-0'>{title}</h3>
               <button aria-label='Close' title='Close' className='w-8 h-8 -mr-2 shrink-0 rounded-full flex items-center justify-center text-muted hover:text-text hover:bg-surface-2 transition-colors' onClick={onClose}><FiX /></button>
             </div>
-            <div className='px-7 pb-6 overflow-y-auto'>{children}</div>
-            {footer && <div className='px-7 py-4 border-t border-line flex justify-end gap-2'>{footer}</div>}
+            <div className='px-6 pb-5 overflow-y-auto'>{children}</div>
+            {footer && <div className='px-6 py-4 border-t border-line flex justify-end gap-2'>{footer}</div>}
           </m.div>
         </Scrim>
       )}

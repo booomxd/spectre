@@ -59,7 +59,7 @@ function Group({ title, hint, items, d, save, delay }) {
           <p className='text-[12px] text-muted mt-0.5'>{hint}</p>
         </div>
       </div>
-      <Card className='px-6 py-1'>
+      <Card className='px-5 py-1'>
         {items.map(([k, label, h, needs], i) => (
           <div key={k} className={cx('py-4', i > 0 && 'border-t border-line/60')}>
             <Toggle checked={!!d[k] && (!needs || !!d[needs])} disabled={needs && !d[needs]} label={label} hint={h} onChange={v => save({ discord: { [k]: v } })} />
@@ -94,14 +94,14 @@ export default function Discord({ active }) {
 
   return (
     <Page title='Discord' subtitle='Your session on your Discord profile. You choose what it shows.'>
-      {!d ? <div className='max-w-3xl space-y-5'><Skeleton className='h-72 rounded-3xl' /><Skeleton className='h-80 rounded-3xl' /></div> : (
-        <div className='max-w-3xl flex flex-col gap-10 pb-4'>
+      {!d ? <div className='max-w-3xl xl:max-w-6xl grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,400px)] items-start'><Skeleton className='h-72 rounded-3xl' /><Skeleton className='h-80 rounded-3xl' /></div> : (
+        <div className='max-w-3xl xl:max-w-6xl grid gap-10 xl:gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,400px)] items-start pb-4'>
           {/* Hero: status + switch + live profile preview */}
           <FadeIn>
             <Card className='relative overflow-hidden rounded-3xl'>
               <span className='halo -top-28 -right-24 w-96 h-96' />
-              <div className='relative p-7 flex items-start gap-5'>
-                <span className='glass-inset w-14 h-14 rounded-2xl flex items-center justify-center shrink-0'><FaDiscord className='text-[28px] text-[#5865F2]' /></span>
+              <div className='relative p-6 flex items-start gap-4'>
+                <span className='glass-inset w-14 h-14 rounded-2xl flex items-center justify-center shrink-0'><FaDiscord className='text-[24px] text-[#5865F2]' /></span>
                 <div className='min-w-0 flex-1'>
                   <div className='flex items-center gap-2 text-[12px] font-semibold text-muted'>
                     <span className={cx('w-2 h-2 rounded-full', pill[1], s.connected && 'shadow-[0_0_10px_currentColor] text-good')} />{pill[0]}
@@ -115,8 +115,8 @@ export default function Discord({ active }) {
                 <div className='pt-1'><Toggle checked={!!d.enabled} disabled={busy} onChange={setEnabled} /></div>
               </div>
 
-              <div className='relative px-7 pb-7'>
-                <div className='hairline mb-6' />
+              <div className='relative px-6 pb-6'>
+                <div className='hairline mb-5' />
                 <div className='flex flex-wrap items-center justify-between gap-3 mb-4'>
                   <span className='eyebrow'>Profile preview</span>
                   <SegmentedTabs size='sm' layoutId='discord-scenario' value={scenario} onChange={setScenario} tabs={SCENARIOS.map(([value, label]) => ({ value, label }))} />
@@ -135,8 +135,10 @@ export default function Discord({ active }) {
             </Card>
           </FadeIn>
 
-          <Group title='Match' hint='What people see about the game you are in' items={MATCH} d={d} save={save} delay={0.06} />
-          <Group title='Session' hint='Your stack, score and timing' items={SESSION} d={d} save={save} delay={0.1} />
+          <div className='min-w-0 flex flex-col gap-10 xl:gap-6'>
+            <Group title='Match' hint='What people see about the game you are in' items={MATCH} d={d} save={save} delay={0.06} />
+            <Group title='Session' hint='Your stack, score and timing' items={SESSION} d={d} save={save} delay={0.1} />
+          </div>
         </div>
       )}
     </Page>

@@ -26,7 +26,7 @@ function dayLabel(ms) {
 function EventRow({ e, index }) {
   const k = KIND[e.type]
   return (
-    <Item index={index} className='group glass relative flex items-center gap-4 rounded-2xl pl-4 pr-3 py-3.5'>
+    <Item index={index} className='group glass relative min-w-0 flex items-center gap-4 rounded-2xl pl-4 pr-3 py-3.5 2xl:last:odd:col-span-2'>
       <span className={cx('w-10 h-10 shrink-0 rounded-2xl border flex items-center justify-center', k.soft, k.tone)}><k.icon size={16} /></span>
       <div className='min-w-0 flex-1'>
         <p className='text-[14px] text-text/80 truncate'>
@@ -138,7 +138,9 @@ export default function FriendActivity() {
                     return days.map(d => (
                       <div key={d.label} className='flex flex-col gap-2'>
                         <div className='eyebrow px-1 pt-3 first:pt-0'>{d.label}</div>
-                        {d.items.map(e => <EventRow key={e.id} e={e} index={n++} />)}
+                        <div className='grid grid-cols-1 2xl:grid-cols-2 gap-2'>
+                          {d.items.map(e => <EventRow key={e.id} e={e} index={n++} />)}
+                        </div>
                       </div>
                     ))
                   })()}

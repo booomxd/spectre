@@ -49,20 +49,20 @@ export default function Suggestions() {
 
   return (
     <Page title='Feedback' subtitle='Ideas, bugs or anything else: it goes straight to the developer.'>
-      <div className='max-w-2xl flex flex-col gap-6 pb-4'>
+      <div className='max-w-2xl xl:max-w-[1040px] grid gap-5 xl:grid-cols-[minmax(0,1fr)_300px] items-start pb-4'>
         <FadeIn>
           <Card className='relative overflow-hidden rounded-3xl'>
             <span className='halo -top-32 -left-24 w-96 h-96' />
             <Swap id={sent ? 'sent' : 'form'} className='relative'>
               {sent ? (
-                <div className='flex flex-col items-center text-center gap-2.5 px-8 py-16'>
+                <div className='flex flex-col items-center text-center gap-2.5 px-6 py-16'>
                   <span className='accent-soft w-20 h-20 rounded-3xl flex items-center justify-center mb-2'><img src={logo} alt='' className='w-12 h-12' draggable={false} /></span>
-                  <div className='display text-[28px] text-text'>Thanks, got it</div>
+                  <div className='display text-[24px] text-text'>Thanks, got it</div>
                   <p className='text-[13px] text-muted max-w-sm leading-relaxed'>Your {label.toLowerCase()} was sent. If you left a contact, you may hear back.</p>
                   <Button className='mt-3' onClick={() => setSent(false)}>Send another</Button>
                 </div>
               ) : (
-                <div className='flex flex-col gap-6 p-7'>
+                <div className='flex flex-col gap-5 p-6'>
                   <div>
                     <div className='eyebrow mb-3'>What is it about?</div>
                     <SegmentedTabs size='lg' layoutId='feedback-kind' value={kind} onChange={setKind}
@@ -95,13 +95,29 @@ export default function Suggestions() {
             </Swap>
           </Card>
         </FadeIn>
-        <FadeIn delay={0.08} className='flex gap-4 px-2'>
+        <FadeIn delay={0.08} className='flex flex-col gap-4 xl:pt-2'>
+          <div className='flex gap-4 px-2 min-w-0'>
           <span className='glass w-9 h-9 rounded-xl flex items-center justify-center text-accent shrink-0'><FiShield size={15} /></span>
-          <div className='text-[12px] text-muted leading-relaxed'>
+          <div className='min-w-0 text-[12px] text-muted leading-relaxed'>
             <div className='text-[13px] font-semibold text-text mb-0.5'>What gets sent</div>
             Only your message, the contact you typed (if any) and your Spectre version. Nothing about your Riot account is included.{' '}
             {cfg?.key ? 'Messages are emailed to the developer.' : 'Messages open as an issue on Spectre’s GitHub, which needs a free GitHub account and is public.'}
           </div>
+          </div>
+          <Card className='hidden xl:block px-4 py-1 rounded-2xl'>
+            {[
+              ['Type', label],
+              ['Message', message.trim() ? `${message.trim().length} characters` : '-'],
+              ['Contact', contact.trim() ? 'Included' : 'Not given'],
+              ['Version', cfg?.version ? `Spectre ${cfg.version}` : '-'],
+              ['Delivery', cfg?.key ? 'Email' : `GitHub issue · ${cfg?.repo || 'booomxd/spectre'}`],
+            ].map(([k, v], i) => (
+              <div key={k} className={'flex items-center justify-between gap-3 py-2.5 text-[12px]' + (i ? ' border-t border-line/60' : '')}>
+                <span className='text-muted shrink-0'>{k}</span>
+                <span className='font-medium text-text truncate tabular-nums'>{v}</span>
+              </div>
+            ))}
+          </Card>
         </FadeIn>
       </div>
     </Page>

@@ -22,7 +22,7 @@ export default function Palette({ agents, side, placed, onPlace, notes, onNotes 
   return (
     <div className='glass h-full flex flex-col rounded-[28px] overflow-hidden'>
       <div className='p-4 pb-3'>
-        <Tabs tabs={[{ value: 'agents', label: 'Agents' }, { value: 'abilities', label: 'Abilities' }, { value: 'notes', label: 'Notes' }]} value={tab} onChange={setTab} layoutId='strat-palette' className='w-full [&>button]:flex-1 [&>button]:justify-center' />
+        <Tabs tabs={[{ value: 'agents', label: 'Agents' }, { value: 'abilities', label: 'Abilities' }, { value: 'notes', label: 'Notes' }]} value={tab} onChange={setTab} layoutId='strat-palette' className='w-full [&>button]:flex-1 [&>button]:justify-center [&>button]:min-w-0 [&>button]:px-2' />
       </div>
 
       {tab === 'agents' && (
@@ -41,7 +41,7 @@ export default function Palette({ agents, side, placed, onPlace, notes, onNotes 
           <div className='flex-1 overflow-y-auto -mr-1 pr-1'>
             {!agents ? (
               <div className='grid grid-cols-4 gap-2'>{Array.from({ length: 16 }).map((_, i) => <Skeleton key={i} className='aspect-square rounded-xl' />)}</div>
-            ) : !list.length ? <Empty title='No agents match' className='py-8' /> : (
+            ) : !list.length ? <Empty title='No agents match' className='py-6' /> : (
               <div className='grid grid-cols-4 gap-2 stagger'>
                 {list.map((a, i) => {
                   const payload = { type: 'agent', agentId: a.uuid, name: a.displayName, icon: a.displayIcon, team }

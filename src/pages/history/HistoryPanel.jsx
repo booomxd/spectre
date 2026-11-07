@@ -3,7 +3,7 @@ import { FiClock, FiChevronRight } from 'react-icons/fi'
 import { invoke } from '../../lib/ipc'
 import { useRiot } from '../../lib/riot'
 import { Button, Card, Empty, ErrorState, Modal, Skeleton } from '../../ui'
-import { AgentIcon, RESULT, TierIcon, cx, fmtDate, kd, timeAgo, useAgents, useMaps, useMemos, openPlayer } from './shared'
+import { AgentIcon, RESULT, TierIcon, cx, fmtDate, fmtLen, kd, timeAgo, useAgents, useMaps, useMemos, openPlayer } from './shared'
 import { CareerBar, FormPills, StatCell, StatStrip } from './career'
 import MatchDetail from './MatchDetail'
 import { MemoModal } from './MemoEditor'
@@ -16,7 +16,7 @@ const QUEUES = [
 // Survives page switches so revisiting history is instant.
 const sumCache = new Map()
 
-function Summary({ rows, agents }) {
+function Summary({ rows, agents, wide }) {
   const team = rows.filter(r => !r.ffa)
   const wins = team.filter(r => r.result === 'win').length
   const kills = rows.reduce((a, r) => a + r.kills, 0)
@@ -25,6 +25,9 @@ function Summary({ rows, agents }) {
   const hsRows = rows.filter(r => r.hs != null)
   const hs = hsRows.length ? Math.round(hsRows.reduce((a, r) => a + r.hs, 0) / hsRows.length) : null
   const rate = team.length ? Math.round(wins / team.length * 100) : null
+  const adrRows = rows.filter(r => r.adr != null)
+  const adr = adrRows.length ? Math.round(adrRows.reduce((a, r) => a + r.adr, 0) / adrRows.length) : null
+  const fb = rows.reduce((a, r) => a + (r.fb || 0), 0)
   const top = useMemo(() => {
     const c = {}
     rows.forEach(r => { c[r.agent] = (c[r.agent] || 0) + 1 })
@@ -36,6 +39,8 @@ function Summary({ rows, agents }) {
       <StatCell label='Avg K/D' value={kd(kills, deaths)} sub={`${kills} / ${deaths}`} />
       <StatCell label='Avg ACS' value={acs || '-'} sub={`${rows.length} matches`} />
       <StatCell label='Headshot' value={hs != null ? hs + '%' : '-'} sub='average' />
+      {wide && <StatCell label='Avg ADR' className='hidden xl:block' value={adr ?? '-'} sub='damage / round' />}
+      {wide && <StatCell label='First bloods' className='hidden 2xl:block' value={fb} sub={`${(fb / (rows.length || 1)).toFixed(1)} per match`} />}
       <StatCell label='Form' sub='oldest to newest' className='min-w-[170px]'>
         <FormPills className='mt-3 h-7' results={team.slice(0, 10).reverse().map(r => r.result)} />
       </StatCell>
@@ -62,11 +67,11 @@ function Metric({ value, label, className, tone }) {
   )
 }
 
-function MatchRow({ item, s, rr, agents, maps, index, onOpen }) {
+function MatchRow({ item, s, rr, agents, maps, index, onOpen, wide }) {
   const map = s && maps[s.mapId]
   if (s === undefined) return <Skeleton className='h-[80px] rounded-2xl' />
   if (!s) return (
-    <Card style={{ '--i': index }} className='h-[80px] px-6 flex items-center text-[12px] text-muted'>Match details unavailable <span className='ml-auto'>{timeAgo(item.start)}</span></Card>
+    <Card style={{ '--i': index }} className='h-[80px] px-5 flex items-center text-[12px] text-muted'>Match details unavailable <span className='ml-auto'>{timeAgo(item.start)}</span></Card>
   )
   const R = RESULT[s.result]
   const glow = s.result === 'win' ? 'var(--good)' : s.result === 'loss' ? 'var(--bad)' : 'var(--warn)'
@@ -88,7 +93,7 @@ function MatchRow({ item, s, rr, agents, maps, index, onOpen }) {
           <div className={cx('text-[11px] mt-1', map?.splash ? 'text-white/75' : 'text-muted')}>{s.mode}</div>
         </div>
       </div>
-      <div className='relative flex items-center gap-6 pl-3 pr-5 flex-1 min-w-0'>
+      <div className='relative flex items-center gap-5 pl-3 pr-5 flex-1 min-w-0'>
         <AgentIcon id={s.agent} agents={agents} size={46} className='!rounded-xl' />
         <div className='w-24'>
           <div className={cx('display text-[22px]', R.text)}>{R.label}</div>
@@ -97,15 +102,19 @@ function MatchRow({ item, s, rr, agents, maps, index, onOpen }) {
         <Metric className='w-24' value={`${s.kills} / ${s.deaths} / ${s.assists}`} label={`${kd(s.kills, s.deaths)} K/D`} />
         <Metric className='w-14' value={s.acs} label='ACS' />
         <Metric className='w-14 hidden md:block' value={s.hs != null ? `${s.hs}%` : '-'} label='HS' />
-        <div className='w-20 hidden lg:flex items-center gap-2'>
+        {wide && <Metric className='w-14 hidden xl:block' value={s.adr ?? '-'} label='ADR' />}
+        {wide && <Metric className='w-10 hidden xl:block' value={s.fb ?? '-'} label='FB' />}
+        <div className={cx('w-20 hidden lg:flex items-center gap-2 shrink-0', wide && '2xl:w-32')}>
           {rr ? (
             <>
               <TierIcon tier={rr.tierAfter} size={24} />
               <span className={cx('font-display text-[16px] font-bold tabular-nums', rr.earned > 0 ? 'text-good' : rr.earned < 0 ? 'text-bad' : 'text-muted')}>{rr.earned > 0 ? '+' : ''}{rr.earned}</span>
+              {wide && rr.after != null && <span className='hidden 2xl:inline text-[11px] text-muted tabular-nums whitespace-nowrap'>{rr.after} RR</span>}
             </>
           ) : <span className='text-[12px] text-muted'>-</span>}
         </div>
         <div className='ml-auto flex items-center gap-3 shrink-0'>
+          {wide && s.length > 0 && <span className='hidden 2xl:inline text-[12px] text-muted tabular-nums'>{fmtLen(s.length)}</span>}
           <span className='text-[12px] text-muted' title={fmtDate(item.start)}>{timeAgo(item.start)}</span>
           <FiChevronRight className='text-muted transition-transform duration-300 ease-out group-hover:translate-x-0.5 group-hover:text-accent' />
         </div>
@@ -115,7 +124,8 @@ function MatchRow({ item, s, rr, agents, maps, index, onOpen }) {
 }
 
 // Match list + summary header + scoreboard modal for one player (defaults to you).
-export default function HistoryPanel({ puuid, step = 20 }) {
+// wide: extra row metrics for the full-width Matches page (off in narrow embeds like Lookup).
+export default function HistoryPanel({ puuid, step = 20, wide = step >= 20 }) {
   const riot = useRiot()
   const id = puuid || riot.puuid
   const agents = useAgents()
@@ -176,10 +186,10 @@ export default function HistoryPanel({ puuid, step = 20 }) {
         ) : !matches.length ? <Empty icon={FiClock} title='No matches found' hint={queue === 'all' ? 'This player has no recent matches, or their history is private.' : 'Nothing in this queue recently. Try another filter.'} />
           : (
             <>
-              {loaded.length > 0 ? <Summary rows={loaded} agents={agents} /> : <StatStrip loading />}
+              {loaded.length > 0 ? <Summary rows={loaded} agents={agents} wide={wide} /> : <StatStrip loading />}
               <div className='stagger flex flex-col gap-2.5'>
                 {matches.map((m, i) => (
-                  <MatchRow key={m.matchId} item={m} s={sums[`${id}|${m.matchId}`]} rr={rr[m.matchId]} agents={agents} maps={maps} index={Math.min(i, 12)} onOpen={setOpen} />
+                  <MatchRow key={m.matchId} item={m} s={sums[`${id}|${m.matchId}`]} rr={rr[m.matchId]} agents={agents} maps={maps} index={Math.min(i, 12)} onOpen={setOpen} wide={wide} />
                 ))}
               </div>
               {matches.length < list.data.total && (

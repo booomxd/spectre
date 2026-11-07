@@ -1,5 +1,19 @@
 # 📜 Changelog
 
+## 3.0.5
+
+### 🎨 Tighter, fuller layout
+- The whole interface is a notch smaller and denser: title bar, page headers, cards, buttons and fields
+- Big windows put the space to use: more columns and more detail instead of stretched, empty cards
+- Home: the ranked trend keeps a steady height, the battle pass shows the next rewards, and Friends shows how many more are online
+- Live: agent select uses two columns on wide windows, the party card shows the queue and each member's level and ready state, and the lobby shows rank names
+- Progression: a Recent ranked list, XP stats on the Account card and four contract columns on wide windows
+- Matches: ADR, first bloods, RR after the game and match length on wide windows, and your own stats in the match detail header
+
+### 🛠️ Fixes
+- The top bar can no longer overlap itself when the window is narrow
+- Playbook: the New button and the Notes tab no longer spill out of their panels on small windows
+
 ## 3.0.4
 
 ### 🛠️ Fixes

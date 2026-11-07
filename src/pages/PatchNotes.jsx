@@ -10,14 +10,14 @@ const fmt = d => d ? new Date(d).toLocaleDateString(undefined, { year: 'numeric'
 function Featured({ n }) {
   return (
     <Card hover className='group overflow-hidden relative rounded-3xl' onClick={() => openExternal(n.url)}>
-      <div className='aspect-[21/9] overflow-hidden glass-inset'>
+      <div className='aspect-[21/9] xl:aspect-[3/1] overflow-hidden glass-inset'>
         {n.image && <img src={n.image} alt='' className='w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]' draggable={false} />}
       </div>
       <div className='absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent' />
-      <div className='absolute inset-x-0 bottom-0 p-7 flex items-end justify-between gap-5'>
+      <div className='absolute inset-x-0 bottom-0 p-6 flex items-end justify-between gap-4'>
         <div className='min-w-0'>
           <span className='inline-flex items-center h-6 px-2.5 rounded-full bg-white/12 border border-white/15 text-[11px] font-semibold text-white/85'>Latest · {fmt(n.date)}</span>
-          <h2 className='display text-[32px] text-white mt-3 drop-shadow-[0_4px_20px_rgb(0_0_0/0.5)]'>{n.title}</h2>
+          <h2 className='display text-[27px] text-white mt-3 drop-shadow-[0_4px_20px_rgb(0_0_0/0.5)]'>{n.title}</h2>
           {n.description && <p className='text-[13px] text-white/70 mt-1.5 max-w-lg leading-relaxed line-clamp-2'>{n.description}</p>}
         </div>
         <span className='w-11 h-11 rounded-full bg-white/12 border border-white/20 text-white flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:translate-x-0.5'><FiArrowUpRight size={18} /></span>
@@ -29,7 +29,7 @@ function Featured({ n }) {
 function NoteRow({ n, index }) {
   return (
     <Item index={index}>
-      <Card hover className='group overflow-hidden flex items-stretch rounded-2xl' onClick={() => openExternal(n.url)}>
+      <Card hover className='group overflow-hidden flex items-stretch rounded-2xl h-full' onClick={() => openExternal(n.url)}>
         <div className='w-44 min-h-[92px] shrink-0 overflow-hidden bg-surface-2'>
           {n.image && <img src={n.image} alt='' loading='lazy' className='w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105' draggable={false} />}
         </div>
@@ -95,25 +95,25 @@ function SpectreNotes() {
       {data.map((r, i) => {
         const expanded = open === null ? i === 0 : open === r.version
         return (
-          <Item key={r.version} index={i} className='relative flex gap-5'>
+          <Item key={r.version} index={i} className='relative flex gap-4'>
             <span className={cx('relative z-[1] mt-4 w-11 h-11 rounded-2xl shrink-0 flex items-center justify-center', i === 0 ? 'accent-soft' : 'glass')}>
               <img src={logo} alt='' className='w-6 h-6' draggable={false} />
             </span>
             <Card className='flex-1 min-w-0 rounded-2xl'>
-              <button className='w-full flex items-center gap-4 text-left px-6 py-[18px]' onClick={() => setOpen(expanded ? '' : r.version)}>
+              <button className='w-full flex items-center gap-4 text-left px-5 py-[18px]' onClick={() => setOpen(expanded ? '' : r.version)}>
                 <div className='min-w-0 flex-1'>
                   <div className='flex items-center gap-2 flex-wrap'>
                     <span className='font-display text-[19px] font-bold tracking-tight text-text'>{r.name}</span>
                     {i === 0 && <Badge tone='accent'>Latest</Badge>}
                     {r.version === current && <Badge tone='good'>Installed</Badge>}
                   </div>
-                  <div className='text-[12px] text-muted mt-0.5 tabular-nums'>{fmt(r.date)}</div>
+                  <div className='text-[12px] text-muted mt-0.5 tabular-nums truncate'>{fmt(r.date)}{r.installer?.size ? ` · ${(r.installer.size / 1e6).toFixed(1)} MB installer` : ''}</div>
                 </div>
                 <span className='w-8 h-8 rounded-full glass-inset flex items-center justify-center shrink-0'><FiChevronDown className={cx('text-muted transition-transform duration-300 ease-out', expanded && 'rotate-180')} /></span>
               </button>
               {expanded && (
-                <FadeIn y={4} className='px-6 pb-6'>
-                  <div className='hairline mb-5' />
+                <FadeIn y={4} className='px-5 pb-5'>
+                  <div className='hairline mb-4' />
                   <Markdown text={r.notes} />
                   <Button size='sm' variant='ghost' icon={FiExternalLink} className='mt-4 -ml-3' onClick={() => openExternal(r.url)}>View on GitHub</Button>
                 </FadeIn>
@@ -131,7 +131,7 @@ export default function PatchNotes() {
   return (
     <Page title="What's new" subtitle={tab === 'spectre' ? 'Every Spectre release, newest first' : 'Recent VALORANT updates from the official site'}
       actions={<SegmentedTabs layoutId='whatsnew-tab' value={tab} onChange={setTab} tabs={[{ value: 'spectre', label: 'Spectre' }, { value: 'valorant', label: 'VALORANT' }]} />}>
-      <div className='max-w-3xl pb-4'>
+      <div className={cx('max-w-3xl pb-4', tab === 'valorant' && 'xl:max-w-6xl')}>
         <Swap id={tab}>{tab === 'spectre' ? <SpectreNotes /> : <ValorantNotes />}</Swap>
       </div>
     </Page>
@@ -145,10 +145,10 @@ function ValorantNotes() {
   if (error && !data) return <ErrorState error={error} onRetry={reload} />
   if (!first) return <Empty title='No patch notes found' hint='Try again in a moment.' />
   return (
-    <div className='flex flex-col gap-6'>
+    <div className='flex flex-col gap-5'>
       <FadeIn><Featured n={first} /></FadeIn>
       {rest.length > 0 && <div className='eyebrow px-1 -mb-2'>Earlier</div>}
-      <Stagger className='flex flex-col gap-3'>
+      <Stagger className='grid gap-3 xl:grid-cols-2'>
         {rest.map((n, i) => <NoteRow key={n.url} n={n} index={i} />)}
       </Stagger>
     </div>
