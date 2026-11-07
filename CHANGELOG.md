@@ -1,5 +1,19 @@
 # 📜 Changelog
 
+## 3.0.1
+
+### ⚡ Smoother
+- Switching between tabs like Live and Playbook no longer freezes
+- A new slow-moving background that stays smooth, and pauses while Spectre is minimized
+
+### 👥 Parties
+- Premade groups are detected for every player in your match and marked Duo, Trio, 4-stack or 5-stack, each in its own colour
+- With streamer mode on, your own name and your friends' names in your party now show instead of "Hidden player"
+
+### ✨ Polish
+- A cleaner Home page: long names fit, and Recent form fills its card
+- Weapons no longer sit on a coloured blob; they get a soft shadow and a thin rarity-colour edge
+
 ## 3.0.0
 
 ### ✨ A brand-new look
