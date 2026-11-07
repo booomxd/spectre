@@ -118,7 +118,7 @@ function PartyPanel({ party, loading, error, reload }) {
               <div className='mt-auto'><RankIcon tier={mem.rank} size={24} /></div>
               {party.iOwn && !mem.self && (
                 <button title='Kick' disabled={busy} onClick={() => act(invoke('social:partyRemove', mem.puuid), 'Removed from party')}
-                  className='absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center text-muted opacity-0 group-hover:opacity-100 hover:text-bad hover:bg-bad/15 transition-all'><FiUserX size={13} /></button>
+                  className='absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center text-muted opacity-0 group-hover:opacity-100 hover:text-bad hover:bg-bad/15 transition-[transform,opacity,background-color,border-color,color] duration-200'><FiUserX size={13} /></button>
               )}
             </Item>
           )

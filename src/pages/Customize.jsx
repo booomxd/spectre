@@ -1,13 +1,13 @@
 import { useMemo, useState } from 'react'
 import { FiCheck, FiSearch } from 'react-icons/fi'
-import { Badge, Button, Card, Empty, Input, Label, Page, RequireRiot, Skeleton, Tabs, Toggle, toast } from '../ui'
+import { Badge, Button, Empty, Input, Label, Page, RequireRiot, SegmentedTabs, Skeleton, Swap, Toggle, toast } from '../ui'
 import { useRiot } from '../lib/riot'
 import { invoke, useInvoke } from '../lib/ipc'
 import { useContent } from '../lib/content'
 import { NO_TITLE, lc } from './tools/gear'
 import { PresencePanel, usePresence } from './tools/PresencePanel'
+import { Choice, Panel, ToolLayout } from './tools/Layout'
 
-const cx = (...c) => c.filter(Boolean).join(' ')
 const TABS = [{ value: 'profile', label: 'Profile' }, { value: 'cards', label: 'Cards' }, { value: 'borders', label: 'Borders' }, { value: 'titles', label: 'Titles' }]
 
 export default function Customize({ active }) {
@@ -54,82 +54,83 @@ export default function Customize({ active }) {
   }
 
   const search = (
-    <div className='relative mb-4'>
+    <div className='relative mb-3.5'>
       <FiSearch className='absolute left-3.5 top-1/2 -translate-y-1/2 text-muted pointer-events-none' />
-      <Input value={q} onChange={e => setQ(e.target.value)} placeholder='Search' className='pl-10 rounded-full' />
+      <Input value={q} onChange={e => setQ(e.target.value)} placeholder={`Search ${tab}`} className='pl-10 rounded-full' />
     </div>
   )
 
   return (
-    <Page title='Customize' subtitle='Level, card, title and border. Any card or title can be shown to friends.'
-      actions={<Button variant='primary' icon={FiCheck} loading={busy} disabled={!dirty || !riot.connected} onClick={save}>Save changes</Button>}>
+    <Page title='Profile' subtitle='Level, card, title and border. Any card or title can be shown to friends.'
+      actions={<>
+        {dirty && <Badge tone='warn'>Unsaved</Badge>}
+        <Button variant='primary' size='sm' icon={FiCheck} loading={busy} disabled={!dirty || !riot.connected} onClick={save}>Save changes</Button>
+      </>}>
       <RequireRiot>
-        <div className='grid grid-cols-[1fr_320px] gap-5 items-start'>
-          <div className='min-w-0'>
-            <Tabs tabs={TABS} value={tab} onChange={t => { setTab(t); setQ('') }} className='mb-5' />
+        <ToolLayout aside={<PresencePanel presence={presence} draft={{ level: curLevel, cardId: curCard, titleId: curTitle || null }} />}>
+          <SegmentedTabs size='sm' layoutId='profile-tool-tab' className='self-start' tabs={TABS} value={tab} onChange={t => { setTab(t); setQ('') }} />
+          <Swap id={tab}>
             {tab === 'profile' && (
-              <div className='space-y-4 anim-fade'>
-                <Card className='p-5'>
+              <Panel title='Identity'>
+                <div className='flex items-center justify-between gap-6'>
                   <Label hint='Shown in the lobby and friends list'>Account level</Label>
-                  <Input type='number' min='1' max='2000' value={level === '' ? curLevel : level} onChange={e => setLevel(e.target.value)} className='max-w-[160px]' />
-                </Card>
-                <Card className='p-5'><Toggle checked={curIdle} onChange={setIdle} label='Idle status' hint='Appear as away in the friends list' /></Card>
-              </div>
+                  <Input type='number' min='1' max='2000' value={level === '' ? curLevel : level} onChange={e => setLevel(e.target.value)} className='w-[140px] text-right tabular-nums font-semibold' />
+                </div>
+                <div className='hairline my-4' />
+                <Toggle checked={curIdle} onChange={setIdle} label='Idle status' hint='Appear as away in the friends list' />
+              </Panel>
             )}
             {tab === 'cards' && (
-              <div className='anim-fade'>
+              <Panel title='Player card' right={shownCards && <span className='text-[11px] text-muted tabular-nums'>{shownCards.length}</span>}>
                 {search}
-                {!shownCards ? <div className='grid grid-cols-4 gap-3'>{Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className='h-40 rounded-2xl' />)}</div>
-                  : !shownCards.length ? <Empty title='No cards found' /> : (
-                    <div className='grid grid-cols-4 gap-3 stagger'>
-                      {shownCards.map((c, i) => (
-                        <button key={c.uuid} style={{ '--i': Math.min(i, 14) }} onClick={() => setCardId(c.uuid)}
-                          className={cx('lift anim-rise rounded-2xl p-2 text-left', lc(curCard) === lc(c.uuid) ? 'accent-soft border border-accent/50' : 'glass hover:bg-surface-2')}>
-                          <img src={c.displayIcon} className='w-full rounded-xl' loading='lazy' />
-                          <div className='text-[11px] font-medium text-muted truncate mt-1.5 px-1 text-center'>{c.displayName}</div>
-                        </button>
+                {!shownCards ? <div className='grid grid-cols-5 gap-2'>{Array.from({ length: 10 }).map((_, i) => <Skeleton key={i} className='h-32 rounded-xl' />)}</div>
+                  : !shownCards.length ? <Empty title='No cards found' className='py-10' /> : (
+                    <div className='grid grid-cols-5 gap-2'>
+                      {shownCards.map(c => (
+                        <Choice key={c.uuid} on={lc(curCard) === lc(c.uuid)} onClick={() => setCardId(c.uuid)} title={c.displayName} className='p-1.5 text-left'>
+                          <img src={c.displayIcon} alt='' className='w-full rounded-lg' loading='lazy' draggable={false} />
+                          <div className='text-[10.5px] font-medium text-muted truncate mt-1 px-0.5 text-center'>{c.displayName}</div>
+                        </Choice>
                       ))}
                     </div>
                   )}
-              </div>
+              </Panel>
             )}
             {tab === 'borders' && (
-              <div className='grid grid-cols-3 gap-3 stagger anim-fade'>
-                {!borders ? Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className='h-28 rounded-2xl' />) : borders.filter(b => b.levelNumberAppearance).map((b, i) => (
-                  <button key={b.uuid} style={{ '--i': Math.min(i, 14) }} onClick={() => setBorderId(b.uuid)}
-                    className={cx('lift anim-rise rounded-2xl p-4', lc(curBorder) === lc(b.uuid) ? 'accent-soft border border-accent/50' : 'glass hover:bg-surface-2')}>
-                    <img src={b.levelNumberAppearance} className='w-full h-14 object-contain' loading='lazy' />
-                    <div className='text-[11px] font-medium text-muted text-center mt-2 tabular-nums'>From level {b.startingLevel}</div>
-                  </button>
-                ))}
-              </div>
+              <Panel title='Level border' hint='Equipped on your account, not only shown to friends'>
+                <div className='grid grid-cols-4 gap-2'>
+                  {!borders ? Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className='h-24 rounded-xl' />) : borders.filter(b => b.levelNumberAppearance).map(b => (
+                    <Choice key={b.uuid} on={lc(curBorder) === lc(b.uuid)} onClick={() => setBorderId(b.uuid)} className='p-3'>
+                      <img src={b.levelNumberAppearance} alt='' className='w-full h-11 object-contain' loading='lazy' draggable={false} />
+                      <div className='text-[10.5px] font-medium text-muted text-center mt-1.5 tabular-nums'>From level {b.startingLevel}</div>
+                    </Choice>
+                  ))}
+                </div>
+              </Panel>
             )}
             {tab === 'titles' && (
-              <div className='anim-fade'>
+              <Panel title='Title' right={shownTitles && <span className='text-[11px] text-muted tabular-nums'>{shownTitles.length}</span>}>
                 {search}
-                {!shownTitles ? <Skeleton className='h-40 rounded-2xl' /> : (
-                  <div className='space-y-2 stagger'>
+                {!shownTitles ? <Skeleton className='h-40 rounded-xl' /> : (
+                  <div className='grid grid-cols-2 gap-2'>
                     <TitleRow on={!curTitle} onClick={() => setTitleId('')} title='No title' sub='Remove title' />
-                    {shownTitles.map((t, i) => <TitleRow key={t.uuid} i={i} on={lc(curTitle) === lc(t.uuid)} onClick={() => setTitleId(t.uuid)} title={t.titleText} sub={t.displayName} />)}
+                    {shownTitles.map(t => <TitleRow key={t.uuid} on={lc(curTitle) === lc(t.uuid)} onClick={() => setTitleId(t.uuid)} title={t.titleText} sub={t.displayName} />)}
                   </div>
                 )}
-              </div>
+              </Panel>
             )}
-            {dirty && <div className='mt-5'><Badge tone='warn'>Unsaved changes</Badge></div>}
-          </div>
-          <PresencePanel presence={presence} draft={{ level: curLevel, cardId: curCard, titleId: curTitle || null }} />
-        </div>
+          </Swap>
+        </ToolLayout>
       </RequireRiot>
     </Page>
   )
 }
 
-function TitleRow({ on, onClick, title, sub, i = 0 }) {
+function TitleRow({ on, onClick, title, sub }) {
   return (
-    <button onClick={onClick} style={{ '--i': Math.min(i, 14) }}
-      className={cx('lift anim-rise w-full text-left rounded-xl px-4 py-3', on ? 'accent-soft border border-accent/50' : 'glass hover:bg-surface-2')}>
-      <div className='text-[13px] font-semibold text-text tracking-tight'>{title}</div>
-      <div className='text-[11px] text-muted mt-0.5'>{sub}</div>
-    </button>
+    <Choice on={on} onClick={onClick} className='w-full text-left px-3.5 py-2.5'>
+      <div className='text-[12.5px] font-semibold text-text tracking-tight truncate'>{title}</div>
+      <div className='text-[10.5px] text-muted mt-0.5 truncate'>{sub}</div>
+    </Choice>
   )
 }

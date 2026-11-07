@@ -76,7 +76,7 @@ export default function Weapons() {
                   {stats ? (
                     <div className='relative glass-inset rounded-2xl grid grid-cols-3 lg:grid-cols-6 divide-x divide-line'>
                       {[['Fire rate', num(stats.fireRate, 1), 'per sec'], ['Magazine', stats.magazineSize, 'rounds'], ['Reload', num(stats.reloadTimeSeconds), 'sec'], ['Equip', num(stats.equipTimeSeconds), 'sec'], ['Run speed', num(stats.runSpeedMultiplier), 'x'], ['Wall pen', pen(stats.wallPenetration), '']].map(([l, v, sub]) => (
-                        <Stat key={l} label={l} value={v} sub={sub} className='px-4 py-3' />
+                        <Stat key={l} label={l} value={v} sub={sub} className={'px-4 py-3 min-w-0' + (l === 'Wall pen' ? ' [&>div:nth-child(2)]:text-[17px] [&>div:nth-child(2)]:leading-8' : '')} />
                       ))}
                     </div>
                   ) : <p className='relative text-[13px] text-muted'>The melee weapon has no ballistic stats.</p>}
@@ -203,7 +203,7 @@ function SkinModal({ skin, weapon, owned, showOwned, tiers, onClose }) {
             <div className='flex flex-wrap gap-2'>
               {skin.levels.map((l, i) => (
                 <button key={l.uuid} onClick={() => { setLi(i); setCi(0) }}
-                  className={cx('h-8 px-3.5 rounded-full border text-xs font-semibold transition-all inline-flex items-center gap-1.5', i === li && ci === 0 ? 'accent-soft border-transparent text-text' : 'glass text-muted hover:text-text hover:border-accent/40')}>
+                  className={cx('h-8 px-3.5 rounded-full border text-xs font-semibold transition-[transform,opacity,background-color,border-color,color] duration-200 inline-flex items-center gap-1.5', i === li && ci === 0 ? 'accent-soft border-transparent text-text' : 'glass text-muted hover:text-text hover:border-accent/40')}>
                   Level {i + 1}{levelItemLabel(l) && <span className='font-normal opacity-70'>{levelItemLabel(l)}</span>}
                   {showOwned && owned && !levelOwned(skin, l, owned) && <FiLock className='opacity-60' />}
                 </button>
@@ -217,7 +217,7 @@ function SkinModal({ skin, weapon, owned, showOwned, tiers, onClose }) {
             <div className='flex flex-wrap gap-2'>
               {skin.chromas.map((c, i) => (
                 <button key={c.uuid} onClick={() => setCi(i)} title={c.displayName}
-                  className={cx('relative w-12 h-12 rounded-xl border flex items-center justify-center transition-all hover:-translate-y-0.5', i === ci ? 'accent-soft border-transparent' : 'glass hover:border-accent/40')}>
+                  className={cx('relative w-12 h-12 rounded-xl border flex items-center justify-center transition-[transform,opacity,background-color,border-color,color] duration-200 hover:-translate-y-0.5', i === ci ? 'accent-soft border-transparent' : 'glass hover:border-accent/40')}>
                   {(c.swatch || c.fullRender) ? <img src={c.swatch || c.fullRender} className='w-7 h-7 object-contain' /> : <span className='text-[10px] text-muted'>{i + 1}</span>}
                   {showOwned && owned && !chromaOwned(skin, c, owned) && <FiLock className='absolute -top-1 -right-1 text-[10px] text-muted bg-panel border border-line rounded-full p-0.5 w-4 h-4' />}
                 </button>

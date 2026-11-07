@@ -35,7 +35,7 @@ function TeamAvg({ label, tier, tone }) {
     <div className={cx('flex items-center gap-3', tone === 'bad' && 'flex-row-reverse text-right')}>
       <RankGlow tier={tier} size={42} />
       <div className='leading-tight'>
-        <div className={cx('eyebrow', tone === 'bad' ? '!text-bad' : '!text-accent')}>{label}</div>
+        <div className={cx('eyebrow', tone === 'bad' ? '!text-bad' : '!text-good')}>{label}</div>
         <div className='mt-1 text-[14px] font-semibold tracking-tight text-text whitespace-nowrap'>{tier ? title(tiers?.[tier]?.tierName) : 'Unranked'}</div>
       </div>
     </div>
@@ -83,7 +83,9 @@ function Banner({ m, onChangeSkins }) {
 function Team({ title: name, tone, players, memos, onScout, onSkins }) {
   const avg = avgRank(players)
   const tiers = useTiers()
-  const dot = tone === 'bad' ? 'bg-bad shadow-[0_0_10px_rgb(var(--bad))]' : 'bg-accent shadow-[0_0_10px_rgb(var(--accent))]'
+  // Allies read green and opponents red in every theme (the game's own convention); free-for-all uses the accent.
+  const dot = { bad: 'bg-bad shadow-[0_0_10px_rgb(var(--bad))]', good: 'bg-good shadow-[0_0_10px_rgb(var(--good))]' }[tone] || 'bg-accent shadow-[0_0_10px_rgb(var(--accent))]'
+  const line = { bad: 'from-bad/50', good: 'from-good/45' }[tone] || 'from-accent/50'
   return (
     <section className='min-w-0'>
       <header className='flex items-center gap-3 px-1 mb-3'>
@@ -92,7 +94,7 @@ function Team({ title: name, tone, players, memos, onScout, onSkins }) {
         <span className='text-[12px] font-semibold text-muted tabular-nums'>{players.length}</span>
         {avg > 0 && <span className='ml-auto flex items-center gap-1.5 text-[11.5px] text-muted'>Avg <RankIcon tier={avg} size={18} /><span className='text-text font-semibold'>{title(tiers?.[avg]?.tierName)}</span></span>}
       </header>
-      <div className={cx('h-px mb-4 bg-gradient-to-r to-transparent', tone === 'bad' ? 'from-bad/50' : 'from-accent/50')} />
+      <div className={cx('h-px mb-4 bg-gradient-to-r to-transparent', line)} />
       <Stagger className='grid gap-2.5' step={0.04}>
         {players.map((p, i) => <PlayerRow key={p.ref || i} p={p} i={i} memo={p.puuid && memos[p.puuid]} onScout={onScout} onSkins={onSkins} />)}
       </Stagger>
@@ -189,13 +191,13 @@ function LiveBody({ active }) {
       <div>
         <Banner m={d} onChangeSkins={() => setPanel({ kind: 'loadout' })} />
         {d.state === 'pregame'
-          ? <div className='max-w-4xl'><Team title='Your team' tone='accent' players={mine} {...rows} /></div>
+          ? <div className='max-w-4xl'><Team title='Your team' tone='good' players={mine} {...rows} /></div>
           : ffa ? <div className='grid gap-x-8 gap-y-10 xl:grid-cols-2'>
             <Team title='Players' tone='accent' players={d.players.slice(0, half)} {...rows} />
             <Team title='Players' tone='accent' players={d.players.slice(half)} {...rows} />
           </div>
           : <div className='grid gap-x-8 gap-y-10 xl:grid-cols-2'>
-            <Team title='Your team' tone='accent' players={mine} {...rows} />
+            <Team title='Your team' tone='good' players={mine} {...rows} />
             <Team title='Opponents' tone='bad' players={theirs} {...rows} />
           </div>}
         <p className='mt-8 mx-auto max-w-3xl text-center text-[12px] leading-relaxed text-muted'>
@@ -205,7 +207,7 @@ function LiveBody({ active }) {
     )
   }
   return (
-    <Page title='Live Match' subtitle={d && d.state !== 'menus' ? 'Both rosters, refreshed every few seconds' : 'Agent select and in-game rosters, plus your party and lobby'} actions={actions}>
+    <Page title='Live Match' subtitle={tab === 'lobby' ? 'Your party, queue and lobby settings' : d && d.state !== 'menus' ? 'Both rosters, refreshed every few seconds' : 'Agent select and in-game rosters, plus your party and lobby'} actions={actions}>
       <Swap id={tab}>{body}</Swap>
       <Drawer open={!!panel} onClose={closePanel} width={shown?.kind === 'loadout' ? 'min(1120px, 82vw)' : undefined}>
         {shown?.kind === 'loadout' && (

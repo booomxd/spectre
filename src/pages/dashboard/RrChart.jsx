@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from 'react'
+import { useId, useState } from 'react'
 import { useContent, useTiers } from '../../lib/content'
 
 const PL = 46, PR = 20, PT = 18, PB = 28
@@ -10,9 +10,7 @@ export default function RrChart({ rows, height = 260, width = 800 }) {
   const tiers = useTiers()
   const maps = useContent('maps')
   const gid = 'rr' + useId().replace(/[^a-zA-Z0-9]/g, '')
-  const [on, setOn] = useState(false)
   const [hover, setHover] = useState(null)
-  useEffect(() => { const t = setTimeout(() => setOn(true), 60); return () => clearTimeout(t) }, [])
 
   const vals = rows.map(r => r.ladder)
   let lo = Math.floor((Math.min(...vals) - 15) / 50) * 50, hi = Math.ceil((Math.max(...vals) + 15) / 50) * 50
@@ -32,7 +30,8 @@ export default function RrChart({ rows, height = 260, width = 800 }) {
   const mapName = id => maps?.find(m => m.mapUrl === id)?.displayName || ''
   const h = hover != null ? rows[hover] : null
   const last = pts[pts.length - 1]
-  const ease = 'cubic-bezier(.22,1,.36,1)'
+  // Entrance uses CSS keyframes (fill-mode both), so reduced motion simply shows the final state.
+  const fade = (dur, delay = 0) => ({ animation: `fade ${dur}s ease ${delay}s both` })
 
   return (
     <div className='relative'>
@@ -53,24 +52,23 @@ export default function RrChart({ rows, height = 260, width = 800 }) {
             {tiers?.[v / 100] && <image href={tiers[v / 100].smallIcon} x={8} y={y(v) - 12} width={24} height={24} />}
           </g>
         ))}
-        <g style={{ transformOrigin: `0 ${H - PB}px`, transformBox: 'view-box', transform: on ? 'none' : 'scaleY(0.6)', opacity: on ? 1 : 0, transition: `transform .9s ${ease}, opacity .7s ease` }}>
-          <path d={area} fill={`url(#${gid}f)`} />
+        <path d={area} fill={`url(#${gid}f)`} style={fade(0.8, 0.1)} />
+        <g style={fade(0.9, 0.2)}>
+          <path d={line} fill='none' strokeWidth={10} strokeLinejoin='round' strokeLinecap='round' stroke='rgb(var(--accent))' opacity={0.14} />
         </g>
-        <path d={line} fill='none' strokeWidth={10} strokeLinejoin='round' strokeLinecap='round' stroke='rgb(var(--accent))'
-          style={{ opacity: on ? 0.12 : 0, transition: 'opacity .9s ease .2s' }} />
         <path d={line} fill='none' strokeWidth={3} strokeLinejoin='round' strokeLinecap='round' stroke={`url(#${gid}l)`}
-          style={{ opacity: on ? 1 : 0, transition: 'opacity .6s ease' }} />
+          style={fade(0.6)} />
         {hover != null && <line x1={pts[hover][0]} x2={pts[hover][0]} y1={PT} y2={H - PB} className='stroke-line' strokeDasharray='3 4' />}
         {pts.map((p, i) => (
           <g key={i} onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)} className='cursor-pointer'>
             <circle cx={p[0]} cy={p[1]} r={14} fill='transparent' />
             <circle cx={p[0]} cy={p[1]} r={hover === i ? 6 : 4} className={rows[i].change >= 0 ? 'fill-good' : 'fill-bad'}
-              style={{ opacity: on ? 1 : 0, stroke: 'rgb(var(--panel))', strokeWidth: 2, transition: `opacity .3s ${0.5 + Math.min(i, 12) * 0.03}s, r .15s` }} />
+              style={{ ...fade(0.3, 0.4 + Math.min(i, 12) * 0.03), stroke: 'rgb(var(--panel))', strokeWidth: 2 }} />
             {rows[i].tierAfter !== rows[i - 1]?.tierAfter && tiers?.[rows[i].tierAfter] && i > 0 && i < rows.length - 1 &&
               <image href={tiers[rows[i].tierAfter].smallIcon} x={p[0] - 11} y={p[1] - 32} width={22} height={22} />}
           </g>
         ))}
-        <circle cx={last[0]} cy={last[1]} r={11} className='fill-accent' style={{ opacity: on ? 0.18 : 0, transition: 'opacity .6s ease .8s' }} />
+        <g style={fade(0.6, 0.8)}><circle cx={last[0]} cy={last[1]} r={11} className='fill-accent' opacity={0.2} /></g>
         {tiers?.[rows[rows.length - 1].tierAfter] && <image href={tiers[rows[rows.length - 1].tierAfter].smallIcon} x={last[0] - 13} y={last[1] - 40} width={26} height={26} />}
       </svg>
       {h && (
