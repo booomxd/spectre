@@ -47,13 +47,13 @@ function Panel({ items, onClose }) {
     <m.div className='glass-strong w-[600px] max-w-[calc(100vw-48px)] rounded-3xl overflow-hidden flex flex-col max-h-[60vh]'
       onMouseDown={e => e.stopPropagation()}
       initial={{ opacity: 0, scale: 0.97, y: -8 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.98, y: -4, transition: { duration: 0.14 } }} transition={SPRING}>
-      <div className='flex items-center gap-3 px-5 h-14 border-b border-line'>
+      <div className='shrink-0 flex items-center gap-3 px-5 h-14 border-b border-line'>
         <FiSearch className='text-muted shrink-0' size={17} />
         <input autoFocus value={q} onChange={e => setQ(e.target.value)} onKeyDown={onKey} placeholder='Jump to a page or run an action...'
           className='flex-1 bg-transparent outline-none text-[15px] text-text placeholder:text-muted/60' />
         <span className='kbd'>Esc</span>
       </div>
-      <div ref={list} className='overflow-y-auto p-2'>
+      <div ref={list} className='flex-1 min-h-0 overflow-y-auto p-2'>
         {!flat.length && <div className='py-10 text-center text-[13px] text-muted'>Nothing matches "{q}"</div>}
         {groups.map(([g, l]) => (
           <div key={g} className='mb-1'>
@@ -76,7 +76,7 @@ function Panel({ items, onClose }) {
           </div>
         ))}
       </div>
-      <div className='flex items-center gap-4 px-5 h-10 border-t border-line text-[11px] text-muted'>
+      <div className='shrink-0 flex items-center gap-4 px-5 h-11 border-t border-line text-[11px] text-muted'>
         <span className='flex items-center gap-1.5'><span className='kbd'>↑</span><span className='kbd'>↓</span>move</span>
         <span className='flex items-center gap-1.5'><span className='kbd'>Enter</span>open</span>
         <span className='ml-auto flex items-center gap-1.5'><span className='kbd'>Ctrl</span><span className='kbd'>K</span>toggle</span>
