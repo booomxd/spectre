@@ -1,18 +1,16 @@
-// Spectre website: dock, theme ruler, screenshot lightbox and live release info from GitHub.
-// The motion layer (hero instrument, tabs, overlay keys, leaders, release roll) lives in readout.js.
+// Spectre website: dock, hero depth, scroll reveals, theme swatches, screenshot lightbox and live release info from GitHub.
 const REPO = 'booomxd/spectre'
 const $ = (s, el = document) => el.querySelector(s)
 const $$ = (s, el = document) => [...el.querySelectorAll(s)]
 const bind = name => $$(`[data-bind="${name}"]`)
+const motionQuery = matchMedia('(prefers-reduced-motion: reduce)')
+let reduced = motionQuery.matches
+motionQuery.addEventListener?.('change', e => { reduced = e.matches; if (reduced) revealAll() })
 
 // ---------- Themes (palette and AA-safe tokens live in boot.js) ----------
 const Theme = window.SpectreTheme
-const calib = $('.calib')
 function markTheme(key) {
-  $$('.swatches button').forEach((b, i) => {
-    b.setAttribute('aria-pressed', String(b.dataset.theme === key))
-    if (b.dataset.theme === key && calib) calib.style.setProperty('--i', i)
-  })
+  $$('.swatches button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.theme === key)))
   const t = Theme?.themes[key]
   if (t) bind('theme-name').forEach(el => { el.textContent = t[0] })
 }
@@ -24,7 +22,7 @@ if (Theme) {
   }))
 }
 
-// ---------- Dock: mobile menu and the current section ----------
+// ---------- Dock: denser glass after scrolling, mobile menu, current section ----------
 const dock = $('.dock')
 const menuBtn = $('.dock-menu')
 const links = $('#dock-links')
@@ -40,20 +38,97 @@ document.addEventListener('keydown', e => {
 })
 document.addEventListener('click', e => { if (dock.classList.contains('open') && !dock.contains(e.target)) setMenu(false) })
 
-// The current section is the last observed one (in page order) crossing the middle band, so FAQ wins inside Download.
 const navLinks = $$('.dock-links a[href^="#"]')
-const watched = [...$$('main > section'), $('#faq')].filter(Boolean)
-const inBand = new Set()
-const sectionObserver = new IntersectionObserver(entries => {
-  entries.forEach(e => (e.isIntersecting ? inBand.add(e.target) : inBand.delete(e.target)))
-  const cur = watched.filter(s => inBand.has(s)).pop()
-  if (!cur) return
+const sections = $$('main > section')
+const sectionObserver = new IntersectionObserver(entries => entries.forEach(e => {
+  if (!e.isIntersecting) return
   navLinks.forEach(a => {
-    if (a.getAttribute('href') === `#${cur.id}`) a.setAttribute('aria-current', 'true')
+    if (a.getAttribute('href') === `#${e.target.id}`) a.setAttribute('aria-current', 'true')
     else a.removeAttribute('aria-current')
   })
-}, { rootMargin: '-45% 0px -50% 0px' })
-watched.forEach(s => sectionObserver.observe(s))
+}), { rootMargin: '-45% 0px -50% 0px' })
+sections.forEach(s => sectionObserver.observe(s))
+
+// ---------- Hero depth: scroll flattens the window, layers drift at different speeds, pointer adds a little parallax ----------
+const stage = $('.stage-inner')
+const target = { p: 0, mx: 0, my: 0 }
+const now = { p: 0, mx: 0, my: 0 }
+let heroVisible = true
+let raf = 0
+function heroProgress() {
+  const v = scrollY / (Math.max(innerHeight, 1) * 0.7)
+  return Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : 0
+}
+function frame() {
+  raf = 0
+  if (reduced || !stage) return
+  let moving = false
+  for (const k of ['p', 'mx', 'my']) {
+    const d = target[k] - now[k]
+    now[k] = !Number.isFinite(d) || Math.abs(d) < 0.001 ? (Number.isFinite(target[k]) ? target[k] : 0) : now[k] + d * 0.12
+    if (now[k] !== target[k]) moving = true
+  }
+  stage.style.setProperty('--p', now.p.toFixed(4))
+  stage.style.setProperty('--mx', now.mx.toFixed(4))
+  stage.style.setProperty('--my', now.my.toFixed(4))
+  if (moving) raf = requestAnimationFrame(frame)
+}
+const kick = () => { if (!raf && !reduced) raf = requestAnimationFrame(frame) }
+function onScroll() {
+  dock.classList.toggle('scrolled', scrollY > 12)
+  if (heroVisible) { target.p = heroProgress(); kick() }
+}
+addEventListener('scroll', onScroll, { passive: true })
+if (stage) {
+  new IntersectionObserver(([e]) => { heroVisible = e.isIntersecting }).observe(stage)
+  if (matchMedia('(pointer: fine)').matches) {
+    $('.hero').addEventListener('pointermove', e => {
+      target.mx = (e.clientX / innerWidth) * 2 - 1
+      target.my = (e.clientY / innerHeight) * 2 - 1
+      kick()
+    })
+    $('.hero').addEventListener('pointerleave', () => { target.mx = 0; target.my = 0; kick() })
+  }
+  target.p = heroProgress()
+  now.p = target.p
+  kick()
+}
+onScroll()
+
+// ---------- Scroll reveals: once in view, settle and then hand control back to the element's own styles ----------
+const reveals = $$('.reveal')
+function settle(el) {
+  el.classList.add('in')
+  const done = e => {
+    if (e.target !== el || e.propertyName !== 'opacity') return
+    el.removeEventListener('transitionend', done)
+    el.classList.remove('reveal', 'in')
+  }
+  el.addEventListener('transitionend', done)
+}
+function revealAll() { reveals.forEach(el => el.classList.remove('reveal', 'in')) }
+if (reduced || !('IntersectionObserver' in window)) revealAll()
+else {
+  // A fast fling or an anchor jump can carry an element past the viewport between two observer checks, so whenever
+  // anything is revealed, everything above the bottom of the screen that is still waiting is revealed with it.
+  const pending = new Set(reveals)
+  const flush = () => {
+    for (const el of pending) {
+      if (el.getBoundingClientRect().top < innerHeight * 0.92) { settle(el); io.unobserve(el); pending.delete(el) }
+    }
+  }
+  const io = new IntersectionObserver(entries => { if (entries.some(e => e.isIntersecting)) flush() }, { rootMargin: '0px 0px -8% 0px', threshold: 0 })
+  reveals.forEach(el => io.observe(el))
+  addEventListener('scrollend', flush, { passive: true })
+  addEventListener('hashchange', () => requestAnimationFrame(flush))
+}
+
+// ---------- Card spotlight follows the pointer ----------
+$$('.card').forEach(c => c.addEventListener('pointermove', e => {
+  const r = c.getBoundingClientRect()
+  c.style.setProperty('--cx', `${e.clientX - r.left}px`)
+  c.style.setProperty('--cy', `${e.clientY - r.top}px`)
+}))
 
 // ---------- Screenshots: skeleton until the file exists, lightbox for the rest ----------
 const shots = $$('[data-shot]')
@@ -153,7 +228,7 @@ const fmt = n => n.toLocaleString('en')
 
 function fileMeta(el, a) {
   if (!el || !a) return
-  const rows = [['File', esc(a.name)], ['Size', `<span class="num" data-roll-late>${mb(a.size)}</span>`]]
+  const rows = [['File', esc(a.name)], ['Size', mb(a.size)]]
   if (a.count >= 100) rows.push(['Downloads', fmt(a.count)])
   if (a.digest) {
     const hash = a.digest.replace(/^sha256:/, '')
@@ -191,12 +266,11 @@ async function loadRelease() {
   const all = await releases()
   const rel = all.find(r => !r.draft && !r.prerelease)
   if (!rel) return
-  // Any Windows installer name: Spectre-x.y.z-setup.exe, Spectre_x.y.z_x64-setup.exe or the older Spectre.Setup.x.y.z.exe
+  // Installer names: Spectre-x.y.z-setup.exe, Spectre_x.y.z_x64-setup.exe or the older Spectre.Setup.x.y.z.exe; any .exe as a fallback
   const installer = rel.assets.find(a => /setup.*\.exe$/i.test(a.name)) || rel.assets.find(a => /\.exe$/i.test(a.name))
   const version = rel.tag.replace(/^v/, '')
 
   bind('tag').forEach(el => { el.textContent = `v${version}` })
-  bind('pill').forEach(el => { el.textContent = `Version ${version} is out. Read the notes` })
   if (installer) {
     bind('installer-href').forEach(el => { el.href = installer.url })
     bind('installer-sub').forEach(el => { el.textContent = `v${version}, ${mb(installer.size)}` })
@@ -205,8 +279,5 @@ async function loadRelease() {
   if (rel.date) bind('date').forEach(el => { el.textContent = new Date(rel.date).toLocaleDateString('en', { month: 'long', day: 'numeric', year: 'numeric' }) })
   const notes = renderNotes(rel.body)
   if (notes) bind('notes').forEach(el => { el.innerHTML = notes })
-  // readout.js rolls the version and size digits when the release readout comes into view.
-  window.SpectreRelease = { version }
-  document.dispatchEvent(new CustomEvent('spectre:release'))
 }
 loadRelease().catch(() => {})
