@@ -19,7 +19,7 @@
    (--line at --line-a), --panel is the opaque fill for menus and popovers, --orb-* tint the backdrop.
    The first block is the shared dark base (and Midnight). :where() keeps it below each theme's own rule, and it also
    applies to any element with data-theme, so theme previews inside a light app still get the dark base. */
-:root, :where([data-theme]:not([data-theme='pearl'])) {
+:root, :where([data-theme]:not([data-theme='pearl']):not([data-theme='aero'])) {
   --bg: 9 9 14;
   --panel: 22 21 30;
   --surface: 255 255 255;    --surface-a: 0.045;
@@ -75,6 +75,59 @@
   color-scheme: light;
 }
 
+/* ---- Aesthetic themes ----
+   Frutiger Aero: glossy mid-2000s sky, aqua and grass, with bubbles drifting up (light).
+   Vaporwave: hot pink and cyan over a violet dusk with a neon horizon grid.
+   Y2K Chrome: iridescent cyan, magenta and lime over brushed graphite.
+   Lo-fi: warm dusk lamp light, peach and lilac. */
+[data-theme='aero'] {
+  --bg: 206 233 248;
+  --panel: 246 252 255;
+  --surface: 255 255 255;    --surface-a: 0.5;
+  --surface-2: 255 255 255;  --surface-2-a: 0.72;
+  --line: 10 60 100;         --line-a: 0.14;
+  --hi-a: 0.95;
+  --shadow-a: 0.2;
+  --text: 8 32 54;
+  --muted: 52 86 112;
+  --accent: 0 108 176;
+  --accent-2: 52 150 40;
+  --good: 22 112 40;
+  --bad: 190 30 40;
+  --warn: 140 82 0;
+  --orb-1: 80 200 255; --orb-2: 150 235 110; --orb-3: 255 255 255; --orb-a: 0.5;
+  --glow-a: 0.35;
+  --noise-a: 0.03;
+  --grid-a: 0;
+  --scrim: 10 50 80;         --scrim-a: 0.25;
+  color-scheme: light;
+}
+[data-theme='aero'] .backdrop { background: linear-gradient(180deg, #8fd3ff 0%, #c8ecff 38%, #effaff 62%, #d6f3c4 100%); }
+[data-theme='aero'] .glass, [data-theme='aero'] .glass-strong { box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.95), inset 0 -10px 24px -18px rgb(0 110 180 / 0.25), 0 10px 30px -18px rgb(0 60 110 / 0.35); }
+[data-theme='aero'] .bubble { display: block; }
+
+[data-theme='vaporwave'] { --bg: 16 8 28;  --panel: 34 18 52; --accent: 255 113 206; --accent-2: 1 205 254;  --orb-1: 255 90 200;  --orb-2: 1 205 254;   --orb-3: 150 80 255; --orb-a: 0.42; --muted: 184 160 206; --good: 5 255 161; }
+[data-theme='vaporwave'] .backdrop::after {
+  background-image: linear-gradient(rgb(255 113 206 / 0.22) 1px, transparent 1px), linear-gradient(90deg, rgb(1 205 254 / 0.18) 1px, transparent 1px);
+  background-size: 56px 56px;
+  -webkit-mask-image: linear-gradient(180deg, transparent 52%, #000 100%); mask-image: linear-gradient(180deg, transparent 52%, #000 100%);
+}
+[data-theme='y2k']  { --bg: 10 11 14; --panel: 26 28 34; --accent: 120 230 255; --accent-2: 214 140 255; --orb-1: 90 220 255;  --orb-2: 230 120 255;  --orb-3: 170 255 90;  --orb-a: 0.36; --muted: 160 166 182; --surface-a: 0.06; --hi-a: 0.16; }
+[data-theme='y2k'] .glass, [data-theme='y2k'] .glass-strong { background-image: linear-gradient(135deg, rgb(255 255 255 / 0.07), rgb(255 255 255 / 0.015) 40%, rgb(255 255 255 / 0.06)); }
+[data-theme='lofi'] { --bg: 20 14 16; --panel: 40 30 32; --accent: 255 170 120; --accent-2: 200 160 255; --orb-1: 255 150 110; --orb-2: 190 150 255;  --orb-3: 120 80 110; --orb-a: 0.38; --muted: 186 166 160; --orb-v: 1.3; }
+
+/* Frutiger Aero bubbles: small glossy spheres drifting up, only in that theme. Transform-only, like the orbs. */
+.bubble {
+  display: none; position: absolute; bottom: -12vmax; border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, rgb(255 255 255 / 0.95), rgb(255 255 255 / 0.35) 18%, rgb(120 210 255 / 0.18) 46%, rgb(80 180 240 / 0.28) 70%, rgb(255 255 255 / 0.6) 100%);
+  box-shadow: inset 0 0 18px rgb(255 255 255 / 0.6);
+  will-change: transform; animation: bubble-up var(--d, 26s) linear infinite; animation-delay: var(--dl, 0s);
+}
+@keyframes bubble-up { 0% { transform: translate3d(0, 0, 0); } 50% { transform: translate3d(var(--sway, 4vmax), -60vh, 0); } 100% { transform: translate3d(0, -125vh, 0); } }
+html[data-hidden] .bubble { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) { .bubble { animation: none !important; } }
+html[data-reduce-motion] .bubble { animation: none !important; }
+
 :root {
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
@@ -116,17 +169,21 @@ button:focus-visible, a:focus-visible, [role='tab']:focus-visible, [role='button
 .backdrop { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; background: rgb(var(--bg)); contain: strict; }
 .backdrop-fields { position: absolute; inset: 0; }
 .orb {
-  position: absolute; width: 70vmax; height: 70vmax; border-radius: 50%;
+  position: absolute; width: 72vmax; height: 72vmax; border-radius: 50%;
   will-change: transform; backface-visibility: hidden; transform: translate3d(0, 0, 0);
   animation: var(--orb-anim) ease-in-out infinite alternate;
+  --v: var(--orb-v, 1.55);   /* vibrance: how strong the drifting color fields are */
 }
-.orb-1 { left: -22vmax; top: -30vmax; --orb-anim: orb-a 34s; background: radial-gradient(closest-side, rgb(var(--orb-1) / var(--orb-a)), rgb(var(--orb-1) / calc(var(--orb-a) * 0.35)) 45%, transparent); }
-.orb-2 { right: -26vmax; top: -6vmax; --orb-anim: orb-b 42s; width: 58vmax; height: 58vmax; background: radial-gradient(closest-side, rgb(var(--orb-2) / calc(var(--orb-a) * 0.6)), rgb(var(--orb-2) / calc(var(--orb-a) * 0.2)) 45%, transparent); }
-.orb-3 { left: 18vmax; bottom: -42vmax; --orb-anim: orb-c 50s; width: 78vmax; height: 78vmax; background: radial-gradient(closest-side, rgb(var(--orb-3) / calc(var(--orb-a) * 0.85)), rgb(var(--orb-3) / calc(var(--orb-a) * 0.28)) 45%, transparent); }
-@keyframes orb-a { 0% { transform: translate3d(0, 0, 0) scale(1); } 50% { transform: translate3d(14vmax, 8vmax, 0) scale(1.12); } 100% { transform: translate3d(4vmax, 16vmax, 0) scale(0.94); } }
-@keyframes orb-b { 0% { transform: translate3d(0, 0, 0) scale(1); } 50% { transform: translate3d(-16vmax, 12vmax, 0) scale(0.9); } 100% { transform: translate3d(-6vmax, -4vmax, 0) scale(1.1); } }
-@keyframes orb-c { 0% { transform: translate3d(0, 0, 0) scale(1.05); } 50% { transform: translate3d(-12vmax, -10vmax, 0) scale(0.92); } 100% { transform: translate3d(10vmax, -4vmax, 0) scale(1.08); } }
+.orb-1 { left: -20vmax; top: -28vmax; --orb-anim: orb-a 22s; background: radial-gradient(closest-side, rgb(var(--orb-1) / calc(var(--orb-a) * var(--v))), rgb(var(--orb-1) / calc(var(--orb-a) * var(--v) * 0.45)) 50%, transparent); }
+.orb-2 { right: -24vmax; top: -8vmax; --orb-anim: orb-b 27s; width: 62vmax; height: 62vmax; background: radial-gradient(closest-side, rgb(var(--orb-2) / calc(var(--orb-a) * var(--v) * 0.85)), rgb(var(--orb-2) / calc(var(--orb-a) * var(--v) * 0.32)) 50%, transparent); }
+.orb-3 { left: 14vmax; bottom: -40vmax; --orb-anim: orb-c 31s; width: 80vmax; height: 80vmax; background: radial-gradient(closest-side, rgb(var(--orb-3) / calc(var(--orb-a) * var(--v))), rgb(var(--orb-3) / calc(var(--orb-a) * var(--v) * 0.4)) 50%, transparent); }
+.orb-4 { left: 34vmax; top: 6vmax; --orb-anim: orb-d 25s; width: 44vmax; height: 44vmax; background: radial-gradient(closest-side, rgb(var(--accent) / calc(var(--orb-a) * var(--v) * 0.6)), rgb(var(--accent) / calc(var(--orb-a) * var(--v) * 0.18)) 50%, transparent); }
+@keyframes orb-a { 0% { transform: translate3d(0, 0, 0) scale(1); } 50% { transform: translate3d(22vmax, 12vmax, 0) scale(1.18); } 100% { transform: translate3d(6vmax, 26vmax, 0) scale(0.9); } }
+@keyframes orb-b { 0% { transform: translate3d(0, 0, 0) scale(1); } 50% { transform: translate3d(-26vmax, 18vmax, 0) scale(0.86); } 100% { transform: translate3d(-8vmax, -6vmax, 0) scale(1.16); } }
+@keyframes orb-c { 0% { transform: translate3d(0, 0, 0) scale(1.05); } 50% { transform: translate3d(-20vmax, -16vmax, 0) scale(0.9); } 100% { transform: translate3d(16vmax, -6vmax, 0) scale(1.14); } }
+@keyframes orb-d { 0% { transform: translate3d(0, 0, 0) scale(0.9); } 50% { transform: translate3d(-18vmax, 20vmax, 0) scale(1.2); } 100% { transform: translate3d(14vmax, 8vmax, 0) scale(1); } }
 html[data-hidden] .orb { animation-play-state: paused; }
+[data-theme='pearl'] .orb, [data-theme='aero'] .orb { --orb-v: 1.25; }
 @media (prefers-reduced-motion: reduce) { .orb { animation: none !important; } }
 html[data-reduce-motion] .orb { animation: none !important; }
 .backdrop::after {
@@ -140,7 +197,7 @@ html[data-reduce-motion] .orb { animation: none !important; }
   content: ""; position: absolute; inset: 0; z-index: 1; opacity: var(--noise-a);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
-[data-theme='pearl'] .backdrop::before { filter: invert(1); }
+[data-theme='pearl'] .backdrop::before, [data-theme='aero'] .backdrop::before { filter: invert(1); }
 
 /* Surfaces.
    .glass         card / tile: translucent fill, hairline border, 1px inner top highlight, layered soft shadow. No blur
@@ -192,14 +249,14 @@ html[data-reduce-motion] .orb { animation: none !important; }
 /* Soft accent halo behind an element (absolute, put inside a relative parent). */
 .halo { position: absolute; pointer-events: none; border-radius: 9999px; background: radial-gradient(closest-side, rgb(var(--accent) / calc(var(--glow-a) * 0.6)), transparent); }
 /* White single-color game icons (currencies) turn dark on light themes. */
-[data-theme='pearl'] .mono-icon { filter: invert(1) brightness(0.35); }
+[data-theme='pearl'] .mono-icon, [data-theme='aero'] .mono-icon { filter: invert(1) brightness(0.35); }
 /* Game-defined colors used as text (rank tiers, content tiers): pass the hex as --tier. They are tuned for dark surfaces,
    so the light theme caps their lightness (same hue and chroma) to keep AA contrast on light glass. */
 .tier-text { color: var(--tier, rgb(var(--text))); }
-[data-theme='pearl'] .tier-text { color: oklch(from var(--tier, rgb(var(--text))) min(l, 0.5) c h); }
+[data-theme='pearl'] .tier-text, [data-theme='aero'] .tier-text { color: oklch(from var(--tier, rgb(var(--text))) min(l, 0.5) c h); }
 /* Light theme: tone down card art behind text and give the Home hero stats a solid panel. */
-[data-theme='pearl'] .hero-art { opacity: 0.32; }
-[data-theme='pearl'] .hero-strip { background: rgb(var(--panel) / 0.82); }
+[data-theme='pearl'] .hero-art, [data-theme='aero'] .hero-art { opacity: 0.32; }
+[data-theme='pearl'] .hero-strip, [data-theme='aero'] .hero-strip { background: rgb(var(--panel) / 0.82); }
 
 .kbd { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 6px; font-size: 11px; font-weight: 600; color: rgb(var(--muted)); background: rgb(var(--surface-2) / var(--surface-2-a)); border: 1px solid rgb(var(--line) / var(--line-a)); border-bottom-width: 2px; }
 

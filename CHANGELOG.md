@@ -1,5 +1,14 @@
 # 📜 Changelog
 
+## 3.0.2
+
+### ⚡ Instant switching
+- Every page loads in the background after launch, so switching tabs no longer freezes
+
+### 🎨 Themes and motion
+- New aesthetic themes: Frutiger Aero (with floating bubbles), Vaporwave, Y2K Chrome and Lo-fi
+- The background glows are brighter and move more, still smooth and paused while minimized
+
 ## 3.0.1
 
 ### ⚡ Smoother
