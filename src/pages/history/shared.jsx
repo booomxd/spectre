@@ -81,8 +81,8 @@ export function TierIcon({ tier, size = 28, showName }) {
   return (
     <span className='inline-flex items-center gap-2' title={t.tierName}>
       <img src={t.smallIcon} alt={t.tierName} style={{ width: size, height: size }} draggable={false} />
-      {/* Tier colors are tuned for dark surfaces; darken them on the light theme so they stay readable. */}
-      {showName && <span className="text-[12px] font-semibold [[data-theme='pearl']_&]:brightness-[0.6] [[data-theme='pearl']_&]:saturate-150" style={{ color: `#${t.color.slice(0, 6)}` }}>{t.tierName}</span>}
+      {/* .tier-text keeps the tier color readable on the light theme. */}
+      {showName && <span className='tier-text text-[12px] font-semibold' style={{ '--tier': `#${t.color.slice(0, 6)}` }}>{t.tierName}</span>}
     </span>
   )
 }

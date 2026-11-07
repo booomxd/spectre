@@ -150,6 +150,15 @@ function LiveBody({ active }) {
   const [panel, setPanel] = useState(null)
   const closePanel = () => setPanel(null)
   useEffect(closePanel, [d?.matchId])
+  // Dev demo only (?demo&scout): open Scout on a sample player for screenshots.
+  const demoScout = useRef(false)
+  useEffect(() => {
+    if (!import.meta.env.DEV || demoScout.current || !d?.players?.length) return
+    const q = new URLSearchParams(window.location.search)
+    if (!q.has('demo') || !q.has('scout')) return
+    demoScout.current = true
+    setPanel({ kind: 'scout', player: d.players.find(p => p.name && !p.hidden && !p.self) || d.players[1] || d.players[0] })
+  }, [d?.players])
   // Keep the last panel's content on screen while the drawer animates out.
   const last = useRef(null)
   if (panel) last.current = panel

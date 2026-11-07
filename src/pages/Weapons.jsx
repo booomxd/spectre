@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { FiLock, FiPlay, FiSearch } from 'react-icons/fi'
-import { Badge, Card, Empty, Heading, Input, Item, Modal, Page, SectionTitle, SegmentedTabs, Select, Skeleton, Stagger, Stat, Swap, cx, m, useReducedMotion, SPRING } from '../ui'
+import { Badge, Card, Empty, Heading, Input, Item, Modal, Page, SectionTitle, SegmentedTabs, Select, Skeleton, Stagger, Stat, Swap, cx, Pill } from '../ui'
 import { useRiot } from '../lib/riot'
 import { CATEGORIES, catKey, chromaOwned, isStandard, lc, levelItemLabel, levelOwned, skinImage, skinOwned, tierColor, useContentTiers, useOwned, useWeapons } from './tools/gear'
 
@@ -18,7 +18,6 @@ export default function Weapons() {
   const [tier, setTier] = useState('')
   const [q, setQ] = useState('')
   const [skin, setSkin] = useState(null)
-  const reduce = useReducedMotion()
 
   const inCat = weapons?.filter(w => catKey(w) === cat) || []
   const weapon = inCat.find(w => lc(w.uuid) === lc(wid)) || inCat[0]
@@ -50,7 +49,7 @@ export default function Weapons() {
               return (
                 <button key={w.uuid} onClick={() => { setWid(w.uuid); setTier(''); setQ('') }}
                   className={cx('relative h-11 pl-3 pr-4 rounded-full flex items-center gap-2.5 shrink-0 transition-colors', on ? 'text-text' : 'text-muted hover:text-text')}>
-                  {on && <m.span layoutId='weapons-pick' className='accent-soft absolute inset-0 rounded-full' transition={reduce ? { duration: 0 } : SPRING} />}
+                  {on && <Pill layoutId='weapons-pick' />}
                   <img src={w.displayIcon} className='relative h-6 w-14 object-contain' />
                   <span className='relative text-[12.5px] font-semibold tracking-tight'>{w.displayName}</span>
                 </button>

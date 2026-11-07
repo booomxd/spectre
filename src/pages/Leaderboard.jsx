@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { FiAward, FiSearch } from 'react-icons/fi'
 import { invoke } from '../lib/ipc'
 import { useRiot } from '../lib/riot'
-import { Badge, Button, Card, Empty, ErrorState, Input, Item, Page, RequireRiot, Skeleton, Stagger } from '../ui'
+import { Badge, Button, Card, Empty, ErrorState, Input, Item, Page, RequireRiot, Skeleton, Stagger, pressable } from '../ui'
 import { TierIcon, cx, useCards, openPlayer } from './history/shared'
 import { CareerBar, StatCell, StatStrip } from './history/career'
 
@@ -22,7 +22,7 @@ function Entry({ p, cards, me, sticky, index }) {
   const secret = isSecret(p)
   const link = !secret && p.puuid
   return (
-    <div style={{ '--i': index }} onClick={() => link && openPlayer(p)}
+    <div style={{ '--i': index }} {...pressable(link ? () => openPlayer(p) : null)}
       className={cx('grid items-center gap-3 px-6 h-[56px] text-[13px] transition-colors', COLS,
         sticky ? 'bg-panel/95 border-t border-accent/40 shadow-[0_-12px_30px_-16px_rgb(var(--accent)/0.5)]' : 'border-b border-line last:border-b-0',
         link && 'cursor-pointer', link && p.puuid !== me && 'hover:bg-surface-2', p.puuid === me && !sticky && 'accent-soft')}>

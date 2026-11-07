@@ -1,7 +1,7 @@
 // Left panel: playbooks (folders) containing strategies, with search and hover actions.
 import { useMemo, useState } from 'react'
 import { FiChevronRight, FiCopy, FiEdit2, FiFolder, FiPlus, FiSearch, FiTrash2 } from 'react-icons/fi'
-import { Badge, Button, Empty, Input, Skeleton } from '../../ui'
+import { Badge, Button, Empty, Input, Skeleton, pressable } from '../../ui'
 
 function Act({ icon: Icon, title, onClick, danger }) {
   return (
@@ -51,12 +51,12 @@ export default function Library({ playbooks, loading, maps, sel, onSelect, onNew
               return (
                 <div key={pb.id} className='anim-rise' style={{ '--i': i }}>
                   <div className='group flex items-center gap-2 h-9 pl-2 pr-1 rounded-xl cursor-pointer text-muted hover:text-text hover:bg-surface-2 transition-colors'
-                    onClick={() => setClosed(c => ({ ...c, [pb.id]: open }))}>
+                    aria-expanded={open} {...pressable(() => setClosed(c => ({ ...c, [pb.id]: open })))}>
                     <FiChevronRight className={`text-xs transition-transform duration-200 ${open ? 'rotate-90' : ''}`} />
                     <FiFolder className='text-accent/80' />
                     <span className='flex-1 truncate text-[13px] font-semibold text-text'>{pb.name}</span>
-                    <span className='text-[11px] tabular-nums group-hover:hidden'>{pb.strategies.length}</span>
-                    <span className='hidden group-hover:flex items-center'>
+                    <span className='text-[11px] tabular-nums group-hover:hidden group-focus-within:hidden'>{pb.strategies.length}</span>
+                    <span className='hidden group-hover:flex group-focus-within:flex items-center'>
                       <Act icon={FiPlus} title='New strategy' onClick={() => onNewStrategy(pb.id)} />
                       <Act icon={FiEdit2} title='Rename' onClick={() => onRename(pb.id)} />
                       <Act icon={FiCopy} title='Duplicate' onClick={() => onDuplicate(pb.id)} />
@@ -69,15 +69,15 @@ export default function Library({ playbooks, loading, maps, sel, onSelect, onNew
                         const m = mapById[s.mapId]
                         const on = sel?.sid === s.id
                         return (
-                          <div key={s.id} onClick={() => onSelect(pb.id, s.id)}
+                          <div key={s.id} {...pressable(() => onSelect(pb.id, s.id))}
                             className={`group flex items-center gap-2.5 h-12 px-1.5 rounded-2xl cursor-pointer transition-colors duration-150 ${on ? 'accent-soft' : 'hover:bg-surface-2'}`}>
                             <div className='h-9 w-9 rounded-xl overflow-hidden glass-inset shrink-0'>{m?.displayIcon && <img src={m.displayIcon} alt='' className='h-full w-full object-cover' />}</div>
                             <div className='flex-1 min-w-0'>
                               <p className={`truncate text-[12.5px] font-semibold leading-tight ${on ? 'text-text' : 'text-text/90'}`}>{s.name}</p>
                               <p className='truncate text-[11px] text-muted leading-tight mt-0.5'>{m?.displayName || 'Unknown map'} · {s.steps.length} step{s.steps.length === 1 ? '' : 's'}</p>
                             </div>
-                            <span className='group-hover:hidden'><Badge tone={s.side === 'attack' ? 'bad' : 'accent'}>{s.side === 'attack' ? 'ATK' : 'DEF'}</Badge></span>
-                            <span className='hidden group-hover:flex items-center'>
+                            <span className='group-hover:hidden group-focus-within:hidden'><Badge tone={s.side === 'attack' ? 'bad' : 'accent'}>{s.side === 'attack' ? 'ATK' : 'DEF'}</Badge></span>
+                            <span className='hidden group-hover:flex group-focus-within:flex items-center'>
                               <Act icon={FiEdit2} title='Rename' onClick={() => onRename(pb.id, s.id)} />
                               <Act icon={FiCopy} title='Duplicate' onClick={() => onDuplicate(pb.id, s.id)} />
                               <Act icon={FiTrash2} title='Delete' danger onClick={() => onDelete(pb.id, s.id)} />

@@ -4,6 +4,7 @@ import { FiCheck, FiCopy, FiDownload, FiPause, FiPlay, FiPlus, FiRotateCcw, FiRo
 import { Badge, Button, Empty, ErrorState, Input, Modal, Select, Skeleton, Tabs, toast } from '../ui'
 import { invoke } from '../lib/ipc'
 import { getContent } from '../lib/content'
+import { prefersReducedMotion } from '../lib/theme'
 import Board from './strategies/Board'
 import Library from './strategies/Library'
 import Palette from './strategies/Palette'
@@ -70,7 +71,7 @@ export default function Strategies({ active }) {
     timers.current[pid] = setTimeout(() => { delete timers.current[pid]; persist(pid) }, now ? 0 : 700)
   }, [persist])
   useEffect(() => () => {
-    cancelAnimationFrame(raf.current)
+    cancelAnimationFrame(raf.current); clearTimeout(raf.current)
     Object.keys(timers.current).forEach(pid => { clearTimeout(timers.current[pid]); persist(pid) })
   }, [persist])
 
@@ -95,6 +96,8 @@ export default function Strategies({ active }) {
 
   const stopPlay = useCallback(() => { cancelAnimationFrame(raf.current); clearTimeout(raf.current); setPlaying(false); setAnim(null) }, [])
   const resetHist = () => { hist.current = { past: [], future: [], base: null } }
+  // Playback stops when you leave the page (it would otherwise keep animating off screen).
+  useEffect(() => { if (active === false) stopPlay() }, [active, stopPlay])
   const selectStrategy = (pid, sid) => { stopPlay(); resetHist(); setStepIdx(0); setStepEdit(null); setSel({ pid, sid }) }
 
   // ---- history-aware edits (snapshots are a strategy's steps)
@@ -150,7 +153,9 @@ export default function Strategies({ active }) {
     if (steps.length < 2) { toast('Add a second step to animate between positions'); return }
     let i = idx >= steps.length - 1 ? 0 : idx
     setPlaying(true); setStepIdx(i); setAnim(null)
-    const HOLD = 600, MOVE = 1100
+    // Reduced motion: no glide, each step just holds a little longer before the next one appears.
+    const reduce = prefersReducedMotion()
+    const HOLD = reduce ? 1100 : 600, MOVE = reduce ? 0 : 1100
     const run = () => {
       const t0 = performance.now()
       const tick = (now) => {
@@ -243,8 +248,8 @@ export default function Strategies({ active }) {
   const mapOptions = (maps || []).map(m => ({ value: m.uuid, label: m.displayName }))
 
   return (
-    <div className='h-full flex min-h-0 gap-4 px-5 pb-5 pt-1 anim-fade'>
-      <div className='w-[236px] shrink-0 min-h-0'>
+    <div className='h-full flex min-h-0 gap-4 px-5 pb-5 pt-1'>
+      <div className='w-[236px] max-[1200px]:w-[204px] shrink-0 min-h-0'>
         {loadErr ? <ErrorState error={loadErr} onRetry={loadPlaybooks} /> : (
           <Library playbooks={playbooks} loading={!playbooks} maps={maps} sel={sel} onSelect={selectStrategy}
             onNewPlaybook={newPlaybookAction} onNewStrategy={newStrategyAction} onRename={renameAction} onDuplicate={duplicateAction} onDelete={deleteAction} />
@@ -307,15 +312,15 @@ export default function Strategies({ active }) {
                 ))}
               </div>
               <span className='w-px h-6 bg-line/60 mx-1 shrink-0' />
-              <Button size='sm' variant='ghost' icon={FiPlus} onClick={() => addStep(false)} disabled={playing} title='Add blank step'>Step</Button>
-              <Button size='sm' variant='ghost' icon={FiCopy} onClick={() => addStep(true)} disabled={playing} title='Duplicate this step (tokens keep identity so they animate)'>Duplicate</Button>
+              <Button size='sm' variant='ghost' icon={FiPlus} onClick={() => addStep(false)} disabled={playing} title='Add blank step'><span className='max-[1200px]:hidden'>Step</span></Button>
+              <Button size='sm' variant='ghost' icon={FiCopy} onClick={() => addStep(true)} disabled={playing} title='Duplicate this step (tokens keep identity so they animate)'><span className='max-[1200px]:hidden'>Duplicate</span></Button>
               <Button size='sm' variant='ghost' icon={FiTrash2} onClick={deleteStep} disabled={playing || strat.steps.length < 2} title='Delete step' />
             </div>
           </>
         )}
       </div>
 
-      <div className='w-[260px] shrink-0 min-h-0'>
+      <div className='w-[260px] max-[1200px]:w-[224px] shrink-0 min-h-0'>
         <Palette agents={agents} side={strat?.side || 'attack'} placed={placed} notes={strat?.notes || ''}
           onNotes={notes => strat && updateStrat(s => ({ ...s, notes }))}
           onPlace={payload => strat && !playing && boardRef.current?.addItem(payload)} />
@@ -326,16 +331,21 @@ export default function Strategies({ active }) {
   )
 }
 
-function PromptModal({ modal, onClose }) {
+function PromptModal({ modal: current, onClose }) {
   const [value, setValue] = useState('')
-  useEffect(() => { if (modal?.kind === 'prompt') setValue(modal.value) }, [modal])
+  useEffect(() => { if (current?.kind === 'prompt') setValue(current.value) }, [current])
+  // Keep the last dialog's content while it animates out (the Modal stays mounted with open=false).
+  const last = useRef(null)
+  if (current) last.current = current
+  const modal = current || last.current
   if (!modal) return null
   const submit = () => {
+    if (!current) return
     if (modal.kind === 'prompt') { const v = value.trim(); if (!v) return; modal.onSubmit(v) } else modal.onSubmit()
     onClose()
   }
   return (
-    <Modal open title={modal.title} onClose={onClose} width={400}
+    <Modal open={!!current} title={modal.title} onClose={onClose} width={400}
       footer={<><Button variant='ghost' onClick={onClose}>Cancel</Button><Button variant={modal.kind === 'confirm' ? 'danger' : 'primary'} onClick={submit}>{modal.kind === 'confirm' ? 'Delete' : 'Save'}</Button></>}>
       {modal.kind === 'prompt'
         ? <Input autoFocus value={value} onChange={e => setValue(e.target.value)} onFocus={e => e.target.select()} onKeyDown={e => e.key === 'Enter' && submit()} />

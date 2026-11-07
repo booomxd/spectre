@@ -3,9 +3,9 @@
 //
 // The app is wrapped once in <MotionProvider>. Use the `m.*` components (never `motion.*`: LazyMotion is strict).
 // Shared-layout (layoutId) indicators need the domMax feature set, so the provider loads domMax instead of domAnimation.
-import { createContext, useContext, useEffect, useState } from 'react'
-import { AnimatePresence, LazyMotion, LayoutGroup, MotionConfig, domMax, m, useReducedMotion as useOsReducedMotion } from 'motion/react'
-import { getReduceMotion, onReduceMotion } from '../lib/theme'
+import { createContext, useContext, useEffect, useState, useSyncExternalStore } from 'react'
+import { AnimatePresence, LazyMotion, LayoutGroup, MotionConfig, MotionGlobalConfig, PresenceContext, domMax, m } from 'motion/react'
+import { getReduceMotion, onReduceMotion, prefersReducedMotion } from '../lib/theme'
 
 export { m, AnimatePresence, LayoutGroup }
 
@@ -13,6 +13,11 @@ export const EASE = [0.22, 1, 0.36, 1]
 export const SPRING = { type: 'spring', stiffness: 520, damping: 40, mass: 0.9 }
 export const SPRING_SOFT = { type: 'spring', stiffness: 320, damping: 32 }
 const ReduceCtx = createContext(false)
+
+// Reduced motion is truly instant: motion's own reducedMotion option only drops transform animations and still plays
+// opacity fades, so the global skip flag is used as well (every motion value, layout pill, enter and exit jumps to its
+// end state). Set at load so the very first render is covered too.
+MotionGlobalConfig.skipAnimations = prefersReducedMotion()
 
 // True when motion should be minimal (setting or OS).
 export function useReducedMotion() { return useContext(ReduceCtx) }
@@ -36,18 +41,43 @@ function useSpotlight(off) {
   }, [off])
 }
 
+// OS prefers-reduced-motion, live (motion's own hook reads it once and never updates).
+const QUERY = '(prefers-reduced-motion: reduce)'
+const onOsChange = cb => {
+  const mq = window.matchMedia?.(QUERY)
+  mq?.addEventListener('change', cb)
+  return () => mq?.removeEventListener('change', cb)
+}
+const useOsReducedMotion = () => useSyncExternalStore(onOsChange, () => !!window.matchMedia?.(QUERY).matches, () => false)
+
 export function MotionProvider({ children }) {
   const [setting, setSetting] = useState(getReduceMotion)
   useEffect(() => onReduceMotion(setSetting), [])
   const os = useOsReducedMotion()
-  const reduce = setting || !!os
+  const reduce = setting || os
+  // Assigned during render (idempotent) so it is in place before any child starts an animation in its effects.
+  MotionGlobalConfig.skipAnimations = reduce
   useSpotlight(reduce)
   return (
     <LazyMotion features={domMax} strict>
-      <MotionConfig reducedMotion={reduce ? 'always' : 'never'} transition={{ duration: 0.22, ease: EASE }}>
+      {/* reducedMotion stays 'never': the skip flag above already makes every animation instant when reducing. */}
+      <MotionConfig reducedMotion='never' transition={{ duration: 0.22, ease: EASE }}>
         <ReduceCtx.Provider value={reduce}>{children}</ReduceCtx.Provider>
       </MotionConfig>
     </LazyMotion>
+  )
+}
+
+// Sliding selection pill (shared layoutId) under the active tab / row. Put it first inside a `relative` element.
+// It is cut off from any surrounding AnimatePresence: a layoutId element inside an exiting subtree waits for another
+// member of its layout stack to take over, which never happens once the pill has moved, so the exit (header sub-tabs,
+// a tab strip inside <Swap>, a modal) would hang forever and leave the old content on screen.
+export function Pill({ layoutId, className = 'accent-soft absolute inset-0 rounded-full', transition }) {
+  const reduce = useReducedMotion()
+  return (
+    <PresenceContext.Provider value={null}>
+      <m.span layoutId={layoutId} className={className} transition={reduce ? { duration: 0 } : transition || SPRING} />
+    </PresenceContext.Provider>
   )
 }
 
@@ -59,7 +89,7 @@ export function PageTransition({ active = true, className, children }) {
     <m.div className={className} style={{ display: active ? undefined : 'none' }}
       initial={reduce ? false : { opacity: 0, y: 8 }}
       animate={active ? { opacity: 1, y: 0 } : { opacity: 0, y: reduce ? 0 : 8 }}
-      transition={active ? { duration: reduce ? 0.12 : 0.22, ease: EASE } : { duration: 0 }}>
+      transition={active && !reduce ? { duration: 0.22, ease: EASE } : { duration: 0 }}>
       {children}
     </m.div>
   )

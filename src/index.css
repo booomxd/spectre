@@ -60,12 +60,13 @@
   --hi-a: 0.7;
   --shadow-a: 0.18;
   --text: 22 24 36;
-  --muted: 96 100 122;
-  --accent: 99 91 255;
+  /* Text tokens are tuned for WCAG AA (4.5:1) on the backdrop and on tinted pills, not only on white cards. */
+  --muted: 90 94 116;
+  --accent: 84 72 240;
   --accent-2: 214 92 255;
-  --good: 22 163 74;
-  --bad: 220 38 38;
-  --warn: 202 138 4;
+  --good: 15 112 52;
+  --bad: 192 28 28;
+  --warn: 138 80 6;
   --orb-1: 140 130 255; --orb-2: 240 140 255; --orb-3: 80 200 255; --orb-a: 0.45;
   --glow-a: 0.32;
   --noise-a: 0.06;
@@ -91,7 +92,7 @@ body {
 input, textarea, select { user-select: text; font-family: inherit; }
 img { object-fit: contain; -webkit-user-drag: none; }
 ::selection { background: rgb(var(--accent) / 0.35); }
-button:focus-visible, a:focus-visible, [role='tab']:focus-visible { outline: 2px solid rgb(var(--accent) / 0.65); outline-offset: 2px; }
+button:focus-visible, a:focus-visible, [role='tab']:focus-visible, [role='button']:focus-visible, summary:focus-visible, [tabindex='0']:focus-visible { outline: 2px solid rgb(var(--accent) / 0.65); outline-offset: 2px; }
 
 .drag { -webkit-app-region: drag; }
 .no-drag, button, input, select, textarea, a { -webkit-app-region: no-drag; }
@@ -188,6 +189,10 @@ button:focus-visible, a:focus-visible, [role='tab']:focus-visible { outline: 2px
 .halo { position: absolute; pointer-events: none; border-radius: 9999px; background: radial-gradient(closest-side, rgb(var(--accent) / calc(var(--glow-a) * 0.6)), transparent); }
 /* White single-color game icons (currencies) turn dark on light themes. */
 [data-theme='pearl'] .mono-icon { filter: invert(1) brightness(0.35); }
+/* Game-defined colors used as text (rank tiers, content tiers): pass the hex as --tier. They are tuned for dark surfaces,
+   so the light theme caps their lightness (same hue and chroma) to keep AA contrast on light glass. */
+.tier-text { color: var(--tier, rgb(var(--text))); }
+[data-theme='pearl'] .tier-text { color: oklch(from var(--tier, rgb(var(--text))) min(l, 0.5) c h); }
 /* Light theme: tone down card art behind text and give the Home hero stats a solid panel. */
 [data-theme='pearl'] .hero-art { opacity: 0.32; }
 [data-theme='pearl'] .hero-strip { background: rgb(var(--panel) / 0.82); }

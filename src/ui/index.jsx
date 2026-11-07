@@ -1,13 +1,13 @@
 // Shared UI kit. Every page builds from these so spacing, color and motion stay consistent.
 // Colors come from theme tokens (see tailwind.config.js): bg, panel, surface, surface-2, line, text, muted, accent, accent-2, good, bad, warn.
 // Surfaces and type helpers are CSS classes in src/index.css (.glass, .glass-strong, .glass-inset, .accent-soft, .display, .eyebrow...).
-import React, { createContext, useContext, useEffect, useId } from 'react'
+import React, { createContext, useContext, useEffect, useId, useState, useSyncExternalStore } from 'react'
 import { createPortal } from 'react-dom'
 import { FiAlertTriangle, FiInbox, FiLoader, FiX } from 'react-icons/fi'
 import { useRiot } from '../lib/riot'
-import { AnimatePresence, EASE, SPRING, m, useReducedMotion } from './motion'
+import { AnimatePresence, Pill, SPRING, m } from './motion'
 
-export { MotionProvider, PageTransition, Stagger, Item, FadeIn, Swap, m, AnimatePresence, LayoutGroup, useReducedMotion, EASE, SPRING, SPRING_SOFT } from './motion'
+export { MotionProvider, PageTransition, Pill, Stagger, Item, FadeIn, Swap, m, AnimatePresence, LayoutGroup, useReducedMotion, EASE, SPRING, SPRING_SOFT } from './motion'
 export { default as CommandPalette } from './CommandPalette'
 
 export const cx = (...c) => c.filter(Boolean).join(' ')
@@ -15,6 +15,32 @@ export const cx = (...c) => c.filter(Boolean).join(' ')
 // Set by the shell / Settings: `section` is the dock section a page belongs to (shown as the eyebrow over the title);
 // `embedded` renders a page inside another page (Settings > Experimental) without its own scroller or outer padding.
 export const PageContext = createContext({ section: null, embedded: false })
+
+// True while the page a component lives in is the one on screen (the shell keeps visited pages mounted but hidden).
+// Outside the shell (overlay window, embedded tools) it stays true and the parent page decides.
+export const PageActiveContext = createContext(true)
+export const usePageActive = () => useContext(PageActiveContext)
+
+const onVisibility = cb => { document.addEventListener('visibilitychange', cb); return () => document.removeEventListener('visibilitychange', cb) }
+// False while the window is minimized, hidden to the tray or otherwise not visible.
+export const useDocumentVisible = () => useSyncExternalStore(onVisibility, () => document.visibilityState !== 'hidden', () => true)
+
+// Current time (ms) that ticks every `interval` ms, aligned to the interval so second readouts change together.
+// Pauses while the page is not on screen or the window is hidden, and catches up immediately when it is shown again.
+export function useNow(interval = 1000) {
+  const active = usePageActive()
+  const visible = useDocumentVisible()
+  const running = active && visible
+  const [now, setNow] = useState(Date.now)
+  useEffect(() => {
+    if (!running) return
+    let t = 0
+    const tick = () => { const n = Date.now(); setNow(n); t = setTimeout(tick, interval - (n % interval) + 5) }
+    tick()
+    return () => clearTimeout(t)
+  }, [running, interval])
+  return now
+}
 
 // Page frame: eyebrow + display title + subtitle + actions, then a scrolling body.
 // Props are unchanged from v2 (title, subtitle, actions, children, className, bodyClassName); `eyebrow` overrides the section label.
@@ -54,11 +80,27 @@ export function Page({ title, subtitle, actions, eyebrow, children, className, b
   )
 }
 
+// Keyboard access for a clickable element that is not a <button>: focusable, announced as a button, Enter / Space click.
+// Spread onto the element: <div {...pressable(onClick)}>. Keys pressed inside nested controls are left alone.
+export function pressable(onClick) {
+  if (!onClick) return {}
+  return {
+    role: 'button', tabIndex: 0, onClick,
+    onKeyDown: e => {
+      if (e.target !== e.currentTarget || (e.key !== 'Enter' && e.key !== ' ')) return
+      e.preventDefault()
+      onClick(e)
+    },
+  }
+}
+
 // Card: glass surface, 24px radius by default (pages may still pass rounded-*).
 // hover = lift + pointer spotlight; glow = accent ring glow (selected / featured); blur = opt-in backdrop blur.
-export function Card({ className, hover, glow, blur, children, as: Tag = 'div', ...rest }) {
+// A clickable Card (onClick) is keyboard reachable too.
+export function Card({ className, hover, glow, blur, children, as: Tag = 'div', onClick, ...rest }) {
+  const press = typeof Tag === 'string' && Tag !== 'button' && Tag !== 'a' ? pressable(onClick) : { onClick }
   return (
-    <Tag className={cx('glass rounded-2xl', hover && 'lift spot cursor-pointer', glow && 'accent-glow', blur && 'glass-blur', className)} {...rest}>{children}</Tag>
+    <Tag className={cx('glass rounded-2xl', hover && 'lift spot cursor-pointer', glow && 'accent-glow', blur && 'glass-blur', className)} {...press} {...rest}>{children}</Tag>
   )
 }
 
@@ -141,7 +183,6 @@ export function Toggle({ checked, onChange, label, hint, disabled }) {
 export function SegmentedTabs({ tabs, value, onChange, size = 'md', variant = 'glass', className, layoutId }) {
   const auto = useId()
   const id = layoutId || 'seg' + auto
-  const reduce = useReducedMotion()
   const h = size === 'sm' ? 'h-7 px-3 text-[12px]' : size === 'lg' ? 'h-9 px-4 text-[13px]' : 'h-8 px-3.5 text-[12.5px]'
   return (
     <div role='tablist' className={cx('relative inline-flex items-center gap-0.5', variant === 'glass' && 'glass p-1 rounded-full', className)}>
@@ -152,7 +193,7 @@ export function SegmentedTabs({ tabs, value, onChange, size = 'md', variant = 'g
         return (
           <button key={v} role='tab' aria-selected={on} onClick={() => onChange(v)}
             className={cx('relative rounded-full font-semibold inline-flex items-center gap-1.5 whitespace-nowrap transition-colors duration-200', h, on ? 'text-text' : 'text-muted hover:text-text')}>
-            {on && <m.span layoutId={id} className='accent-soft absolute inset-0 rounded-full' transition={reduce ? { duration: 0 } : SPRING} />}
+            {on && <Pill layoutId={id} />}
             {Icon && <Icon className={cx('relative', on && 'text-accent')} size={13} />}
             <span className='relative'>{t?.label ?? t}</span>
             {t?.count != null && <span className='relative text-[10px] font-bold text-muted tabular-nums'>{t.count}</span>}
@@ -173,7 +214,7 @@ const TONES = {
   warn: 'bg-warn/12 text-warn border-warn/30',
 }
 export function Badge({ tone = 'neutral', className, children }) {
-  return <span className={cx('inline-flex items-center gap-1 h-5 px-2 rounded-full border text-[10px] font-semibold tracking-wide uppercase', TONES[tone] || TONES.neutral, className)}>{children}</span>
+  return <span className={cx('inline-flex items-center gap-1 h-5 px-2 shrink-0 whitespace-nowrap rounded-full border text-[10px] font-semibold tracking-wide uppercase', TONES[tone] || TONES.neutral, className)}>{children}</span>
 }
 
 export function Stat({ label, value, sub, className, size = 'md' }) {
@@ -225,21 +266,30 @@ export const Scrim = ({ onMouseDown, children, className }) => (
 )
 
 export function Modal({ open, onClose, title, children, footer, width = 480 }) {
+  const panel = React.useRef(null)
   useEffect(() => {
     if (!open) return
     const onKey = e => e.key === 'Escape' && onClose?.()
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [open, onClose])
+  // Keyboard focus moves into the dialog (unless a field inside already took it with autoFocus) and returns on close.
+  useEffect(() => {
+    if (!open) return
+    const prev = document.activeElement
+    const id = requestAnimationFrame(() => { if (panel.current && !panel.current.contains(document.activeElement)) panel.current.focus({ preventScroll: true }) })
+    return () => { cancelAnimationFrame(id); if (prev && prev.isConnected && prev.focus) prev.focus({ preventScroll: true }) }
+  }, [open])
   return createPortal(
     <AnimatePresence>
       {open && (
         <Scrim key='modal' className='items-center justify-center' onMouseDown={onClose}>
-          <m.div className='glass-strong rounded-3xl max-h-[85vh] flex flex-col' style={{ width }} onMouseDown={e => e.stopPropagation()}
+          <m.div ref={panel} role='dialog' aria-modal='true' aria-label={typeof title === 'string' ? title : undefined} tabIndex={-1}
+            className='glass-strong rounded-3xl max-h-[85vh] max-w-[calc(100vw-32px)] flex flex-col outline-none' style={{ width }} onMouseDown={e => e.stopPropagation()}
             initial={{ opacity: 0, scale: 0.96, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.98, y: 6 }} transition={SPRING}>
             <div className='flex items-center justify-between px-7 pt-6 pb-3'>
-              <h3 className='display text-[22px]'>{title}</h3>
-              <button className='w-8 h-8 -mr-2 rounded-full flex items-center justify-center text-muted hover:text-text hover:bg-surface-2 transition-colors' onClick={onClose}><FiX /></button>
+              <h3 className='display text-[22px] min-w-0'>{title}</h3>
+              <button aria-label='Close' title='Close' className='w-8 h-8 -mr-2 shrink-0 rounded-full flex items-center justify-center text-muted hover:text-text hover:bg-surface-2 transition-colors' onClick={onClose}><FiX /></button>
             </div>
             <div className='px-7 pb-6 overflow-y-auto'>{children}</div>
             {footer && <div className='px-7 py-4 border-t border-line flex justify-end gap-2'>{footer}</div>}
@@ -267,11 +317,11 @@ export function ToastHost() {
     return () => listeners.delete(add)
   }, [])
   return createPortal(
-    <div className='fixed bottom-5 right-5 z-[60] flex flex-col gap-2 items-end pointer-events-none'>
+    <div role='status' aria-live='polite' className='fixed bottom-5 right-5 z-[60] flex flex-col gap-2 items-end pointer-events-none'>
       <AnimatePresence initial={false}>
         {items.map(t => (
           <m.div key={t.id} layout initial={{ opacity: 0, y: 14, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, x: 24, transition: { duration: 0.16 } }} transition={SPRING}
-            className={cx('glass-strong pointer-events-auto flex items-center gap-2.5 max-w-sm rounded-full px-4 py-2.5 text-[13px] font-medium',
+            className={cx('glass-strong pointer-events-auto flex items-center gap-2.5 max-w-sm rounded-[20px] px-4 py-2.5 text-[13px] font-medium leading-snug',
               t.tone === 'good' ? '!border-good/40' : t.tone === 'bad' ? '!border-bad/40' : '')}>
             <span className={cx('w-2 h-2 rounded-full shrink-0 shadow-[0_0_10px_currentColor]', t.tone === 'good' ? 'bg-good text-good' : t.tone === 'bad' ? 'bg-bad text-bad' : 'bg-accent text-accent')} />
             {t.message}

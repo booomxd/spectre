@@ -10,11 +10,22 @@ export function getContent(path) {
   return cache.get(path)
 }
 
+// A falsy path loads nothing (returns null), so callers can wait for an id instead of requesting a placeholder.
+// While a new path loads, the previous data stays (no flash to empty when switching between cached items).
 export function useContent(path) {
   const [data, setData] = useState(null)
-  useEffect(() => { let live = true; getContent(path).then(d => live && setData(d)).catch(() => { }); return () => { live = false } }, [path])
-  return data
+  useEffect(() => {
+    if (!path) return
+    let live = true
+    getContent(path).then(d => live && setData(d)).catch(() => { })
+    return () => { live = false }
+  }, [path])
+  return path ? data : null
 }
+
+// Riot uses the all-zero GUID for "none" (no card, no title). Returns a content path only for a real id.
+const NONE = '00000000-0000-0000-0000-000000000000'
+export const contentPath = (kind, id) => (id && id !== NONE ? `${kind}/${id}` : null)
 
 // Latest competitive tier list: tier number -> { tierName, smallIcon, largeIcon, color }.
 export function useTiers() {

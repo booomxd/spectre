@@ -1,6 +1,21 @@
 # 📜 Changelog
 
-## Unreleased
+## 3.0.0
+
+### ✨ A brand-new look
+- A floating top dock replaces the sidebar: Home, Live, Career, Squad, Arsenal and Playbook, each with its own tabs
+- Ctrl+K opens a quick search to jump to any page
+- Every page is redesigned, with smoother, lighter animations and a Reduce motion setting
+- Renamed pages: Matches, Feed, Lookup, Store, What's new and Feedback
+
+### 🧪 Experimental
+- Rank Editor, Profile, Premier and Status moved to Settings → Experimental, off by default
+- Resetting overrides now restores your real profile status right away instead of leaving it stuck
+
+### 🛠️ Fixes
+- Light theme text is easier to read
+- Clocks and store timers pause when hidden and no longer drift
+- Fixed an invisible layer that could block clicks after closing quick search
 
 ### ⚙️ Under the hood
 - The app's backend is rewritten in Rust on Tauri 2, replacing Electron and Node

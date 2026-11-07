@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { FiArrowRight, FiClock, FiSearch, FiUser, FiX } from 'react-icons/fi'
 import { invoke, useInvoke } from '../lib/ipc'
-import { useContent, useTiers } from '../lib/content'
+import { contentPath, useContent, useTiers } from '../lib/content'
 import { Badge, Button, Card, Empty, ErrorState, FadeIn, Heading, Item, Page, RequireRiot, Skeleton, Stagger, toast } from '../ui'
 import { ListLabel, ListRow, Pane, SPLIT_BODY, SplitView } from './friends/Layout'
 import HistoryPanel from './history/HistoryPanel'
@@ -71,15 +71,16 @@ function ActHistory({ scout, seasons }) {
                 <div className='text-[11px] text-muted'>Final</div>
               </div>
             </div>
-            <div className={cx('flex items-center gap-2 rounded-full pl-1.5 pr-3.5 py-1 border', a.peak ? 'border-accent/30 bg-accent/10' : 'border-line bg-surface-2/60')} title='Act peak'>
+            <div className={cx('shrink-0 whitespace-nowrap flex items-center gap-2 rounded-full pl-1.5 pr-3.5 py-1 border', a.peak ? 'border-accent/30 bg-accent/10' : 'border-line bg-surface-2/60')} title='Act peak'>
               <TierIcon tier={a.peak} size={26} />
               <div className='leading-tight'>
                 <div className='text-[12px] font-semibold'>{a.peak ? tiers?.[a.peak]?.tierName : '-'}</div>
                 <div className='text-[11px] font-medium text-accent'>Act peak</div>
               </div>
             </div>
-            {isPeak && a.peak > 0 && <Badge tone='accent'>All-time peak</Badge>}
-            <div className='ml-auto text-right leading-tight'>
+            {/* The highlighted row already marks the peak act; the badge only shows when there is room for it. */}
+            {isPeak && a.peak > 0 && <Badge tone='accent' className='max-[1200px]:hidden'>All-time peak</Badge>}
+            <div className='ml-auto shrink-0 whitespace-nowrap text-right leading-tight'>
               <div className='text-[13px] font-semibold tabular-nums'>{wr}% <span className='text-muted font-normal text-[11px]'>win rate</span></div>
               <div className='text-[11px] text-muted tabular-nums'>{a.wins}W of {a.games} games</div>
             </div>
@@ -94,8 +95,8 @@ function Profile({ puuid }) {
   const scout = useInvoke('search:scout', [puuid])
   const { data, error, loading, reload } = useInvoke('search:profile', [puuid])
   const { data: memo, reload: reloadMemo } = useInvoke('memo:get', [puuid])
-  const card = useContent(data?.cardId ? `playercards/${data.cardId}` : 'playercards/00000000-0000-0000-0000-000000000000')
-  const title = useContent(data?.titleId ? `playertitles/${data.titleId}` : 'playertitles/00000000-0000-0000-0000-000000000000')
+  const card = useContent(contentPath('playercards', data?.cardId))
+  const title = useContent(contentPath('playertitles', data?.titleId))
   const seasons = useSeasons()
 
   if (error && !data) return <ErrorState error={error} onRetry={reload} />
@@ -161,7 +162,8 @@ export default function PlayerSearch({ params }) {
   const [searchError, setSearchError] = useState(null)
   const { data: recent, reload: reloadRecent } = useInvoke('search:recent')
 
-  useEffect(() => { if (params?.puuid) { setPuuid(params.puuid); setSearchError(null) } }, [params?.puuid])
+  // Keyed on the params object (a new one per navigate), so the same player opens again after looking up someone else.
+  useEffect(() => { if (params?.puuid) { setPuuid(params.puuid); setSearchError(null) } }, [params])
 
   const find = async (value) => {
     if (!value.includes('#')) { setSearchError('Enter a Riot ID like Name#Tag'); return }

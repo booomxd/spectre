@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getContent } from '../../lib/content'
+import { useNow } from '../../ui'
 import { skinImage } from '../tools/gear'
 
 // Item type ids used by the store.
@@ -63,11 +64,12 @@ export function fmtDuration(s) {
   return `${m}m ${String(sec).padStart(2, '0')}s`
 }
 
-// Live countdown from a "seconds left" snapshot taken when it loaded.
+// Live countdown from a "seconds left" snapshot. The snapshot time resets whenever a new value arrives (a store
+// refresh), so the countdown never drifts by the time since the component first mounted. Ticks only while visible.
 export function useCountdown(secondsLeft) {
-  const [t0] = useState(() => Date.now())
-  const [, tick] = useState(0)
-  useEffect(() => { const i = setInterval(() => tick(n => n + 1), 1000); return () => clearInterval(i) }, [])
+  const now = useNow()
+  const [snap, setSnap] = useState(() => ({ s: secondsLeft, t: Date.now() }))
+  if (snap.s !== secondsLeft) setSnap({ s: secondsLeft, t: Date.now() })
   if (secondsLeft == null) return null
-  return Math.max(0, secondsLeft - (Date.now() - t0) / 1000)
+  return Math.max(0, secondsLeft - Math.max(0, now - snap.t) / 1000)
 }

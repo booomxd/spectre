@@ -1,0 +1,6 @@
+# Cloudflare Pages: the website in docs/ is static, so there is no build step.
+# Deploy with: npx wrangler pages deploy
+# (or connect the repo in the Cloudflare dashboard with build command empty and output directory "docs").
+name = "spectre"
+pages_build_output_dir = "docs"
+compatibility_date = "2026-10-01"

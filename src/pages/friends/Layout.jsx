@@ -1,7 +1,7 @@
 // Shared list/detail layout for the Squad pages (Friends, Feed, Notes, Lookup).
 // Local to the Squad pages: a left list pane with its own scroller and a right detail area.
 import { FiSearch } from 'react-icons/fi'
-import { Input, cx, m, useReducedMotion, SPRING } from '../../ui'
+import { Input, Pill, cx, pressable } from '../../ui'
 
 // Fills the page body. Use with <Page bodyClassName={SPLIT_BODY}>.
 export const SPLIT_BODY = '!overflow-hidden flex min-h-0'
@@ -53,12 +53,11 @@ export function ListLabel({ children, count }) {
 
 // A selectable row in a list pane. The selection pill slides between rows (shared layoutId per list).
 export function ListRow({ selected, onClick, layoutId, className, children, dim, as: Tag = 'div', ...rest }) {
-  const reduce = useReducedMotion()
   return (
-    <Tag onClick={onClick} {...rest}
+    <Tag {...(Tag === 'div' ? pressable(onClick) : { onClick })} {...rest}
       className={cx('group relative flex items-center gap-3 rounded-2xl px-2.5 py-2 cursor-pointer text-left w-full transition-[opacity,background-color] duration-200',
         !selected && 'hover:bg-surface-2/70', dim && !selected && 'opacity-55 hover:opacity-100', className)}>
-      {selected && <m.span layoutId={layoutId} className='accent-soft absolute inset-0 rounded-2xl' transition={reduce ? { duration: 0 } : SPRING} />}
+      {selected && <Pill layoutId={layoutId} className='accent-soft absolute inset-0 rounded-2xl' />}
       {children}
     </Tag>
   )

@@ -2,6 +2,7 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { FiMessageSquare, FiSend, FiX } from 'react-icons/fi'
 import { Badge, Card, Button, Skeleton, Empty, toast, cx, Stagger, Item } from '../../ui'
 import { invoke, useInvoke } from '../../lib/ipc'
+import { prefersReducedMotion } from '../../lib/theme'
 import { PlayerCard, StatusDot } from '../live/parts'
 import { ListLabel, ListRow } from './Layout'
 
@@ -67,7 +68,7 @@ export function ChatPanel({ cid, friend, statusLine, active, onClose, onSent, ac
 
   useLayoutEffect(() => {
     const el = scroller.current
-    if (el) el.scrollTo({ top: el.scrollHeight, behavior: list.length > 1 ? 'smooth' : 'auto' })
+    if (el) el.scrollTo({ top: el.scrollHeight, behavior: list.length > 1 && !prefersReducedMotion() ? 'smooth' : 'auto' })
   }, [list.length, cid])
 
   const send = async e => {

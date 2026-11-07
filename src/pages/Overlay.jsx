@@ -41,7 +41,7 @@ function Row({ p, showPeak, tiers }) {
       </div>
       {p.ranked && (<>
         <div className='text-right leading-tight shrink-0'>
-          <div className='text-[10.5px] font-semibold tracking-tight' style={{ color: p.rank && t ? `#${t.color.slice(0, 6)}` : undefined }}>{p.rank ? title(t?.tierName) : 'Unranked'}</div>
+          <div className='tier-text text-[10.5px] font-semibold tracking-tight' style={p.rank && t ? { '--tier': `#${t.color.slice(0, 6)}` } : undefined}>{p.rank ? title(t?.tierName) : 'Unranked'}</div>
           {p.rank > 0 && <div className='text-[9.5px] text-muted tabular-nums'>{p.rr} RR</div>}
         </div>
         <RankIcon tier={p.rank} size={24} />
