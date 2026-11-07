@@ -7,9 +7,8 @@
   <meta name="description" content="Free, open-source VALORANT companion for Windows. See every player's rank, peak and skins in your match, scout anyone, track matches and run your party, through the Riot Client you're already signed in to.">
   <meta name="page-type" content="software">
   <meta name="site-kind" content="software">
-  <meta name="theme-color" content="#0a0d12">
-  <meta name="color-scheme" content="dark light">
-  <link rel="canonical" href="https://spectreclient.pages.dev/">
+  <meta name="theme-color" content="#07070b">
+  <meta name="color-scheme" content="dark">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Spectre">
   <meta property="og:title" content="Spectre: VALORANT companion app for Windows">
@@ -25,358 +24,332 @@
   <meta name="twitter:image" content="https://spectreclient.pages.dev/screenshots/live.png">
   <link rel="icon" href="site/logo.svg" type="image/svg+xml">
   <link rel="preload" href="site/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="site/style.css?v=20261107s">
-  <script src="site/boot.js?v=20261107s"></script>
-  <script src="site/app.js?v=20261107s" defer></script>
-  <script src="site/readout.js?v=20261107s" defer></script>
+  <link rel="stylesheet" href="site/style.css?v=20261107r">
+  <script src="site/boot.js?v=20261107r"></script>
+  <script src="site/app.js?v=20261107r" defer></script>
 </head>
 <body>
-  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+    <symbol id="i-cross" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M22 12h-4M6 12H2M12 6V2M12 22v-4"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></symbol>
     <symbol id="i-eyeoff" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></symbol>
+    <symbol id="i-monitor" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></symbol>
+    <symbol id="i-drop" viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5M12 15V3"/></symbol>
     <symbol id="i-github" viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 17.13V21"/></symbol>
-    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></symbol>
+    <symbol id="i-package" viewBox="0 0 24 24"><path d="M16.5 9.4l-9-5.19M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96L12 12.01l8.73-5.05M12 22.08V12"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
     <symbol id="i-left" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></symbol>
     <symbol id="i-right" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></symbol>
     <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></symbol>
-    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
     <symbol id="i-expand" viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></symbol>
+    <symbol id="i-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M16.24 7.76l-2.12 6.36-6.36 2.12 2.12-6.36 6.36-2.12z"/></symbol>
+    <symbol id="i-bag" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18M16 10a4 4 0 0 1-8 0"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
     <symbol id="i-windows" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M3 5.6l7.4-1v7H3zM11.4 4.4L21 3v8.6h-9.6zM3 12.4h7.4v7l-7.4-1zM11.4 12.4H21V21l-9.6-1.4z"/></symbol>
   </svg>
 
   <a class="skip" href="#main">Skip to content</a>
 
-  <header class="dock">
-    <div class="wrap dock-in">
+  <div class="backdrop" aria-hidden="true">
+    <div class="field field-1"></div><div class="field field-2"></div><div class="field field-3"></div>
+  </div>
+
+  <header class="dock-wrap">
+    <div class="dock glass">
       <a class="brand" href="#top" aria-label="Spectre, back to top"><img src="site/logo.svg" alt="" width="28" height="28">Spectre</a>
       <nav class="dock-links" id="dock-links" aria-label="Sections">
-        <a href="#live">Live match</a>
+        <a href="#live">Live Match</a>
         <a href="#features">Features</a>
         <a href="#themes">Themes</a>
         <a href="#safety">Safety</a>
         <a href="#faq">FAQ</a>
-        <a class="dock-gh-text" href="https://github.com/booomxd/spectre">GitHub</a>
+        <a href="https://github.com/booomxd/spectre" class="dock-gh-text">GitHub</a>
       </nav>
-      <a class="btn btn-ghost btn-icon dock-gh" href="https://github.com/booomxd/spectre" aria-label="Spectre on GitHub"><svg class="i" aria-hidden="true"><use href="#i-github"/></svg></a>
-      <a class="btn btn-primary btn-sm" href="#download"><svg class="i" aria-hidden="true"><use href="#i-windows"/></svg>Download</a>
-      <button class="btn btn-ghost btn-icon dock-menu" type="button" aria-expanded="false" aria-controls="dock-links" aria-label="Open menu"><svg class="i" aria-hidden="true"><use href="#i-menu"/></svg></button>
+      <a class="btn btn-ghost btn-icon dock-gh" href="https://github.com/booomxd/spectre" aria-label="Spectre on GitHub"><svg class="i"><use href="#i-github"/></svg></a>
+      <a class="btn btn-primary btn-sm" href="#download"><svg class="i"><use href="#i-download"/></svg>Download</a>
+      <button class="btn btn-ghost btn-icon dock-menu" type="button" aria-expanded="false" aria-controls="dock-links" aria-label="Open menu"><svg class="i"><use href="#i-menu"/></svg></button>
+      <span class="dock-progress" aria-hidden="true"></span>
     </div>
   </header>
 
   <main id="main">
-    <!-- 1. Hero: the copy is final on the first frame; the instrument resolves an example match beside it. -->
     <section class="hero" id="top">
-      <div class="wrap grid hero-grid">
-        <div class="hero-copy">
-          <a class="notes-pill" href="#whats-new"><span class="live-dot" aria-hidden="true"></span><span data-bind="pill">Read the latest release notes</span><span aria-hidden="true">&#8250;</span></a>
-          <h1>Know who's in your match before round one.</h1>
-          <p class="lead">Spectre is a free, open-source companion for VALORANT on Windows. It shows ranks, peaks and skins for all ten players, scouts anyone in one click and runs your party and store, through the Riot Client you're already signed in to.</p>
-          <div class="cta">
-            <a class="btn btn-primary btn-lg" data-bind="installer-href" href="https://github.com/booomxd/spectre/releases/latest">
-              <svg class="i" aria-hidden="true"><use href="#i-windows"/></svg>
-              <span>Download for Windows<small data-bind="installer-sub">Latest release on GitHub</small></span>
-            </a>
-            <a class="link" href="https://github.com/booomxd/spectre">View the source</a>
-          </div>
-          <p class="facts">Free and open source. Windows 10 and 11, 64-bit. Never asks for your Riot password.</p>
+      <div class="wrap hero-copy">
+        <a class="pill glass" href="#whats-new"><b data-bind="tag">New version</b><span>Read the release notes</span><svg class="i"><use href="#i-right"/></svg></a>
+        <h1>The VALORANT companion app for Windows</h1>
+        <p class="lead">See every player's rank, peak and skins the moment agent select loads, scout anyone in one click and run your party without opening the game. It works through the Riot Client you're already signed in to.</p>
+        <div class="cta">
+          <a class="btn btn-primary btn-lg" data-bind="installer-href" href="https://github.com/booomxd/spectre/releases/latest">
+            <svg class="i"><use href="#i-windows"/></svg>
+            <span>Download for Windows<small data-bind="installer-sub">Latest release</small></span>
+          </a>
+          <a class="btn btn-lg" href="https://github.com/booomxd/spectre"><svg class="i"><use href="#i-github"/></svg>View the source</a>
         </div>
+        <ul class="facts" aria-label="Requirements">
+          <li><svg class="i"><use href="#i-check"/></svg>Free and open source</li>
+          <li><svg class="i"><use href="#i-check"/></svg>Windows 10 and 11, 64-bit</li>
+          <li><svg class="i"><use href="#i-check"/></svg>No Riot password needed</li>
+        </ul>
+      </div>
 
-        <figure class="instrument glass grat is-blank" id="resolve" aria-label="Example of Spectre's Live Match: both teams with rank, RR and peak">
-          <div class="inst-chrome">
-            <span class="tag">Example match</span>
-            <span class="inst-where">Ascent, Competitive, Frankfurt</span>
-            <span class="inst-status" aria-live="off" data-status>Round 1, 0 to 0</span>
+      <div class="wrap stage" aria-label="Spectre screenshots">
+        <div class="stage-inner">
+          <div class="layer layer-main">
+            <button class="shot shot-hero glass" type="button" data-shot aria-label="Open the Home screenshot full size">
+              <img src="screenshots/home.png" width="1280" height="800" alt="Spectre's Home page: rank and RR, wallet, battle pass, daily store and online friends" fetchpriority="high" decoding="async" data-title="Home" data-text="Rank and RR, wallet, battle pass, daily offers and online friends at a glance.">
+            </button>
           </div>
-          <div class="phase" data-stop="2" aria-hidden="true">
-            <ol class="phase-ruler"><li>Lobby</li><li>Agent select</li><li>In match</li><li>Round 13</li></ol>
-            <span class="needle-track"><i class="needle"></i></span>
+          <div class="layer layer-a">
+            <button class="shot shot-float glass" type="button" data-shot aria-label="Open the Scout screenshot full size">
+              <img src="screenshots/scout.png" width="1280" height="800" alt="Scout panel with rank history, recent form and last competitive matches" loading="lazy" decoding="async" data-title="Scout" data-text="Rank history by act, recent form and the last 10 competitive matches for any player.">
+            </button>
           </div>
-          <div class="roster">
-            <div class="team team-ally">
-              <p class="team-head"><span class="team-name">Your team</span><span class="avg">Avg Diamond 2</span></p>
-              <ul class="rows">
-                <li class="row party"><span class="who"><span class="cell nm"><b>Nova</b> <small>#EUW</small></span><span class="cell sub"><span class="agent">Jett</span><span class="skin">Prime Vandal</span></span></span><span class="rank"><span class="cell rk"><i class="chip t-dia"></i>Diamond 2</span><span class="cell peak">Peak Ascendant 1</span></span><span class="cell rr"><span class="num" data-roll data-tick>64</span><span class="u">RR</span></span></li>
-                <li class="row"><span class="who"><span class="cell nm"><b>kairo</b> <small>#777</small></span><span class="cell sub"><span class="agent">Sova</span><span class="skin">Ion Phantom</span></span></span><span class="rank"><span class="cell rk"><i class="chip t-dia"></i>Diamond 3</span><span class="cell peak">Peak Ascendant 1</span></span><span class="cell rr"><span class="num" data-roll>38</span><span class="u">RR</span></span></li>
-                <li class="row"><span class="who"><span class="cell nm"><b>Lumen</b> <small>#4410</small></span><span class="cell sub"><span class="agent">Omen</span><span class="skin">Reaver Vandal</span></span></span><span class="rank"><span class="cell rk"><i class="chip t-dia"></i>Diamond 1</span><span class="cell peak">Peak Diamond 3</span></span><span class="cell rr"><span class="num" data-roll>22</span><span class="u">RR</span></span></li>
-                <li class="row"><span class="who"><span class="cell nm"><b>vexa</b> <small>#sea</small></span><span class="cell sub"><span class="agent">Killjoy</span><span class="skin">Oni Phantom</span></span></span><span class="rank"><span class="cell rk"><i class="chip t-dia"></i>Diamond 2</span><span class="cell peak">Peak Immortal 1</span></span><span class="cell rr"><span class="num" data-roll>85</span><span class="u">RR</span></span></li>
-                <li class="row"><span class="who"><span class="cell nm"><b>Orbit</b> <small>#001</small></span><span class="cell sub"><span class="agent">Skye</span><span class="skin">Glitchpop Vandal</span></span></span><span class="rank"><span class="cell rk"><i class="chip t-plat"></i>Platinum 3</span><span class="cell peak">Peak Diamond 2</span></span><span class="cell rr"><span class="num" data-roll>71</span><span class="u">RR</span></span></li>
-              </ul>
-            </div>
-            <div class="team team-opp">
-              <p class="team-head"><span class="team-name">Opponents</span><span class="avg">Avg Diamond 2</span></p>
-              <ul class="rows">
-                <li class="row"><span class="who"><span class="cell nm"><b>Reyna</b> <svg class="i eye" role="img" aria-label="Streamer mode, name hidden"><use href="#i-eyeoff"/></svg></span><span class="cell sub"><span class="agent">Streamer</span><span class="skin">RGX Vandal</span></span></span><span class="rank"><span class="cell rk"><i class="chip t-asc"></i>Ascendant 1</span><span class="cell peak">Peak Immortal 2</span></span><span class="cell rr"><span class="num" data-roll>93</span><span class="u">RR</span></span></li>
-                <li class="row"><span class="who"><span class="cell nm"><b>nightjar</b> <small>#km</small></span><span class="cell sub"><span class="agent">Raze</span><span class="skin">Oni Phantom</span></span></span><span class="rank"><span class="cell rk"><i class="chip t-dia"></i>Diamond 3</span><span class="cell peak">Peak Ascendant 2</span></span><span class="cell rr"><span class="num" data-roll>21</span><span class="u">RR</span></span></li>
-                <li class="row"><span class="who"><span class="cell nm"><b>Sable</b> <small>#77</small></span><span class="cell sub"><span class="agent">Cypher</span><span class="skin">Ion Phantom</span></span></span><span class="rank"><span class="cell rk"><i class="chip t-dia"></i>Diamond 3</span><span class="cell peak">Peak Diamond 3</span></span><span class="cell rr"><span class="num" data-roll>10</span><span class="u">RR</span></span></li>
-                <li class="row"><span class="who"><span class="cell nm"><b>drift</b> <small>#euw</small></span><span class="cell sub"><span class="agent">Breach</span><span class="skin">Reaver Vandal</span></span></span><span class="rank"><span class="cell rk"><i class="chip t-dia"></i>Diamond 1</span><span class="cell peak">Peak Ascendant 1</span></span><span class="cell rr"><span class="num" data-roll data-tick>50</span><span class="u">RR</span></span></li>
-                <li class="row"><span class="who"><span class="cell nm"><b>Tallow</b> <small>#333</small></span><span class="cell sub"><span class="agent">Viper</span><span class="skin">Kuronami Vandal</span></span></span><span class="rank"><span class="cell rk"><i class="chip t-plat"></i>Platinum 2</span><span class="cell peak">Peak Diamond 1</span></span><span class="cell rr"><span class="num" data-roll>47</span><span class="u">RR</span></span></li>
-              </ul>
-            </div>
-            <span class="reticle" aria-hidden="true"><span class="ret ret-snap"></span></span>
-            <span class="scan" aria-hidden="true"></span>
+          <div class="layer layer-b">
+            <button class="shot shot-float glass" type="button" data-shot aria-label="Open the overlay screenshot full size">
+              <img src="screenshots/overlay.png" width="1280" height="800" alt="In-game overlay with both teams' ranks" loading="lazy" decoding="async" data-title="Overlay" data-text="Both teams' ranks over the game. Ctrl+Shift+O shows or hides it, Ctrl+Shift+L lets clicks pass through.">
+            </button>
           </div>
-        </figure>
+        </div>
       </div>
     </section>
 
-    <!-- 2. Live match: the real screenshot with leader callouts, then Scout and the overlay. -->
     <section class="section" id="live">
       <div class="wrap">
-        <div class="head">
-          <h2>Ranks and skins for all ten players</h2>
-          <p>Live Match fills in during agent select and follows the game to the last round. Click any name to scout that player.</p>
+        <div class="split">
+          <div class="split-copy reveal">
+            <span class="kicker"><svg class="i"><use href="#i-target"/></svg>Live Match</span>
+            <h2>Ranks and skins for all ten players</h2>
+            <p>Live Match fills in during agent select and follows the game until the last round.</p>
+            <ul class="checks">
+              <li><svg class="i"><use href="#i-check"/></svg>Current-act rank, RR and peak rank for everyone</li>
+              <li><svg class="i"><use href="#i-check"/></svg>Vandal and Phantom skins on every card</li>
+              <li><svg class="i"><use href="#i-check"/></svg>Your party marked with a coloured bar</li>
+              <li><svg class="i"><use href="#i-eyeoff"/></svg>Streamer-mode players shown by agent only</li>
+            </ul>
+          </div>
+          <button class="shot shot-big glass reveal" type="button" data-shot aria-label="Open the Live Match screenshot full size" style="--d:120ms">
+            <img src="screenshots/live.png" width="1280" height="800" alt="Live Match: both teams with current rank, peak rank and Vandal and Phantom skins" loading="lazy" decoding="async" data-title="Live Match" data-text="Both teams with current-act rank, RR, peak rank and Vandal / Phantom skins. Your party is marked with a coloured bar.">
+          </button>
         </div>
 
-        <figure class="live-figure">
-          <button class="frame glass" type="button" data-shot aria-label="Open the Live Match screenshot full size">
-            <span class="ret" aria-hidden="true"></span>
-            <picture>
-              <source type="image/webp" srcset="screenshots/live-1280.webp 1280w, screenshots/live-1920.webp 1920w" sizes="(min-width: 1320px) 1240px, calc(100vw - 32px)">
-              <img src="screenshots/live.png" width="2560" height="1600" alt="Live Match: both teams with current rank, RR, peak rank and notes, your party marked with a bar" loading="lazy" decoding="async" data-title="Live Match" data-text="Both teams with current-act rank, RR and peak rank. Your party is marked with a coloured bar.">
-            </picture>
-          </button>
-          <div class="leaders" aria-hidden="true">
-            <span class="leader t2" style="--x:30.1%;--y:74.6%;--o:0%"><i class="ld-dot">1</i><i class="ld-line"></i><span class="ld-label">Current rank, RR and peak for everyone</span></span>
-            <span class="leader t2" style="--x:2.7%;--y:87.4%;--o:4%"><i class="ld-dot">2</i><i class="ld-line"></i><span class="ld-label">Your party, marked with a bar</span></span>
-            <span class="leader t1" style="--x:12.4%;--y:87.6%;--o:8%"><i class="ld-dot">3</i><i class="ld-line"></i><span class="ld-label">Your own notes on players you've met</span></span>
-            <span class="leader t1" style="--x:62.3%;--y:73.3%;--o:12%"><i class="ld-dot">4</i><i class="ld-line"></i><span class="ld-label">Streamer mode: agent only, never the name</span></span>
-          </div>
-          <ol class="leader-key">
-            <li>Current rank, RR and peak for everyone</li>
-            <li>Your party, marked with a bar</li>
-            <li>Your own notes on players you've met</li>
-            <li>Streamer mode: agent only, never the name</li>
-          </ol>
-        </figure>
-
-        <div class="panels">
-          <article class="panel glass">
-            <button class="crop" type="button" data-shot aria-label="Open the Scout screenshot full size">
-              <picture>
-                <source type="image/webp" srcset="screenshots/scout-1280.webp 1280w, screenshots/scout-1920.webp 1920w" sizes="(min-width: 1320px) 780px, (min-width: 769px) 62vw, 160vw">
-                <img src="screenshots/scout.png" width="2560" height="1600" alt="Scout panel with current and peak rank, recent form, KDA, headshot % and rank history" loading="lazy" decoding="async" data-title="Scout" data-text="Rank history by act, recent form and the last 10 competitive matches for any player.">
-              </picture>
+        <div class="pair">
+          <article class="card glass reveal">
+            <div class="card-copy">
+              <span class="card-icon"><svg class="i"><use href="#i-cross"/></svg></span>
+              <h3>Scout any player in one click</h3>
+              <p>Rank history by act, win rate, KDA, headshot % and their last 10 competitive games.</p>
+            </div>
+            <button class="shot shot-card" type="button" data-shot aria-label="Open the Scout screenshot full size">
+              <img src="screenshots/scout.png" width="1280" height="800" alt="Scout panel with rank history, recent form and last competitive matches" loading="lazy" decoding="async" data-title="Scout" data-text="Rank history by act, recent form and the last 10 competitive matches for any player.">
             </button>
-            <div class="panel-copy">
-              <h3>Scout anyone in one click</h3>
-              <p>Rank history by act, win rate, KDA, headshot % and their last 10 competitive games. Open it from any name in Live Match, or search a Riot ID.</p>
-            </div>
           </article>
-
-          <article class="panel glass">
-            <div class="crop overlay-stage is-on">
-              <div class="ov-inner">
-                <picture>
-                  <source type="image/webp" srcset="screenshots/overlay-off-1280.webp 1280w, screenshots/overlay-off-1920.webp 1920w" sizes="(min-width: 1320px) 780px, (min-width: 769px) 62vw, 160vw">
-                  <img src="screenshots/overlay-off-1280.webp" width="2560" height="1600" alt="" loading="lazy" decoding="async">
-                </picture>
-                <picture class="overlay-band">
-                  <source type="image/webp" srcset="screenshots/overlay-1280.webp 1280w, screenshots/overlay-1920.webp 1920w" sizes="(min-width: 1320px) 780px, (min-width: 769px) 62vw, 160vw">
-                  <img src="screenshots/overlay.png" width="2560" height="1600" alt="In-game overlay listing both teams with rank and RR" loading="lazy" decoding="async">
-                </picture>
-              </div>
-              <p class="ov-hint" aria-hidden="true">Overlay hidden. Press the keys again.</p>
+          <article class="card glass reveal" style="--d:100ms">
+            <div class="card-copy">
+              <span class="card-icon"><svg class="i"><use href="#i-monitor"/></svg></span>
+              <h3>Keeps ranks on top of the game</h3>
+              <p><kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>O</kbd> shows the overlay, <kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>L</kbd> lets clicks pass through. It never steals focus.</p>
             </div>
-            <div class="panel-copy">
-              <h3>Ranks on top of the game</h3>
-              <p>Ctrl Shift O shows it, Ctrl Shift L lets clicks pass through. It never steals focus. The shortcut works in the app; on this page the button shows you.</p>
-              <button class="keycap-toggle" type="button" aria-pressed="true" aria-label="Show the overlay preview"><kbd>Ctrl</kbd><kbd>Shift</kbd><kbd>O</kbd></button>
-            </div>
+            <button class="shot shot-card" type="button" data-shot aria-label="Open the overlay screenshot full size">
+              <img src="screenshots/overlay.png" width="1280" height="800" alt="In-game overlay with both teams' ranks" loading="lazy" decoding="async" data-title="Overlay" data-text="Both teams' ranks over the game. Ctrl+Shift+O shows or hides it, Ctrl+Shift+L lets clicks pass through.">
+            </button>
           </article>
         </div>
       </div>
     </section>
 
-    <!-- 3. Features: the app's own dock as tabs, one app frame. -->
     <section class="section" id="features">
       <div class="wrap">
-        <div class="head">
+        <div class="section-head reveal">
           <h2>Everything around the match</h2>
-          <p>Six sections in one top dock, the same as in the app.</p>
+          <p>Six sections in one top dock: Home, Live, Career, Squad, Arsenal and Playbook.</p>
         </div>
-        <div class="tabs-rail">
-          <div class="dock-tabs" role="tablist" aria-label="Spectre sections">
-            <button type="button" role="tab" id="tab-home" aria-controls="panel-home" aria-selected="true">Home</button>
-            <button type="button" role="tab" id="tab-live" aria-controls="panel-live" aria-selected="false" tabindex="-1">Live</button>
-            <button type="button" role="tab" id="tab-career" aria-controls="panel-career" aria-selected="false" tabindex="-1">Career</button>
-            <button type="button" role="tab" id="tab-squad" aria-controls="panel-squad" aria-selected="false" tabindex="-1">Squad</button>
-            <button type="button" role="tab" id="tab-arsenal" aria-controls="panel-arsenal" aria-selected="false" tabindex="-1">Arsenal</button>
-            <button type="button" role="tab" id="tab-playbook" aria-controls="panel-playbook" aria-selected="false" tabindex="-1">Playbook</button>
-          </div>
-        </div>
-        <div class="tab-stage">
-          <div class="tab-panel is-current" role="tabpanel" id="panel-home" aria-labelledby="tab-home">
-            <button class="frame glass tab-frame" type="button" data-shot aria-label="Open the Home screenshot full size"><span class="ret" aria-hidden="true"></span><span class="clip"><i class="edge" aria-hidden="true"></i><picture><source type="image/webp" srcset="screenshots/home-1280.webp 1280w, screenshots/home-1920.webp 1920w" sizes="(min-width: 1320px) 920px, (min-width: 769px) 72vw, calc(100vw - 32px)"><img src="screenshots/home.png" width="2560" height="1600" alt="Home: rank and RR, wallet, battle pass, daily store and online friends" loading="lazy" decoding="async" data-title="Home" data-text="Rank and RR, wallet, battle pass, daily offers and online friends at a glance."></picture></span>
-            </button>
-            <div class="tab-copy"><h3>Home</h3><p>Your rank and RR, wallet, battle pass progress, today's store and who's online, on the first screen you see.</p></div>
-          </div>
-          <div class="tab-panel" role="tabpanel" id="panel-live" aria-labelledby="tab-live">
-            <button class="frame glass tab-frame" type="button" data-shot aria-label="Open the Live Match screenshot full size"><span class="ret" aria-hidden="true"></span><span class="clip"><i class="edge" aria-hidden="true"></i><picture><source type="image/webp" srcset="screenshots/live-1280.webp 1280w, screenshots/live-1920.webp 1920w" sizes="(min-width: 1320px) 920px, (min-width: 769px) 72vw, calc(100vw - 32px)"><img src="screenshots/live.png" width="2560" height="1600" alt="Live Match with both teams" loading="lazy" decoding="async" data-title="Live Match" data-text="Both teams with current-act rank, RR and peak rank. Your party is marked with a coloured bar."></picture></span>
-            </button>
-            <div class="tab-copy"><h3>Live</h3><p>Both teams from agent select to the last round: rank, RR, peak, skins and your notes. Lobby and Party sits one tab over.</p></div>
-          </div>
-          <div class="tab-panel" role="tabpanel" id="panel-career" aria-labelledby="tab-career">
-            <button class="frame glass tab-frame" type="button" data-shot aria-label="Open the Matches screenshot full size"><span class="ret" aria-hidden="true"></span><span class="clip"><i class="edge" aria-hidden="true"></i><picture><source type="image/webp" srcset="screenshots/matches-1280.webp 1280w, screenshots/matches-1920.webp 1920w" sizes="(min-width: 1320px) 920px, (min-width: 769px) 72vw, calc(100vw - 32px)"><img src="screenshots/matches.png" width="2560" height="1600" alt="Match history with scores, K/D/A and combat score" loading="lazy" decoding="async" data-title="Matches" data-text="Recent matches with scores, K/D/A, ACS, ADR and headshot %, with the full scoreboard and round breakdown."></picture></span>
-            </button>
-            <div class="tab-copy"><h3>Career</h3><p>Recent matches with score, K/D/A, ACS, ADR and headshot %. Open any game for the full scoreboard and every round, then check your RR history and the leaderboard.</p></div>
-          </div>
-          <div class="tab-panel" role="tabpanel" id="panel-squad" aria-labelledby="tab-squad">
-            <button class="frame glass tab-frame" type="button" data-shot aria-label="Open the Squad screenshot full size"><span class="ret" aria-hidden="true"></span><span class="clip"><i class="edge" aria-hidden="true"></i><picture><source type="image/webp" srcset="screenshots/squad-1280.webp 1280w, screenshots/squad-1920.webp 1920w" sizes="(min-width: 1320px) 920px, (min-width: 769px) 72vw, calc(100vw - 32px)"><img src="screenshots/squad.png" width="2560" height="1600" alt="Friends list with party, chat and invites" loading="lazy" decoding="async" data-title="Squad" data-text="Online friends and what they're playing, direct messages, invites and your party."></picture></span>
-            </button>
-            <div class="tab-copy"><h3>Squad</h3><p>See what friends are playing, chat, invite by Riot ID or party code, and ready up from your desktop without opening the game.</p></div>
-          </div>
-          <div class="tab-panel" role="tabpanel" id="panel-arsenal" aria-labelledby="tab-arsenal">
-            <button class="frame glass tab-frame" type="button" data-shot aria-label="Open the Store screenshot full size"><span class="ret" aria-hidden="true"></span><span class="clip"><i class="edge" aria-hidden="true"></i><picture><source type="image/webp" srcset="screenshots/store-1280.webp 1280w, screenshots/store-1920.webp 1920w" sizes="(min-width: 1320px) 920px, (min-width: 769px) 72vw, calc(100vw - 32px)"><img src="screenshots/store.png" width="2560" height="1600" alt="Store with daily offers, featured bundle and prices" loading="lazy" decoding="async" data-title="Store" data-text="Daily offers, featured bundles and the Night Market with prices and time remaining."></picture></span>
-            </button>
-            <div class="tab-copy"><h3>Arsenal</h3><p>Daily offers, bundles and the Night Market with timers. Equip skins, variants and buddies you own, even from agent select.</p></div>
-          </div>
-          <div class="tab-panel" role="tabpanel" id="panel-playbook" aria-labelledby="tab-playbook">
-            <div class="frame glass tab-frame strat"><span class="ret" aria-hidden="true"></span><span class="clip"><i class="edge" aria-hidden="true"></i><svg class="strat-board" viewBox="0 0 1600 1000" role="img" aria-label="A strat board on a made-up map: three agents with dashed paths to a site">
-                <defs>
-                  <marker id="arrow" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="sb-arrowhead"/></marker>
-                  <pattern id="sb-grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" class="sb-gridline"/></pattern>
-                </defs>
-                <rect width="1600" height="1000" class="sb-ground"/>
-                <rect width="1600" height="1000" fill="url(#sb-grid)"/>
-                <path class="sb-map" d="M260 140H640V260H760V140H1060V300H1340V620H1180V860H820V720H640V860H300V600H180V300H260Z"/>
-                <path class="sb-wall" d="M640 260V420H760V260M820 720V560H1060V720M300 600H460V460M1180 620H1060V460M760 420H900V300"/>
-                <rect class="sb-site" x="900" y="160" width="140" height="120" rx="6"/>
-                <rect class="sb-site" x="340" y="700" width="160" height="120" rx="6"/>
-                <text class="sb-label" x="970" y="232">A</text>
-                <text class="sb-label" x="420" y="772">B</text>
-                <text class="sb-small" x="660" y="520">Mid</text>
-                <path class="sb-path" d="M1260 560C1180 470 1100 430 1040 300" marker-end="url(#arrow)"/>
-                <path class="sb-path" d="M1120 800C980 760 860 600 820 480 800 400 860 330 930 290" marker-end="url(#arrow)"/>
-                <path class="sb-path" d="M1260 560C1060 560 980 380 980 290" marker-end="url(#arrow)"/>
-                <circle class="sb-agent" cx="1260" cy="560" r="20"/>
-                <circle class="sb-agent" cx="1120" cy="800" r="20"/>
-                <circle class="sb-agent b" cx="1300" cy="600" r="20"/>
-                <circle class="sb-util" cx="820" cy="360" r="54"/>
-              </svg></span>
+        <div class="bento">
+          <article class="card glass card-career reveal">
+            <div class="card-copy">
+              <span class="card-icon"><svg class="i"><use href="#i-chart"/></svg></span>
+              <h3>Career: every match, round by round</h3>
+              <p>Scores, K/D/A, ACS, ADR and headshot % for recent games, the full scoreboard, your RR history and the leaderboard.</p>
             </div>
-            <div class="tab-copy"><h3>Playbook</h3><p>Draw rounds on every map with agents, abilities and paths, then save them to run with your team.</p></div>
+            <button class="shot shot-card" type="button" data-shot aria-label="Open the Matches screenshot full size">
+              <img src="screenshots/matches.png" width="1280" height="800" alt="Match history with scores, K/D/A and combat score" loading="lazy" decoding="async" data-title="Matches" data-text="Recent matches with scores, K/D/A, ACS, ADR and headshot %, with the full scoreboard and round breakdown.">
+            </button>
+          </article>
+          <article class="card glass card-squad reveal" style="--d:80ms">
+            <div class="card-copy">
+              <span class="card-icon"><svg class="i"><use href="#i-users"/></svg></span>
+              <h3>Squad: friends and party</h3>
+              <p>See what friends are playing, chat, invite by Riot ID or code, and ready up from your desktop.</p>
+            </div>
+            <button class="shot shot-card" type="button" data-shot aria-label="Open the Squad screenshot full size">
+              <img src="screenshots/squad.png" width="1280" height="800" alt="Friends list with party, chat and invites" loading="lazy" decoding="async" data-title="Squad" data-text="Online friends and what they're playing, direct messages, invites and your party.">
+            </button>
+          </article>
+          <article class="card glass card-arsenal reveal">
+            <div class="card-copy">
+              <span class="card-icon"><svg class="i"><use href="#i-bag"/></svg></span>
+              <h3>Arsenal: store and loadout</h3>
+              <p>Daily offers, bundles and the Night Market with timers. Equip skins, variants and buddies you own, even from agent select.</p>
+            </div>
+            <button class="shot shot-card" type="button" data-shot aria-label="Open the Store screenshot full size">
+              <img src="screenshots/store.png" width="1280" height="800" alt="Store with daily offers, featured bundle and prices" loading="lazy" decoding="async" data-title="Store" data-text="Daily offers, featured bundles and the Night Market with prices and time remaining.">
+            </button>
+          </article>
+          <div class="minis">
+            <article class="card glass card-mini reveal" style="--d:60ms">
+              <span class="card-icon"><svg class="i"><use href="#i-compass"/></svg></span>
+              <h3>Playbook for your strats</h3>
+              <p>Draw rounds on every map with agents and abilities, then save them.</p>
+            </article>
+            <article class="card glass card-mini reveal" style="--d:120ms">
+              <span class="card-icon"><svg class="i"><use href="#i-chat"/></svg></span>
+              <h3>Discord presence</h3>
+              <p>Mode, map, score, rank and party on your profile. One switch, no setup.</p>
+            </article>
+            <article class="card glass card-mini reveal" style="--d:180ms">
+              <span class="card-icon"><svg class="i"><use href="#i-refresh"/></svg></span>
+              <h3>Updates in one click</h3>
+              <p>New versions show up inside the app and install themselves.</p>
+            </article>
           </div>
-        </div>
-        <div class="also">
-          <p>Discord presence: mode, map, score and rank on your profile.</p>
-          <p>Updates install in one click.</p>
         </div>
       </div>
     </section>
 
-    <!-- 4. Themes: a calibration ruler that re-accents this page. -->
     <section class="section" id="themes">
       <div class="wrap">
-        <div class="grid themes-grid">
-          <div class="themes-copy">
-            <h2>Twelve themes. This page follows the one you pick.</h2>
-            <p>From the dark Midnight to the light Pearl. Spectre remembers your pick in Settings, and this page remembers it here.</p>
+        <div class="split split-rev">
+          <div class="split-copy reveal">
+            <span class="kicker"><svg class="i"><use href="#i-drop"/></svg>Themes</span>
+            <h2>Twelve themes for your setup</h2>
+            <p>From Midnight to the light Pearl theme. Pick one here and this page switches with it.</p>
+            <div class="swatches" role="group" aria-label="Theme">
+              <button type="button" data-theme="midnight" style="--sw:#ff4655;--gl:#ff8c78;--i:0" aria-label="Midnight"></button>
+              <button type="button" data-theme="onyx" style="--sw:#ebebf0;--gl:#a0a0aa;--i:1" aria-label="Onyx"></button>
+              <button type="button" data-theme="ember" style="--sw:#ff8030;--gl:#ffbe5a;--i:2" aria-label="Ember"></button>
+              <button type="button" data-theme="glacier" style="--sw:#56c8ff;--gl:#a0e6ff;--i:3" aria-label="Glacier"></button>
+              <button type="button" data-theme="verdant" style="--sw:#3edc8c;--gl:#a0f0be;--i:4" aria-label="Verdant"></button>
+              <button type="button" data-theme="amethyst" style="--sw:#b078ff;--gl:#e6a0ff;--i:5" aria-label="Amethyst"></button>
+              <button type="button" data-theme="gilded" style="--sw:#e8be5a;--gl:#ffe196;--i:6" aria-label="Gilded"></button>
+              <button type="button" data-theme="aurora" style="--sw:#2dd4bf;--gl:#a78bfa;--i:7" aria-label="Aurora"></button>
+              <button type="button" data-theme="sakura" style="--sw:#ff79b0;--gl:#ffbed7;--i:8" aria-label="Sakura"></button>
+              <button type="button" data-theme="abyss" style="--sw:#5c84ff;--gl:#78dcff;--i:9" aria-label="Abyss"></button>
+              <button type="button" data-theme="sunset" style="--sw:#ff5e8c;--gl:#ffb05c;--i:10" aria-label="Sunset"></button>
+              <button type="button" data-theme="pearl" style="--sw:#635bff;--gl:#d65cff;--i:11" aria-label="Pearl (light)"></button>
+            </div>
+            <p class="swatch-name" aria-live="polite"><span data-bind="theme-name">Midnight</span> theme</p>
           </div>
-          <button class="frame glass themes-frame" type="button" data-shot aria-label="Open the themes screenshot full size">
-            <span class="ret" aria-hidden="true"></span>
-            <picture><source type="image/webp" srcset="screenshots/themes-1280.webp 1280w, screenshots/themes-1920.webp 1920w" sizes="(min-width: 1320px) 610px, (min-width: 769px) 50vw, calc(100vw - 32px)"><img src="screenshots/themes.png" width="2560" height="1600" alt="Spectre's theme picker in Settings" loading="lazy" decoding="async" data-title="Themes" data-text="Twelve themes, from the dark Midnight to the light Pearl, picked in Settings."></picture>
+          <button class="shot shot-big shot-glow glass reveal" type="button" data-shot aria-label="Open the themes screenshot full size" style="--d:120ms">
+            <img src="screenshots/themes.png" width="1280" height="800" alt="Spectre's theme picker in Settings" loading="lazy" decoding="async" data-title="Themes" data-text="Twelve themes, from the dark Midnight to the light Pearl, picked in Settings.">
           </button>
         </div>
-        <div class="calib" style="--i:0">
-          <div class="swatches calib-ruler" role="group" aria-label="Theme">
-            <button type="button" data-theme="midnight" style="--sw:#ff4655" aria-label="Midnight"></button>
-            <button type="button" data-theme="onyx" style="--sw:#ebebf0" aria-label="Onyx"></button>
-            <button type="button" data-theme="ember" style="--sw:#ff8030" aria-label="Ember"></button>
-            <button type="button" data-theme="glacier" style="--sw:#56c8ff" aria-label="Glacier"></button>
-            <button type="button" data-theme="verdant" style="--sw:#3edc8c" aria-label="Verdant"></button>
-            <button type="button" data-theme="amethyst" style="--sw:#b078ff" aria-label="Amethyst"></button>
-            <button type="button" data-theme="gilded" style="--sw:#e8be5a" aria-label="Gilded"></button>
-            <button type="button" data-theme="aurora" style="--sw:#2dd4bf" aria-label="Aurora"></button>
-            <button type="button" data-theme="sakura" style="--sw:#ff79b0" aria-label="Sakura"></button>
-            <button type="button" data-theme="abyss" style="--sw:#5c84ff" aria-label="Abyss"></button>
-            <button type="button" data-theme="sunset" style="--sw:#ff5e8c" aria-label="Sunset"></button>
-            <button type="button" data-theme="pearl" style="--sw:#635bff" aria-label="Pearl, light"></button>
-          </div>
-          <div class="calib-scale" aria-hidden="true"><span class="calib-needle"></span></div>
-          <p class="calib-name" aria-live="polite"><span data-bind="theme-name">Midnight</span> theme</p>
-        </div>
       </div>
     </section>
 
-    <!-- 5. Safety: a plain spec sheet. -->
     <section class="section" id="safety">
       <div class="wrap">
-        <div class="head">
-          <h2>Not a cheat. No account. No tracking.</h2>
-          <p>Spectre is a regular desktop app that talks to the Riot Client on your PC. It only changes something when you ask, like equipping a skin.</p>
+        <div class="section-head reveal">
+          <h2>Not a cheat, no accounts, no tracking</h2>
+          <p>Spectre is a regular desktop app that talks to the Riot Client on your PC.</p>
         </div>
-        <dl class="spec-sheet">
-          <div class="spec-row"><dt>Game memory and files</dt><dd>Never read or changed</dd></div>
-          <div class="spec-row"><dt>Vanguard</dt><dd>No contact</dd></div>
-          <div class="spec-row"><dt>How it talks to Riot</dt><dd>Your own Riot Client session, the same way the game does</dd></div>
-          <div class="spec-row"><dt>Riot password</dt><dd>Never asked for</dd></div>
-          <div class="spec-row"><dt>Servers, analytics, telemetry</dt><dd>None</dd></div>
-          <div class="spec-row"><dt>Streamer-mode players</dt><dd>Never named</dd></div>
-          <div class="spec-row"><dt>Where settings live</dt><dd><code>%APPDATA%\Spectre</code></dd></div>
-        </dl>
-        <p class="more"><a class="link" href="https://github.com/booomxd/spectre/blob/main/docs/PRIVACY.md">Read the privacy details &#8250;</a></p>
+        <div class="duo">
+          <article class="card glass reveal">
+            <span class="card-icon"><svg class="i"><use href="#i-shield"/></svg></span>
+            <h3>Never touches the game</h3>
+            <ul class="checks">
+              <li><svg class="i"><use href="#i-check"/></svg>No reading or changing game memory or files, and nothing injected</li>
+              <li><svg class="i"><use href="#i-check"/></svg>No contact with Vanguard</li>
+              <li><svg class="i"><use href="#i-check"/></svg>Talks to Riot the way the VALORANT client does, with your own session</li>
+              <li><svg class="i"><use href="#i-check"/></svg>Only changes things when you ask, like equipping a skin</li>
+            </ul>
+          </article>
+          <article class="card glass reveal" style="--d:100ms">
+            <span class="card-icon"><svg class="i"><use href="#i-lock"/></svg></span>
+            <h3>Private by design</h3>
+            <ul class="checks">
+              <li><svg class="i"><use href="#i-check"/></svg>No Riot password: it uses the Riot Client you're already signed in to</li>
+              <li><svg class="i"><use href="#i-check"/></svg>No servers of its own, no analytics, no telemetry</li>
+              <li><svg class="i"><use href="#i-check"/></svg>Streamer-mode players in your match are never named</li>
+              <li><svg class="i"><use href="#i-check"/></svg><span>Settings and notes stay on your PC in <code>%APPDATA%\Spectre</code></span></li>
+            </ul>
+          </article>
+        </div>
+        <p class="note reveal"><a class="link" href="https://github.com/booomxd/spectre/blob/main/docs/PRIVACY.md">Read the privacy details</a></p>
       </div>
     </section>
 
-    <!-- 6. Download: the release readout, what's new, SmartScreen and questions. -->
     <section class="section" id="download">
       <div class="wrap">
-        <div class="head">
+        <div class="section-head reveal">
           <h2>Download Spectre</h2>
-          <p>Free for Windows 10 and 11, 64-bit. You need VALORANT installed and the Riot Client open and signed in.</p>
+          <p>Free for Windows 10 and 11 (64-bit). You need VALORANT installed and the Riot Client open and signed in.</p>
         </div>
-        <div class="grid dl-grid">
-          <div class="release-readout glass grat">
-            <p class="big-wrap"><span class="ret" aria-hidden="true"></span><span class="big" data-bind="tag" data-roll-late>Latest</span></p>
-            <p class="rel-date">Released <span data-bind="date">on GitHub</span></p>
-            <dl class="meta-rows" data-bind="installer-meta" hidden></dl>
-            <dl class="meta-rows meta-static">
-              <dt>Works on</dt><dd>Windows 10 and 11, 64-bit</dd>
-              <dt>Installs</dt><dd>For your user only, and updates itself</dd>
-            </dl>
-            <a class="btn btn-primary btn-lg" data-bind="installer-href" href="https://github.com/booomxd/spectre/releases/latest"><svg class="i" aria-hidden="true"><use href="#i-windows"/></svg>Download the installer</a>
-          </div>
-
-          <div id="whats-new" class="notes">
-            <h3>What's new in <span data-bind="tag">the latest release</span></h3>
-            <div class="notes-body" data-bind="notes">
-              <p>The release notes for every version are on <a class="link" href="https://github.com/booomxd/spectre/releases/latest">GitHub</a>.</p>
+        <div class="dl">
+          <article class="card glass dl-card reveal">
+            <div class="dl-top">
+              <span class="card-icon"><svg class="i"><use href="#i-package"/></svg></span>
+              <span class="badge">Recommended</span>
             </div>
-            <p class="notes-links">
+            <h3>Installer</h3>
+            <p>Installs for your user only, adds a desktop shortcut and updates itself from inside the app.</p>
+            <dl class="file" data-bind="installer-meta" hidden></dl>
+            <a class="btn btn-primary btn-lg" data-bind="installer-href" href="https://github.com/booomxd/spectre/releases/latest"><svg class="i"><use href="#i-download"/></svg>Download the installer</a>
+          </article>
+
+          <div id="whats-new" class="card glass notes reveal" style="--d:100ms">
+            <div class="notes-head">
+              <h3>What's new in <span data-bind="tag">the latest release</span></h3>
+              <span class="notes-date" data-bind="date"></span>
+            </div>
+            <div class="notes-body" data-bind="notes">
+              <p>Release notes are on <a class="link" href="https://github.com/booomxd/spectre/releases/latest">GitHub</a>.</p>
+            </div>
+            <div class="notes-links">
               <a class="link" href="https://github.com/booomxd/spectre/blob/main/CHANGELOG.md">Full changelog</a>
               <a class="link" href="https://github.com/booomxd/spectre/releases">All releases</a>
-            </p>
+            </div>
           </div>
         </div>
 
-        <div class="smartscreen glass">
-          <p><b>Windows may warn on first launch because Spectre isn't code-signed yet.</b> Click More info, then Run anyway.</p>
-          <div class="ss-mock" aria-hidden="true">
-            <span class="ss-btn">More info</span>
-            <svg class="ss-arrow" viewBox="0 0 64 12"><path d="M0 6H58M52 1l6 5-6 5"/></svg>
-            <span class="ss-btn ss-run">Run anyway</span>
-          </div>
+        <div class="tip glass reveal">
+          <span class="card-icon"><svg class="i"><use href="#i-shield"/></svg></span>
+          <p><b>Windows SmartScreen warning?</b> Spectre isn't code-signed yet, so Windows may warn on first launch. Click <b>More info</b>, then <b>Run anyway</b>.</p>
         </div>
+      </div>
+    </section>
 
-        <div class="faq" id="faq">
-          <h3>Questions</h3>
-          <details>
-            <summary>Can I get banned for using Spectre?<i class="pm" aria-hidden="true"></i></summary>
+    <section class="section" id="faq">
+      <div class="wrap faq-wrap">
+        <div class="section-head reveal">
+          <h2>Questions and answers</h2>
+        </div>
+        <div class="faq">
+          <details class="glass reveal">
+            <summary>Can I get banned for using Spectre?<svg class="i"><use href="#i-chevron"/></svg></summary>
             <div class="faq-a"><p>Spectre isn't a cheat. It never reads or changes the game, doesn't touch Vanguard, and talks to Riot the same way the VALORANT client does. It's still an unofficial, fan-made tool, so use it at your own risk.</p></div>
           </details>
-          <details>
-            <summary>Spectre says it's waiting for the Riot Client<i class="pm" aria-hidden="true"></i></summary>
+          <details class="glass reveal">
+            <summary>Spectre says it's waiting for the Riot Client<svg class="i"><use href="#i-chevron"/></svg></summary>
             <div class="faq-a"><p>Open the Riot Client and sign in. Spectre connects on its own within a few seconds.</p></div>
           </details>
-          <details>
-            <summary>Live Match is empty<i class="pm" aria-hidden="true"></i></summary>
+          <details class="glass reveal">
+            <summary>Live Match is empty<svg class="i"><use href="#i-chevron"/></svg></summary>
             <div class="faq-a"><p>It fills in once agent select starts. Before that, the Squad section shows your party.</p></div>
           </details>
-          <details>
-            <summary>How do I update?<i class="pm" aria-hidden="true"></i></summary>
-            <div class="faq-a"><p>Spectre checks for new versions on launch and offers a one-click update. You can also check any time from Settings, About, Check for updates.</p></div>
+          <details class="glass reveal">
+            <summary>How do I update?<svg class="i"><use href="#i-chevron"/></svg></summary>
+            <div class="faq-a"><p>Spectre checks for new versions on launch and offers a one-click update. You can also check any time from <b>Settings, About, Check for updates</b>.</p></div>
           </details>
-          <details>
-            <summary>How do I uninstall?<i class="pm" aria-hidden="true"></i></summary>
+          <details class="glass reveal">
+            <summary>How do I uninstall?<svg class="i"><use href="#i-chevron"/></svg></summary>
             <div class="faq-a"><p>Open Windows Settings, then Apps, Installed apps, Spectre. To remove saved data too, delete <code>%APPDATA%\Spectre</code>.</p></div>
           </details>
         </div>
@@ -387,28 +360,28 @@
   <footer class="footer">
     <div class="wrap">
       <div class="footer-top">
-        <a class="brand" href="#top"><img src="site/logo.svg" alt="" width="26" height="26" loading="lazy">Spectre</a>
+        <a class="brand" href="#top"><img src="site/logo.svg" alt="" width="26" height="26">Spectre</a>
         <nav aria-label="Links">
           <a class="link" href="https://github.com/booomxd/spectre">GitHub</a>
           <a class="link" href="https://github.com/booomxd/spectre/releases">Releases</a>
+          <a class="link" href="https://github.com/booomxd/spectre/blob/main/CHANGELOG.md">Changelog</a>
+          <a class="link" href="https://github.com/booomxd/spectre/blob/main/docs/FEATURES.md">Every feature</a>
           <a class="link" href="https://github.com/booomxd/spectre/blob/main/docs/PRIVACY.md">Privacy</a>
-          <a class="link" href="https://github.com/booomxd/spectre/issues">Report an issue</a>
         </nav>
       </div>
-      <p class="legal">Spectre was created under Riot Games' "Legal Jibber Jabber" policy using assets owned by Riot Games. Riot Games does not endorse or sponsor this project. VALORANT and Riot Games are trademarks or registered trademarks of Riot Games, Inc.</p>
-      <p class="legal">Screenshots and the demo match use made-up players.</p>
+      <p class="legal">Spectre was created under Riot Games' "Legal Jibber Jabber" policy using assets owned by Riot Games. Riot Games does not endorse or sponsor this project. VALORANT and Riot Games are trademarks or registered trademarks of Riot Games, Inc. Screenshots use made-up players and stats.</p>
       <p class="legal">Made by <a class="link" href="https://github.com/booomxd">booomxd</a>. Inter typeface under the SIL Open Font License.</p>
     </div>
   </footer>
 
   <dialog id="lightbox" aria-label="Screenshot">
-    <button class="btn btn-icon lb-close" type="button" aria-label="Close"><svg class="i" aria-hidden="true"><use href="#i-x"/></svg></button>
-    <button class="btn btn-icon lb-nav lb-prev" type="button" data-lb="-1" aria-label="Previous screenshot"><svg class="i" aria-hidden="true"><use href="#i-left"/></svg></button>
+    <button class="btn btn-icon lb-close" type="button" aria-label="Close"><svg class="i"><use href="#i-x"/></svg></button>
+    <button class="btn btn-icon lb-nav lb-prev" type="button" data-lb="-1" aria-label="Previous screenshot"><svg class="i"><use href="#i-left"/></svg></button>
     <figure>
-      <img id="lb-img" alt="" width="2560" height="1600">
+      <img id="lb-img" alt="" width="1280" height="800">
       <figcaption id="lb-cap"></figcaption>
     </figure>
-    <button class="btn btn-icon lb-nav lb-next" type="button" data-lb="1" aria-label="Next screenshot"><svg class="i" aria-hidden="true"><use href="#i-right"/></svg></button>
+    <button class="btn btn-icon lb-nav lb-next" type="button" data-lb="1" aria-label="Next screenshot"><svg class="i"><use href="#i-right"/></svg></button>
   </dialog>
 </body>
 </html>
