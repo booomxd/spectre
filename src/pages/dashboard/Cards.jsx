@@ -1,7 +1,6 @@
-import { useEffect, useState } from 'react'
 import { FiUsers, FiShoppingBag, FiClock, FiArrowUpRight, FiActivity } from 'react-icons/fi'
-import { Card, Heading, Badge, Skeleton, Empty, cx } from '../../ui'
-import { useContent, useTiers } from '../../lib/content'
+import { Card, Heading, Badge, Skeleton, Empty, cx, useNow } from '../../ui'
+import { contentPath, useContent, useTiers } from '../../lib/content'
 import { navigate } from '../../nav'
 import { CUR, rewardItem, fmt, fmtDuration, useCountdown } from './catalog'
 import { Price, Countdown, ItemArt } from './bits'
@@ -40,7 +39,7 @@ export function formOf(rows) {
 
 // Hero: name over the player card art, quick stats in a recessed strip.
 export function Hero({ riot, identity, account, rr }) {
-  const card = useContent(identity ? `playercards/${identity.cardId}` : 'playercards/00000000-0000-0000-0000-000000000000')
+  const card = useContent(contentPath('playercards', identity?.cardId))
   const f = formOf(rr)
   const stats = [
     ['Account level', account ? account.level : null, account ? `${fmt(account.xp)} XP` : ''],
@@ -82,8 +81,7 @@ export function Hero({ riot, identity, account, rr }) {
 
 // Local time pill (ticks every second).
 function LiveClock({ className }) {
-  const [now, setNow] = useState(new Date())
-  useEffect(() => { const i = setInterval(() => setNow(new Date()), 1000); return () => clearInterval(i) }, [])
+  const now = new Date(useNow())
   return (
     <div className={cx('glass-inset rounded-full pl-3 pr-3.5 h-8 inline-flex items-center gap-2 text-[12px] text-muted', className)} title='Local time'>
       <FiClock /><span className='font-display font-bold text-text tabular-nums'>{now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
@@ -111,7 +109,7 @@ export function RankTile({ rank }) {
             {t ? <img src={t.largeIcon} alt='' className='w-[96px] h-[96px] object-contain drop-shadow-[0_10px_24px_rgb(0_0_0/0.35)] transition-transform duration-500 ease-out group-hover:scale-105 group-hover:-rotate-3' />
               : <Skeleton className='w-[96px] h-[96px] rounded-2xl' />}
             <div className='min-w-0'>
-              <div className='display text-[30px] truncate' style={color ? { color } : undefined}>{rank.tier ? t?.tierName : 'Unranked'}</div>
+              <div className='tier-text display text-[30px] truncate' style={color ? { '--tier': color } : undefined}>{rank.tier ? t?.tierName : 'Unranked'}</div>
               {rank.tier > 0 && <div className='mt-2 text-[13px] font-semibold text-text tabular-nums'>{rank.rr} RR <span className={cx('font-medium', rank.lastChange >= 0 ? 'text-good' : 'text-bad')}>{signed(rank.lastChange)} last game</span></div>}
             </div>
           </div>
@@ -309,8 +307,7 @@ export function FriendsCard({ friends }) {
 }
 
 export function ClockCard({ store }) {
-  const [now, setNow] = useState(new Date())
-  useEffect(() => { const i = setInterval(() => setNow(new Date()), 1000); return () => clearInterval(i) }, [])
+  const now = new Date(useNow())
   const left = useCountdown(store?.dailySecondsLeft)
   return (
     <Card className='h-full p-6 flex flex-col'>

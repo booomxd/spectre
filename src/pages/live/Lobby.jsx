@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { FiCheck, FiKey, FiLock, FiPlay, FiSquare, FiUnlock, FiUserPlus, FiUsers } from 'react-icons/fi'
 import { FaCrown } from 'react-icons/fa'
-import { Badge, Button, Card, Empty, FadeIn, Input, Item, SPRING, Skeleton, Stagger, m, toast, withToast } from '../../ui'
+import { Badge, Button, Card, Empty, FadeIn, Input, Item, Pill, Skeleton, Stagger, toast, withToast } from '../../ui'
 import { invoke, useInvoke } from '../../lib/ipc'
 import { ModeIcon, PlayerCard, RankIcon } from './parts'
 import { queueName } from './util'
@@ -140,7 +140,7 @@ export default function Lobby({ active, matchState }) {
                 onClick={() => act('access', () => invoke('social:partyAccess', isOpen))}
                 className={cx('relative h-9 rounded-full text-[12.5px] font-semibold flex items-center justify-center gap-2 transition-colors disabled:cursor-not-allowed',
                   p.open === isOpen ? 'text-text' : 'text-muted hover:text-text disabled:opacity-60')}>
-                {p.open === isOpen && <m.span layoutId='lobby-access' className='accent-soft absolute inset-0 rounded-full' transition={SPRING} />}
+                {p.open === isOpen && <Pill layoutId='lobby-access' />}
                 <Icon className='relative' /> <span className='relative'>{text} party</span>
               </button>
             ))}

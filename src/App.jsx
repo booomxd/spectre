@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { FiDownload, FiMinus, FiSearch, FiSquare, FiX, FiDroplet, FiFeather } from 'react-icons/fi'
 import { EXPERIMENTAL_IDS, PAGES, SECTIONS, UTILITY, navigate, sectionOf } from './nav'
 import { invoke, isOverlayWindow, openExternal, useEvent } from './lib/ipc'
 import { RiotProvider, useRiot } from './lib/riot'
 import { THEMES, applySavedTheme, getReduceMotion, setReduceMotion, setTheme } from './lib/theme'
 import logo from './assets/spectre-logo.svg'
-import { AnimatePresence, Button, CommandPalette, Modal, MotionProvider, PageContext, PageTransition, SPRING, SegmentedTabs, ToastHost, cx, m, toast, useReducedMotion } from './ui'
+import { AnimatePresence, Button, CommandPalette, Modal, MotionProvider, PageActiveContext, PageContext, PageTransition, Pill, SegmentedTabs, ToastHost, cx, m, toast } from './ui'
 import { SETTINGS_TABS } from './pages/Settings'
 import Overlay from './pages/Overlay'
 
@@ -61,15 +61,14 @@ function WindowControls() {
 
 // Floating glass dock: the six sections, with a spring pill under the active one.
 function Dock({ section, onSection }) {
-  const reduce = useReducedMotion()
   return (
     <nav className='glass-strong flex items-center gap-0.5 p-1 rounded-full'>
       {SECTIONS.map(s => {
         const on = section === s.id
         return (
-          <button key={s.id} onClick={() => onSection(s.id)} title={s.label}
+          <button key={s.id} onClick={() => onSection(s.id)} title={s.label} aria-current={on ? 'page' : undefined}
             className={cx('relative h-9 px-3.5 rounded-full flex items-center gap-2 text-[13px] font-semibold transition-colors duration-200', on ? 'text-text' : 'text-muted hover:text-text')}>
-            {on && <m.span layoutId='dock-pill' className='accent-soft absolute inset-0 rounded-full' transition={reduce ? { duration: 0 } : SPRING} />}
+            {on && <Pill layoutId='dock-pill' />}
             <s.icon className={cx('relative shrink-0', on && 'text-accent')} size={15} />
             <span className='relative max-[1200px]:hidden'>{s.label}</span>
           </button>
@@ -97,7 +96,6 @@ function Brand() {
 
 // Right side of the second row: palette trigger + utility pages.
 function Utilities({ page, onOpen, onPalette }) {
-  const reduce = useReducedMotion()
   return (
     <div className='flex items-center gap-2'>
       <button onClick={onPalette} title='Search (Ctrl+K)'
@@ -108,9 +106,9 @@ function Utilities({ page, onOpen, onPalette }) {
         {UTILITY.map(u => {
           const on = page === u.id
           return (
-            <button key={u.id} onClick={() => onOpen(u.id)} title={u.label} aria-label={u.label}
+            <button key={u.id} onClick={() => onOpen(u.id)} title={u.label} aria-label={u.label} aria-current={on ? 'page' : undefined}
               className={cx('relative w-8 h-7 rounded-full flex items-center justify-center transition-colors', on ? 'text-accent' : 'text-muted hover:text-text')}>
-              {on && <m.span layoutId='util-pill' className='accent-soft absolute inset-0 rounded-full' transition={reduce ? { duration: 0 } : SPRING} />}
+              {on && <Pill layoutId='util-pill' />}
               <u.icon className='relative' size={14} />
             </button>
           )
@@ -125,6 +123,13 @@ const CONTEXTS = Object.fromEntries(Object.values(PAGES).map(p => {
   const s = p.section && SECTIONS.find(x => x.id === p.section)
   return [p.id, { section: s ? s.label : 'Spectre', embedded: false }]
 }))
+
+// One kept-alive page. Memoized so shell-only state (the palette, the update prompt) does not re-render every visited
+// page; NO_PARAMS keeps the params prop stable for pages that were never given any.
+const NO_PARAMS = Object.freeze({})
+const PageSlot = memo(function PageSlot({ page: P, params, active }) {
+  return <P params={params} active={active} />
+})
 
 // Experimental tool ids open Settings > Experimental focused on that tool; unknown ids fall back to Home.
 function resolve(page, params) {
@@ -215,9 +220,11 @@ function Shell() {
       <main className='flex-1 relative min-h-0 z-10'>
         {Object.values(PAGES).map(p => visited.has(p.id) && (
           <PageContext.Provider key={p.id} value={CONTEXTS[p.id]}>
-            <PageTransition active={page === p.id} className='absolute inset-0'>
-              <p.component params={params[p.id] || {}} active={page === p.id} />
-            </PageTransition>
+            <PageActiveContext.Provider value={page === p.id}>
+              <PageTransition active={page === p.id} className='absolute inset-0'>
+                <PageSlot page={p.component} params={params[p.id] || NO_PARAMS} active={page === p.id} />
+              </PageTransition>
+            </PageActiveContext.Provider>
           </PageContext.Provider>
         ))}
       </main>

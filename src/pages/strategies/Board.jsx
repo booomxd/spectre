@@ -67,6 +67,7 @@ const Board = forwardRef(function Board({ items, map, side, active, locked, onLi
   const [draft, setDraft] = useState(null)
   const [edit, setEdit] = useState(null) // text editor {id, bx, by, value}
   const [panning, setPanning] = useState(false)
+  const [narrow, setNarrow] = useState(false) // board narrower than the full style pill + hint: compact chrome
   const st = useRef({ touched: false, space: false, pan: null, drag: null, erased: null, drawing: false, draft: null })
   const P = useRef(); P.current = { items, side, view, tool, color, width, snap, locked }
 
@@ -81,7 +82,11 @@ const Board = forwardRef(function Board({ items, map, side, active, locked, onLi
 
   useLayoutEffect(() => { fit() }, [map?.uuid, fit])
   useEffect(() => {
-    const ro = new ResizeObserver(() => { if (!st.current.touched) fit() })
+    const ro = new ResizeObserver(() => {
+      const w = wrap.current?.clientWidth
+      if (w) setNarrow(w < 640)
+      if (!st.current.touched) fit()
+    })
     ro.observe(wrap.current)
     return () => ro.disconnect()
   }, [fit])
@@ -315,15 +320,15 @@ const Board = forwardRef(function Board({ items, map, side, active, locked, onLi
       </div>
 
       {/* style pill */}
-      <div className='glass-strong absolute left-1/2 -translate-x-1/2 top-4 z-10 flex items-center gap-3 pl-4 pr-1.5 h-11 rounded-full anim-fade'>
-        <div className='flex items-center gap-1.5'>
+      <div className={`glass-strong absolute top-4 z-10 flex items-center h-11 rounded-full anim-fade ${narrow ? 'left-[68px] gap-2 pl-3 pr-1' : 'left-1/2 -translate-x-1/2 gap-3 pl-4 pr-1.5'}`}>
+        <div className={`flex items-center ${narrow ? 'gap-1' : 'gap-1.5'}`}>
           {COLORS.map(c => (
             <button key={c} onClick={() => setColor(c)} title={c}
               className={`h-5 w-5 rounded-full transition-transform duration-150 hover:scale-110 ${color === c ? 'ring-2 ring-offset-2 ring-offset-panel ring-text/80 scale-110' : 'shadow-[inset_0_0_0_1px_rgb(0_0_0/0.15)]'}`} style={{ background: c }} />
           ))}
         </div>
         <span className='w-px h-5 bg-line/60' />
-        <div className='flex items-center gap-1'>
+        <div className='flex items-center gap-0.5'>
           {WIDTHS.map(w => (
             <button key={w} onClick={() => setWidth(w)} title={`Stroke ${w}`}
               className={`h-8 w-8 rounded-full grid place-items-center transition-colors ${width === w ? 'accent-soft' : 'hover:bg-surface-2'}`}>
@@ -332,8 +337,8 @@ const Board = forwardRef(function Board({ items, map, side, active, locked, onLi
           ))}
         </div>
         <span className='w-px h-5 bg-line/60' />
-        <button onClick={() => setSnap(s => !s)} title='Snap tokens to grid'
-          className={`h-8 px-3 rounded-full flex items-center gap-1.5 text-[12px] font-semibold transition-colors ${snap ? 'accent-soft text-accent' : 'text-muted hover:text-text hover:bg-surface-2'}`}><FiGrid />Snap</button>
+        <button onClick={() => setSnap(s => !s)} title='Snap tokens to grid' aria-pressed={snap} aria-label='Snap tokens to grid'
+          className={`h-8 rounded-full flex items-center gap-1.5 text-[12px] font-semibold transition-colors ${narrow ? 'w-8 justify-center' : 'px-3'} ${snap ? 'accent-soft text-accent' : 'text-muted hover:text-text hover:bg-surface-2'}`}><FiGrid />{!narrow && 'Snap'}</button>
       </div>
 
       {/* zoom */}
@@ -343,7 +348,7 @@ const Board = forwardRef(function Board({ items, map, side, active, locked, onLi
         <button className='h-8 w-8 grid place-items-center rounded-full text-muted hover:text-text hover:bg-surface-2 transition-colors' onClick={() => zoomBy(1.25)} title='Zoom in'><FiPlus /></button>
         <button className='h-8 w-8 grid place-items-center rounded-full text-muted hover:text-text hover:bg-surface-2 transition-colors' onClick={fit} title='Fit to view'><FiMaximize /></button>
       </div>
-      <div className='absolute left-4 bottom-4 z-10 text-[11px] text-muted/80 pointer-events-none'>Wheel zoom · Space or middle-drag to pan · Shift snaps lines</div>
+      {!narrow && <div className='absolute left-4 bottom-4 z-10 text-[11px] text-muted/80 pointer-events-none'>Wheel zoom · Space or middle-drag to pan · Shift snaps lines</div>}
     </div>
   )
 })

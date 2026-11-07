@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { FiCornerDownLeft, FiSearch } from 'react-icons/fi'
-import { AnimatePresence, SPRING, m } from './motion'
+import { AnimatePresence, Pill, SPRING, m } from './motion'
 
 const cx = (...c) => c.filter(Boolean).join(' ')
 
@@ -39,7 +39,8 @@ function Panel({ items, onClose }) {
     if (e.key === 'ArrowDown') { e.preventDefault(); setSel(s => Math.min(flat.length - 1, s + 1)) }
     else if (e.key === 'ArrowUp') { e.preventDefault(); setSel(s => Math.max(0, s - 1)) }
     else if (e.key === 'Enter') { e.preventDefault(); flat[sel] && run(flat[sel]) }
-    else if (e.key === 'Escape') { e.preventDefault(); onClose() }
+    // stopPropagation: Escape closes only the palette, not a modal underneath it.
+    else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); onClose() }
   }
   let n = -1
   return (
@@ -64,7 +65,7 @@ function Panel({ items, onClose }) {
               return (
                 <button key={i.id} data-sel={on} onMouseMove={() => sel !== idx && setSel(idx)} onClick={() => run(i)}
                   className={cx('relative w-full h-11 px-3 rounded-xl flex items-center gap-3 text-left text-[13.5px] transition-colors', on ? 'text-text' : 'text-text/80')}>
-                  {on && <m.span layoutId='palette-sel' className='accent-soft absolute inset-0 rounded-xl' transition={SPRING} />}
+                  {on && <Pill layoutId='palette-sel' className='accent-soft absolute inset-0 rounded-xl' />}
                   <span className={cx('relative w-7 h-7 rounded-lg flex items-center justify-center shrink-0 glass-inset', on ? 'text-accent' : 'text-muted')}>{Icon && <Icon size={14} />}</span>
                   <span className='relative flex-1 truncate font-medium'>{i.label}</span>
                   {i.hint && <span className='relative text-[11.5px] text-muted truncate'>{i.hint}</span>}

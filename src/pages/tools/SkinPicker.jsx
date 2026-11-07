@@ -91,7 +91,7 @@ export default function SkinPicker({ weapon, owned, value, onChange, maxHeight =
                   </div>
                   <div className='mt-1.5 flex items-center gap-1.5'>
                     {tier && <img src={tier.displayIcon} className='w-3.5 h-3.5' title={tier.displayName} />}
-                    <span className='text-[11px] font-semibold truncate' style={{ color: tierColor(tier) }}>{s.displayName}</span>
+                    <span className='tier-text text-[11px] font-semibold truncate' style={tierColor(tier) ? { '--tier': tierColor(tier) } : undefined}>{s.displayName}</span>
                   </div>
                   {isStandard(weapon, s) && <Badge className='mt-1'>Standard</Badge>}
                 </button>

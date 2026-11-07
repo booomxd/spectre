@@ -222,13 +222,14 @@ function FriendsBody({ active }) {
 
   const canInvite = !!party.data
   const invite = f => withToast(invoke('social:invite', f.gameName, f.tagLine), `Invited ${f.gameName}`)
-  const online = groups.valorant.length + groups.elsewhere.length
+  const online = groups.valorant.length + groups.elsewhere.length // shown after the search filter
+  const onlineTotal = (friends.data || []).filter(f => f.online).length // counters ignore the search
   const pending = requests.data?.incoming?.length || 0
   const chatFriend = chat && byPuuid[chat.puuid]
   const shared = { canInvite, onInvite: invite, onChat: chatWith, chatPuuid: chat?.puuid }
 
   const list = (
-    <Pane title='Friends' right={friends.data && <span className='text-[11px] font-semibold text-muted tabular-nums'><span className='text-good'>{online}</span> / {friends.data.length}</span>}
+    <Pane title='Friends' right={friends.data && <span className='text-[11px] font-semibold text-muted tabular-nums'><span className='text-good'>{onlineTotal}</span> / {friends.data.length}</span>}
       header={<SearchField value={q} onChange={setQ} placeholder='Search friends or notes' />}>
       {friends.loading && !friends.data ? (
         <div className='flex flex-col gap-1.5 p-1'>{Array.from({ length: 8 }, (_, i) => <Skeleton key={i} className='h-[54px] rounded-2xl' />)}</div>
@@ -245,7 +246,7 @@ function FriendsBody({ active }) {
   )
 
   return (
-    <Page title='Friends' subtitle={friends.data ? `${online} online of ${friends.data.length}${pending ? ` · ${pending} new ${pending === 1 ? 'request' : 'requests'}` : ''}` : 'Your Riot friends and party'}
+    <Page title='Friends' subtitle={friends.data ? `${onlineTotal} online of ${friends.data.length}${pending ? ` · ${pending} new ${pending === 1 ? 'request' : 'requests'}` : ''}` : 'Your Riot friends and party'}
       bodyClassName={SPLIT_BODY}>
       <SplitView list={list}>
         {chat ? (

@@ -3,6 +3,7 @@ import { FiLock, FiCheck, FiRefreshCw } from 'react-icons/fi'
 import { Page, Card, Heading, Button, Badge, Skeleton, Empty, ErrorState, RequireRiot, Swap, Stagger, Item, cx } from '../ui'
 import { useInvoke } from '../lib/ipc'
 import { useTiers } from '../lib/content'
+import { prefersReducedMotion } from '../lib/theme'
 import { useCatalog, pickPass, rewardItem, fmt } from './dashboard/catalog'
 import { formOf } from './dashboard/Cards'
 import RrChart from './dashboard/RrChart'
@@ -52,7 +53,7 @@ function BattlePass({ pass, cat }) {
 
   useEffect(() => {
     const el = scroller.current?.querySelector('[data-current]')
-    if (el && scroller.current) scroller.current.scrollTo({ left: el.offsetLeft - 160, behavior: 'smooth' })
+    if (el && scroller.current) scroller.current.scrollTo({ left: el.offsetLeft - 160, behavior: prefersReducedMotion() ? 'auto' : 'smooth' })
   }, [cat])
 
   return (

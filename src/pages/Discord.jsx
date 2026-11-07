@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { FaDiscord } from 'react-icons/fa'
-import { Card, ErrorState, FadeIn, Page, SegmentedTabs, Skeleton, Swap, Toggle, cx, toast } from '../ui'
+import { Card, ErrorState, FadeIn, Page, SegmentedTabs, Skeleton, Swap, Toggle, cx, toast, useNow } from '../ui'
 import { invoke, useInvoke } from '../lib/ipc'
 import { useRiot } from '../lib/riot'
 import { useSettings } from './settings/useSettings'
@@ -23,15 +23,14 @@ const SESSION = [
 ]
 const SCENARIOS = [['live', 'Live'], ['competitive', 'Competitive'], ['deathmatch', 'Deathmatch'], ['teamdm', 'Team DM'], ['pregame', 'Agent Select'], ['lobby', 'Lobby'], ['queue', 'In Queue']]
 
-const elapsed = start => {
-  const s = Math.max(0, Math.floor((Date.now() - start) / 1000))
+const elapsed = (start, now) => {
+  const s = Math.max(0, Math.floor((now - start) / 1000))
   return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`
 }
 
 // How the activity looks on a Discord profile.
 function Activity({ activity }) {
-  const [, tick] = useState(0)
-  useEffect(() => { const t = setInterval(() => tick(n => n + 1), 1000); return () => clearInterval(t) }, [])
+  const now = useNow()
   const a = activity.assets || {}
   return (
     <div className='flex gap-4'>
@@ -45,7 +44,7 @@ function Activity({ activity }) {
         <div className='text-[14px] font-bold text-text'>Spectre</div>
         <div className='text-[13px] text-text/90 truncate'>{activity.details}</div>
         {activity.state && <div className='text-[12.5px] text-muted truncate'>{activity.state}</div>}
-        {activity.timestamps?.start && <div className='text-[12px] font-medium text-good tabular-nums'>{elapsed(activity.timestamps.start)} elapsed</div>}
+        {activity.timestamps?.start && <div className='text-[12px] font-medium text-good tabular-nums'>{elapsed(activity.timestamps.start, now)} elapsed</div>}
       </div>
     </div>
   )

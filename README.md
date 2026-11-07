@@ -39,21 +39,24 @@ Live match ranks, scouting, skins, your party, Discord presence and more, all th
 ## 📸 Preview
 
 <p align="center">
-  <a href="docs/screenshots/live-match.png"><img src="docs/screenshots/live-match.png" alt="Live Match: both teams with current rank, peak rank and Vandal / Phantom skins" /></a>
+  <a href="docs/screenshots/home.png"><img src="docs/screenshots/home.png" alt="Home: rank, ranked trend and recent form" /></a>
 </p>
 
-| 🔍 Scout any player | 🔫 See anyone's skins |
+| 📡 Live match | 🔍 Scout any player |
 | :---: | :---: |
-| [![Scout panel with rank history, recent performance and matches](docs/screenshots/scout.png)](docs/screenshots/scout.png) | [![Skins panel with card, sprays, weapon skins and buddies](docs/screenshots/skins.png)](docs/screenshots/skins.png) |
+| [![Live Match with both teams, ranks and skins](docs/screenshots/live.png)](docs/screenshots/live.png) | [![Scout panel with rank, peak and recent form](docs/screenshots/scout.png)](docs/screenshots/scout.png) |
+
+| 🕑 Matches | 🛒 Store |
+| :---: | :---: |
+| [![Match history with stats per game](docs/screenshots/matches.png)](docs/screenshots/matches.png) | [![Store with featured bundle and daily offers](docs/screenshots/store.png)](docs/screenshots/store.png) |
+
+| 👥 Squad | 🖥️ In-game overlay (<code>Ctrl+Shift+O</code>) |
+| :---: | :---: |
+| [![Friends, party and lobby](docs/screenshots/squad.png)](docs/screenshots/squad.png) | [![In-game overlay with both teams' ranks](docs/screenshots/overlay.png)](docs/screenshots/overlay.png) |
 
 <p align="center">
-  <a href="docs/screenshots/overlay.jpg"><img src="docs/screenshots/overlay.jpg" alt="In-game overlay with both teams' ranks" /></a>
-  <br><sub>🖥️ The in-game overlay, toggled with <code>Ctrl+Shift+O</code></sub>
+  <a href="docs/screenshots/themes.png"><img src="docs/screenshots/themes.png" alt="Home in six of the twelve themes" /></a>
 </p>
-
-| 👥 Lobby & Party | 🎮 Discord presence |
-| :---: | :---: |
-| [![Lobby and party controls](docs/screenshots/lobby.png)](docs/screenshots/lobby.png) | [![Discord Rich Presence settings and profile preview](docs/screenshots/discord.png)](docs/screenshots/discord.png) |
 
 <sub>Screenshots use sample data: the players, names and stats are made up. Streamer-mode players show only their agent, just like in a real match.</sub>
 

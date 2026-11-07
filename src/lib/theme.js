@@ -40,6 +40,11 @@ export function setReduceMotion(on) {
   try { localStorage.setItem(MOTION_KEY, on ? '1' : '0') } catch (e) { }
   window.dispatchEvent(new CustomEvent(MOTION_EVENT, { detail: on }))
 }
+// Effective reduced motion right now (the setting or the OS), for code outside React render (scroll behavior, rAF loops).
+export function prefersReducedMotion() {
+  if (getReduceMotion()) return true
+  try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches } catch (e) { return false }
+}
 export function onReduceMotion(fn) {
   const h = e => fn(e.detail)
   window.addEventListener(MOTION_EVENT, h)

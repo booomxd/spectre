@@ -1,6 +1,6 @@
 // Demo-data mode: answers every backend channel from sample fixtures so the UI runs in a plain browser.
 // Only reachable from src/lib/ipc.js under the Vite dev server with `?demo` in the URL (never in production builds).
-// URL params: ?demo&page=<pageId>&theme=<themeId>&overlay&experimental=1
+// URL params: ?demo&page=<pageId>&theme=<themeId>&overlay&experimental=1&live=idle (live=idle: not in a match)
 import { setTheme, THEMES } from '../theme'
 import { BUDDY_LEVELS, CONTRACTS, GUNS, OWNED_CHROMAS, OWNED_LEVELS } from './assets'
 import * as F from './fixtures'
@@ -131,7 +131,7 @@ const H = {
   'settings:get': () => db.settings,
   'settings:set': p => setSettings(p && typeof p === 'object' ? p : {}),
 
-  'live:state': () => F.liveState(),
+  'live:state': () => (params.get('live') === 'idle' ? { state: 'menus' } : F.liveState()),
   'live:scout': ref => F.liveScout(ref),
   'live:loadout': ref => F.liveLoadout(ref),
 

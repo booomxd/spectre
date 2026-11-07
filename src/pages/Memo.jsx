@@ -124,7 +124,8 @@ export default function Memo({ params }) {
 
   // Player notes still open here from Live Match, Friends and scoreboards.
   const [target, setTarget] = useState(null)
-  useEffect(() => { if (params?.puuid) setTarget({ puuid: params.puuid, name: params.name || '' }) }, [params?.puuid])
+  // Keyed on the params object (a new one per navigate), so opening the same player again after closing works too.
+  useEffect(() => { if (params?.puuid) setTarget({ puuid: params.puuid, name: params.name || '' }) }, [params])
   const memos = useInvoke('memo:list', [], { skip: !target, deps: [target] })
   const memoMap = useMemo(() => Object.fromEntries((memos.data || []).map(m => [m.puuid, m])), [memos.data])
   const memoTags = useMemo(() => [...new Set((memos.data || []).flatMap(m => m.tags))], [memos.data])
@@ -134,16 +135,23 @@ export default function Memo({ params }) {
   }, [nb.data, doc])
 
   // Every edit updates the page right away and saves after a short pause.
+  const pending = useRef(null)
   const commit = next => {
     setDoc(next)
     setSaving(true)
     clearTimeout(timer.current)
+    pending.current = next
     timer.current = setTimeout(async () => {
+      pending.current = null
       try { await invoke('notebook:save', next) } catch (e) { toast.error(e.message) }
       setSaving(false)
     }, 500)
   }
-  useEffect(() => () => clearTimeout(timer.current), [])
+  // An edit still waiting for its debounce is saved on unmount instead of being dropped.
+  useEffect(() => () => {
+    clearTimeout(timer.current)
+    if (pending.current) invoke('notebook:save', pending.current).catch(e => toast.error(e.message))
+  }, [])
 
   const sections = doc?.sections || []
   const s = sections.find(x => x.id === cur) || sections[0]

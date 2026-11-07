@@ -1,178 +1,177 @@
-// Spectre website: theme swatches, screenshot viewer, lightbox, card spotlight and live release info from GitHub.
+// Spectre website: dock, hero depth, scroll reveals, theme swatches, screenshot lightbox and live release info from GitHub.
 const REPO = 'booomxd/spectre'
 const $ = (s, el = document) => el.querySelector(s)
 const $$ = (s, el = document) => [...el.querySelectorAll(s)]
 const bind = name => $$(`[data-bind="${name}"]`)
-const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches
-const store = {
-  get: k => { try { return localStorage.getItem(k) } catch { return null } },
-  set: (k, v) => { try { localStorage.setItem(k, v) } catch {} },
+const motionQuery = matchMedia('(prefers-reduced-motion: reduce)')
+let reduced = motionQuery.matches
+motionQuery.addEventListener?.('change', e => { reduced = e.matches; if (reduced) revealAll() })
+
+// ---------- Themes (palette and AA-safe tokens live in boot.js) ----------
+const Theme = window.SpectreTheme
+function markTheme(key) {
+  $$('.swatches button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.theme === key)))
+  const t = Theme?.themes[key]
+  if (t) bind('theme-name').forEach(el => { el.textContent = t[0] })
+}
+if (Theme) {
+  markTheme(document.documentElement.dataset.theme)
+  $$('.swatches button').forEach(b => b.addEventListener('click', () => {
+    Theme.apply(b.dataset.theme, true)
+    markTheme(b.dataset.theme)
+  }))
 }
 
-// Themes: the same twelve as the app. The page defaults to Amethyst to match the ghost logo.
-const THEMES = {
-  midnight: ['Midnight', '255 70 85', '255 140 120'],
-  onyx: ['Onyx', '235 235 235', '160 160 160'],
-  ember: ['Ember', '255 128 48', '255 190 90'],
-  glacier: ['Glacier', '86 200 255', '160 230 255'],
-  verdant: ['Verdant', '62 220 140', '160 240 190'],
-  amethyst: ['Amethyst', '176 120 255', '230 160 255'],
-  gilded: ['Gilded', '232 190 90', '255 225 150'],
-  aurora: ['Aurora', '45 212 191', '167 139 250'],
-  sakura: ['Sakura', '255 121 176', '255 190 215'],
-  abyss: ['Abyss', '92 132 255', '120 220 255'],
-  sunset: ['Sunset', '255 94 140', '255 176 92'],
-  pearl: ['Pearl', '99 91 255', '214 92 255'],
+// ---------- Dock: denser glass after scrolling, mobile menu, current section ----------
+const dock = $('.dock')
+const menuBtn = $('.dock-menu')
+const links = $('#dock-links')
+function setMenu(open) {
+  dock.classList.toggle('open', open)
+  menuBtn.setAttribute('aria-expanded', String(open))
+  menuBtn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu')
 }
-function setTheme(key, save) {
-  const t = THEMES[key]
-  if (!t) return
-  document.documentElement.style.setProperty('--a', t[1])
-  document.documentElement.style.setProperty('--a2', t[2])
-  $$('.swatches button').forEach(b => b.setAttribute('aria-pressed', b.dataset.theme === key))
-  bind('theme-name').forEach(el => { el.textContent = t[0] })
-  if (save) store.set('spectre-site-theme', key)
-}
-setTheme(THEMES[store.get('spectre-site-theme')] ? store.get('spectre-site-theme') : 'amethyst')
-$$('.swatches button').forEach(b => b.addEventListener('click', () => setTheme(b.dataset.theme, true)))
+menuBtn.addEventListener('click', () => setMenu(!dock.classList.contains('open')))
+links.addEventListener('click', e => { if (e.target.closest('a')) setMenu(false) })
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && dock.classList.contains('open')) { setMenu(false); menuBtn.focus() }
+})
+document.addEventListener('click', e => { if (dock.classList.contains('open') && !dock.contains(e.target)) setMenu(false) })
 
-// Nav glass gets denser once the page scrolls; the hero window flattens out as it comes into view.
-const nav = $('.nav')
-const win = $('.window')
-let ticking = false
-function onScroll() {
-  ticking = false
-  nav.classList.toggle('scrolled', scrollY > 12)
-  if (win && !reduced) {
-    const p = Math.min(1, Math.max(0, scrollY / (innerHeight * 0.55)))
-    win.style.setProperty('--rx', `${14 * (1 - p)}deg`)
-    win.style.setProperty('--s', 0.94 + 0.06 * p)
+const navLinks = $$('.dock-links a[href^="#"]')
+const sections = $$('main > section')
+const sectionObserver = new IntersectionObserver(entries => entries.forEach(e => {
+  if (!e.isIntersecting) return
+  navLinks.forEach(a => {
+    if (a.getAttribute('href') === `#${e.target.id}`) a.setAttribute('aria-current', 'true')
+    else a.removeAttribute('aria-current')
+  })
+}), { rootMargin: '-45% 0px -50% 0px' })
+sections.forEach(s => sectionObserver.observe(s))
+
+// ---------- Hero depth: scroll flattens the window, layers drift at different speeds, pointer adds a little parallax ----------
+const stage = $('.stage-inner')
+const target = { p: 0, mx: 0, my: 0 }
+const now = { p: 0, mx: 0, my: 0 }
+let heroVisible = true
+let raf = 0
+function heroProgress() {
+  const v = scrollY / (Math.max(innerHeight, 1) * 0.7)
+  return Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : 0
+}
+function frame() {
+  raf = 0
+  if (reduced || !stage) return
+  let moving = false
+  for (const k of ['p', 'mx', 'my']) {
+    const d = target[k] - now[k]
+    now[k] = !Number.isFinite(d) || Math.abs(d) < 0.001 ? (Number.isFinite(target[k]) ? target[k] : 0) : now[k] + d * 0.12
+    if (now[k] !== target[k]) moving = true
   }
+  stage.style.setProperty('--p', now.p.toFixed(4))
+  stage.style.setProperty('--mx', now.mx.toFixed(4))
+  stage.style.setProperty('--my', now.my.toFixed(4))
+  if (moving) raf = requestAnimationFrame(frame)
 }
-addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(onScroll) } }, { passive: true })
+const kick = () => { if (!raf && !reduced) raf = requestAnimationFrame(frame) }
+function onScroll() {
+  dock.classList.toggle('scrolled', scrollY > 12)
+  if (heroVisible) { target.p = heroProgress(); kick() }
+}
+addEventListener('scroll', onScroll, { passive: true })
+if (stage) {
+  new IntersectionObserver(([e]) => { heroVisible = e.isIntersecting }).observe(stage)
+  if (matchMedia('(pointer: fine)').matches) {
+    $('.hero').addEventListener('pointermove', e => {
+      target.mx = (e.clientX / innerWidth) * 2 - 1
+      target.my = (e.clientY / innerHeight) * 2 - 1
+      kick()
+    })
+    $('.hero').addEventListener('pointerleave', () => { target.mx = 0; target.my = 0; kick() })
+  }
+  target.p = heroProgress()
+  now.p = target.p
+  kick()
+}
 onScroll()
 
-// Scroll reveal
-const reveal = new IntersectionObserver(entries => entries.forEach(e => {
-  if (!e.isIntersecting) return
-  e.target.classList.add('in')
-  reveal.unobserve(e.target)
-}), { rootMargin: '0px 0px -8% 0px' })
-$$('.reveal').forEach(el => reveal.observe(el))
+// ---------- Scroll reveals: once in view, settle and then hand control back to the element's own styles ----------
+const reveals = $$('.reveal')
+function settle(el) {
+  el.classList.add('in')
+  const done = e => {
+    if (e.target !== el || e.propertyName !== 'opacity') return
+    el.removeEventListener('transitionend', done)
+    el.classList.remove('reveal', 'in')
+  }
+  el.addEventListener('transitionend', done)
+}
+function revealAll() { reveals.forEach(el => el.classList.remove('reveal', 'in')) }
+if (reduced || !('IntersectionObserver' in window)) revealAll()
+else {
+  // A fast fling or an anchor jump can carry an element past the viewport between two observer checks, so whenever
+  // anything is revealed, everything above the bottom of the screen that is still waiting is revealed with it.
+  const pending = new Set(reveals)
+  const flush = () => {
+    for (const el of pending) {
+      if (el.getBoundingClientRect().top < innerHeight * 0.92) { settle(el); io.unobserve(el); pending.delete(el) }
+    }
+  }
+  const io = new IntersectionObserver(entries => { if (entries.some(e => e.isIntersecting)) flush() }, { rootMargin: '0px 0px -8% 0px', threshold: 0 })
+  reveals.forEach(el => io.observe(el))
+  addEventListener('scrollend', flush, { passive: true })
+  addEventListener('hashchange', () => requestAnimationFrame(flush))
+}
 
-// Cursor spotlight on cards
+// ---------- Card spotlight follows the pointer ----------
 $$('.card').forEach(c => c.addEventListener('pointermove', e => {
   const r = c.getBoundingClientRect()
-  c.style.setProperty('--mx', `${e.clientX - r.left}px`)
-  c.style.setProperty('--my', `${e.clientY - r.top}px`)
+  c.style.setProperty('--cx', `${e.clientX - r.left}px`)
+  c.style.setProperty('--cy', `${e.clientY - r.top}px`)
 }))
 
-// Screenshot viewer
-const SHOTS = [
-  { title: 'Live Match', src: 'screenshots/live-match.png', alt: 'Live Match: both teams with current rank, peak rank and Vandal / Phantom skins',
-    text: 'Both teams with current-act rank, RR, peak rank and Vandal / Phantom skins. Your party is marked with a colored bar.' },
-  { title: 'Scout', src: 'screenshots/scout.png', alt: 'Scout panel with rank history, recent performance and matches',
-    text: 'Any player\'s rank history, recent performance (KDA, ACS, HS %, KAST, ADR, first bloods), top agents and last 10 competitive matches.' },
-  { title: 'Skins', src: 'screenshots/skins.png', alt: 'Skins panel with card, sprays, weapon skins and buddies',
-    text: 'Anyone\'s card, title, sprays, and every weapon skin with its gun buddy.' },
-  { title: 'Overlay', src: 'screenshots/overlay.jpg', alt: 'In-game overlay with both teams\' ranks',
-    text: 'Both teams\' ranks over the game. Ctrl+Shift+O shows or hides it, Ctrl+Shift+L lets clicks pass through.' },
-  { title: 'Lobby & Party', src: 'screenshots/lobby.png', alt: 'Lobby and party controls',
-    text: 'Invite friends by Riot ID, share invite codes, pick a mode, ready up and start matchmaking.' },
-  { title: 'Discord', src: 'screenshots/discord.png', alt: 'Discord Rich Presence settings and profile preview',
-    text: 'Rich Presence with mode, map art, score, rank and party, plus a profile preview with sample scenarios.' },
-]
-const tabs = $$('.tab')
-const tablist = $('.tabs')
-const ind = $('.tab-ind')
-const viewer = $('#viewer')
-const vImg = $('#viewer-img')
-const progress = $('.progress')
-let cur = 0
-let token = 0
-
-function moveIndicator() {
-  const t = tabs[cur]
-  ind.style.left = `${t.offsetLeft}px`
-  ind.style.width = `${t.offsetWidth}px`
+// ---------- Screenshots: skeleton until the file exists, lightbox for the rest ----------
+const shots = $$('[data-shot]')
+function markMissing(btn) {
+  btn.classList.add('is-missing')
+  btn.disabled = true
+  btn.setAttribute('aria-hidden', 'true')
+  btn.tabIndex = -1
 }
-function restartProgress() {
-  if (!viewer.classList.contains('auto')) return
-  progress.style.animation = 'none'
-  void progress.offsetWidth
-  progress.style.animation = ''
-}
-function stopAuto() { viewer.classList.remove('auto') }
-
-function show(i, { user = false, focus = false } = {}) {
-  cur = (i + SHOTS.length) % SHOTS.length
-  const s = SHOTS[cur]
-  tabs.forEach((t, j) => {
-    t.setAttribute('aria-selected', j === cur)
-    t.tabIndex = j === cur ? 0 : -1
-  })
-  viewer.setAttribute('aria-labelledby', tabs[cur].id)
-  moveIndicator()
-  const t = tabs[cur]
-  tablist.scrollTo({ left: t.offsetLeft - (tablist.clientWidth - t.offsetWidth) / 2, behavior: reduced ? 'auto' : 'smooth' })
-  if (focus) t.focus()
-  if (user) stopAuto()
-  else restartProgress()
-
-  const mine = ++token
-  vImg.classList.add('out')
-  const next = new Image()
-  next.src = s.src
-  const swap = () => {
-    if (mine !== token) return
-    vImg.src = s.src
-    vImg.alt = s.alt
-    $('#viewer-title').textContent = s.title
-    $('#viewer-text').textContent = s.text
-    vImg.classList.remove('out')
-  }
-  next.decode().then(swap, swap)
-}
-
-tabs.forEach((t, i) => t.addEventListener('click', () => show(i, { user: true })))
-tablist.addEventListener('keydown', e => {
-  const step = { ArrowRight: 1, ArrowLeft: -1 }[e.key]
-  if (step) { e.preventDefault(); show(cur + step, { user: true, focus: true }) }
-  if (e.key === 'Home') { e.preventDefault(); show(0, { user: true, focus: true }) }
-  if (e.key === 'End') { e.preventDefault(); show(SHOTS.length - 1, { user: true, focus: true }) }
+shots.forEach(btn => {
+  const img = $('img', btn)
+  if (img.complete && img.naturalWidth === 0) markMissing(btn)
+  else img.addEventListener('error', () => markMissing(btn), { once: true })
 })
-$$('[data-step]').forEach(b => b.addEventListener('click', () => show(cur + Number(b.dataset.step), { user: true })))
-progress.addEventListener('animationend', () => show(cur + 1))
-addEventListener('resize', moveIndicator)
-document.fonts?.ready.then(moveIndicator)
-moveIndicator()
 
-// Autoplay only while the viewer is on screen, and never with reduced motion.
-if (!reduced) {
-  viewer.classList.add('auto')
-  new IntersectionObserver(([e]) => viewer.classList.toggle('visible', e.isIntersecting), { threshold: 0.5 }).observe(viewer)
-}
-// Warm the cache so switching tabs is instant.
-addEventListener('load', () => SHOTS.forEach(s => { new Image().src = s.src }))
-
-// Lightbox
 const lb = $('#lightbox')
 const lbImg = $('#lb-img')
+let lbList = []
 let lbIndex = 0
+function gallery() {
+  const seen = new Set()
+  return shots.filter(b => !b.classList.contains('is-missing')).map(b => $('img', b)).filter(img => {
+    const src = img.getAttribute('src')
+    if (seen.has(src)) return false
+    seen.add(src)
+    return true
+  })
+}
 function lbShow(i) {
-  lbIndex = (i + SHOTS.length) % SHOTS.length
-  const s = SHOTS[lbIndex]
-  lbImg.src = s.src
-  lbImg.alt = s.alt
-  $('#lb-cap').textContent = `${s.title} · ${s.text}`
+  lbIndex = (i + lbList.length) % lbList.length
+  const img = lbList[lbIndex]
+  lbImg.src = img.getAttribute('src')
+  lbImg.alt = img.alt
+  $('#lb-cap').textContent = img.dataset.text ? `${img.dataset.title}: ${img.dataset.text}` : img.alt
 }
-function openLightbox(i) {
-  stopAuto()
-  lbShow(i)
+shots.forEach(btn => btn.addEventListener('click', () => {
+  if (btn.classList.contains('is-missing') || !lb.showModal) return
+  lbList = gallery()
+  const i = lbList.findIndex(img => img.getAttribute('src') === $('img', btn).getAttribute('src'))
+  lbShow(Math.max(0, i))
+  $$('.lb-nav').forEach(b => { b.hidden = lbList.length < 2 })
   lb.showModal()
-}
-$('.viewer-stage').addEventListener('click', () => openLightbox(cur))
-$$('[data-open]').forEach(b => b.addEventListener('click', () => openLightbox(Number(b.dataset.open))))
+}))
 $('.lb-close').addEventListener('click', () => lb.close())
 $$('[data-lb]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); lbShow(lbIndex + Number(b.dataset.lb)) }))
 lb.addEventListener('click', e => { if (e.target === lb || e.target.tagName === 'FIGURE') lb.close() })
@@ -181,7 +180,7 @@ lb.addEventListener('keydown', e => {
   if (e.key === 'ArrowLeft') lbShow(lbIndex - 1)
 })
 
-// Live release info: version, download links, sizes, checksums, download count and release notes.
+// ---------- Live release info: version, download link, size, checksum and release notes ----------
 const esc = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c])
 const inline = s => esc(s)
   .replace(/`([^`]+)`/g, '<code>$1</code>')
@@ -233,39 +232,27 @@ function fileMeta(el, a) {
   if (a.count >= 100) rows.push(['Downloads', fmt(a.count)])
   if (a.digest) {
     const hash = a.digest.replace(/^sha256:/, '')
-    rows.push(['SHA-256', `<button type="button" data-copy="${esc(hash)}" title="Copy SHA-256"><span>${esc(hash)}</span><svg class="i"><use href="#i-copy"/></svg></button>`])
+    rows.push(['SHA-256', `<button type="button" data-copy="${esc(hash)}" aria-label="Copy SHA-256 checksum"><span>${esc(hash)}</span><svg class="i" aria-hidden="true"><use href="#i-copy"/></svg></button>`])
   }
   el.innerHTML = rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')
   el.hidden = false
 }
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-copy]')
-  if (!b) return
-  navigator.clipboard?.writeText(b.dataset.copy).then(() => {
+  if (!b || !navigator.clipboard) return
+  navigator.clipboard.writeText(b.dataset.copy).then(() => {
     const span = $('span', b)
-    const was = span.textContent
     span.textContent = 'Copied'
-    setTimeout(() => { span.textContent = was }, 1400)
-  })
+    setTimeout(() => { span.textContent = b.dataset.copy }, 1400)
+  }, () => {})
 })
-
-function countUp(el, to) {
-  if (reduced) { el.textContent = fmt(to); return }
-  const start = performance.now()
-  const tick = now => {
-    const p = Math.min(1, (now - start) / 1400)
-    el.textContent = fmt(Math.round(to * (1 - (1 - p) ** 3)))
-    if (p < 1) requestAnimationFrame(tick)
-  }
-  requestAnimationFrame(tick)
-}
 
 async function releases() {
   try {
     const cached = JSON.parse(sessionStorage.getItem('spectre-releases'))
     if (cached && Date.now() - cached.at < 10 * 60e3) return cached.data
   } catch {}
-  const r = await fetch(`https://api.github.com/repos/${REPO}/releases?per_page=100`, { headers: { Accept: 'application/vnd.github+json' } })
+  const r = await fetch(`https://api.github.com/repos/${REPO}/releases?per_page=30`, { headers: { Accept: 'application/vnd.github+json' } })
   if (!r.ok) throw new Error(`GitHub returned ${r.status}`)
   const data = (await r.json()).map(x => ({
     tag: x.tag_name, draft: x.draft, prerelease: x.prerelease, date: x.published_at, body: x.body || '', url: x.html_url,
@@ -279,25 +266,17 @@ async function loadRelease() {
   const all = await releases()
   const rel = all.find(r => !r.draft && !r.prerelease)
   if (!rel) return
-  const isApp = a => /\.exe$|-win\.zip$/i.test(a.name)
   // Tauri (Spectre_x.y.z_x64-setup.exe) and older Electron (Spectre.Setup.x.y.z.exe) installer names
   const installer = rel.assets.find(a => /^Spectre([ .]Setup.*|_.*-setup)\.exe$/i.test(a.name))
-  const total = all.reduce((n, r) => n + r.assets.filter(isApp).reduce((m, a) => m + a.count, 0), 0)
   const version = rel.tag.replace(/^v/, '')
 
   bind('tag').forEach(el => { el.textContent = `v${version}` })
-  bind('version').forEach(el => { el.textContent = version })
-  bind('version-label').forEach(el => { el.textContent = 'Latest version' })
-  if (total >= 100) {
-    bind('downloads-label').forEach(el => { el.textContent = 'Downloads' })
-    bind('downloads').forEach(el => countUp(el, total))
-  }
   if (installer) {
     bind('installer-href').forEach(el => { el.href = installer.url })
-    bind('installer-sub').forEach(el => { el.textContent = `v${version} · ${mb(installer.size)}` })
+    bind('installer-sub').forEach(el => { el.textContent = `v${version}, ${mb(installer.size)}` })
     fileMeta(bind('installer-meta')[0], installer)
   }
-  bind('date').forEach(el => { el.textContent = new Date(rel.date).toLocaleDateString('en', { month: 'long', day: 'numeric', year: 'numeric' }) })
+  if (rel.date) bind('date').forEach(el => { el.textContent = new Date(rel.date).toLocaleDateString('en', { month: 'long', day: 'numeric', year: 'numeric' }) })
   const notes = renderNotes(rel.body)
   if (notes) bind('notes').forEach(el => { el.innerHTML = notes })
 }
