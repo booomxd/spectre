@@ -74,10 +74,16 @@ async fn releases(ctx: &Ctx, force: bool) -> Res<Vec<Value>> {
     Ok(list)
 }
 
+/// The newest release by version number. GitHub lists releases by creation date, not version, so the first row can be
+/// an older version (a re-published or back-filled release), which made the app offer a downgrade.
+fn newest(list: Vec<Value>) -> Option<Value> {
+    list.into_iter().reduce(|best, r| if newer(&js::s(&r["version"]), &js::s(&best["version"])) { r } else { best })
+}
+
 static STATUS: Lazy<Mutex<Value>> = Lazy::new(|| Mutex::new(json!({ "current": null, "available": false })));
 
 async fn check(ctx: &Ctx) -> Res<Value> {
-    let latest = releases(ctx, true).await?.into_iter().next();
+    let latest = newest(releases(ctx, true).await?);
     let cur = current(ctx);
     let available = latest.as_ref().map(|l| newer(&js::s(&l["version"]), &cur)).unwrap_or(false);
     let l = latest.unwrap_or(Value::Null);
@@ -94,7 +100,7 @@ static INSTALLING: AtomicBool = AtomicBool::new(false);
 
 async fn install(ctx: &Ctx) -> Res<Value> {
     if INSTALLING.load(Ordering::SeqCst) { return Err(msg("Already updating")); }
-    let latest = releases(ctx, false).await?.into_iter().next().unwrap_or(Value::Null);
+    let latest = newest(releases(ctx, false).await?).unwrap_or(Value::Null);
     let can = truthy(&STATUS.lock().unwrap()["canInstall"]);
     if !can || !truthy(&latest["installer"]) { return Err(msg("No update to install")); }
     INSTALLING.store(true, Ordering::SeqCst);
@@ -133,7 +139,9 @@ async fn download_and_run(ctx: &Ctx, inst: &Value) -> Res<Value> {
         let _ = std::fs::remove_file(&file);
         return Err(msg("Download was corrupted, please try again"));
     }
-    std::process::Command::new(&file).spawn()?;
+    // Tauri's NSIS flags: /UPDATE skips the "an older version is installed" page and keeps shortcuts as they are,
+    // /P (passive) shows only a progress bar with no wizard clicks, and /R starts Spectre again when it finishes.
+    std::process::Command::new(&file).args(["/P", "/UPDATE", "/R"]).spawn()?;
     if let Some(app) = ctx.app.clone() {
         crate::core::spawn(async move {
             tokio::time::sleep(Duration::from_millis(800)).await;

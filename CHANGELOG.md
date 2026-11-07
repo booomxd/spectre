@@ -1,5 +1,11 @@
 # 📜 Changelog
 
+## 3.0.3
+
+### 🛠️ Updates
+- In-app updates now install with just a progress bar and reopen Spectre, without the "an older version is installed" setup page (from the next update on)
+- The updater always offers the highest version, never an older release
+
 ## 3.0.2
 
 ### ⚡ Instant switching
