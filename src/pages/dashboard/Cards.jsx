@@ -38,6 +38,12 @@ export function formOf(rows) {
 }
 
 // Hero: name over the player card art, quick stats in a recessed strip.
+// Long names (or wide CJK names) step down so the hero never crowds the card art.
+function nameSize(name = '') {
+  const w = [...name].reduce((n, ch) => n + (/[⺀-￯]/.test(ch) ? 1.8 : 1), 0)
+  return w <= 10 ? 64 : w <= 14 ? 52 : w <= 20 ? 42 : 34
+}
+
 export function Hero({ riot, identity, account, rr }) {
   const card = useContent(contentPath('playercards', identity?.cardId))
   const f = formOf(rr)
@@ -58,7 +64,7 @@ export function Hero({ riot, identity, account, rr }) {
       <LiveClock className='hero-strip absolute top-6 right-6' />
       <div className='relative px-8 pt-7 flex-1'>
         <div className='eyebrow flex items-center gap-2'>{greeting()}<span className='w-1 h-1 rounded-full bg-muted/60' />{new Date().toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long' })}</div>
-        <h2 className='display mt-3 text-[64px] text-text truncate pb-1'>
+        <h2 className='display mt-3 text-text truncate pb-1' style={{ fontSize: nameSize(riot.gameName) }} title={riot.gameName}>
           {riot.gameName || 'Agent'}<span className='text-muted/70 text-[26px] font-semibold tracking-tight ml-2'>{riot.tagLine ? `#${riot.tagLine}` : ''}</span>
         </h2>
         <div className='mt-3 flex flex-wrap items-center gap-2'>
@@ -158,13 +164,13 @@ export function FormTile({ rr }) {
     <Card hover onClick={go('history')} className='group h-full p-6 flex flex-col'>
       <Heading hint={f.games ? `${f.wins} wins in the last ${f.games}` : 'Ranked results'} right={<Arrow />}>Recent form</Heading>
       {!rr.data ? <Skeleton className='flex-1 min-h-[160px] rounded-2xl' /> : !rows.length ? <Empty icon={FiActivity} title='No ranked games yet' className='py-8' /> : (
-        <div className='flex-1 flex flex-col justify-end'>
-          <div className='relative h-[96px] rounded-2xl glass-inset px-3 flex items-center gap-1.5'>
+        <div className='flex-1 flex flex-col mt-1'>
+          <div className='relative flex-1 min-h-[96px] rounded-2xl glass-inset px-3 flex items-center gap-1.5'>
             <span className='absolute left-3 right-3 top-1/2 h-px bg-line' />
             {rows.map((r, i) => (
               <div key={r.id || i} className='relative flex-1 h-full' title={`${signed(r.change)} RR`}>
                 <span className={cx('absolute inset-x-0 mx-auto w-full max-w-[14px] rounded-full', r.change >= 0 ? 'bottom-1/2 bg-gradient-to-t from-good/40 to-good' : 'top-1/2 bg-gradient-to-b from-bad/40 to-bad')}
-                  style={{ height: Math.max(8, Math.abs(r.change) / max * 40) + 'px' }} />
+                  style={{ height: Math.max(6, Math.abs(r.change) / max * 44) + '%' }} />
               </div>
             ))}
           </div>

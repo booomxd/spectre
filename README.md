@@ -14,7 +14,7 @@ Live match ranks, scouting, skins, your party, Discord presence and more, all th
 ![Tauri](https://img.shields.io/badge/Tauri-2-2a1458?style=for-the-badge&logo=tauri&logoColor=white)
 ![React](https://img.shields.io/badge/React-18-2a1458?style=for-the-badge&logo=react&logoColor=white)
 
-**[🌐 Website](https://booomxd.github.io/spectre/)** · **[⬇️ Download](https://github.com/booomxd/spectre/releases/latest)** · **[✨ Features](docs/FEATURES.md)** · **[🔒 Privacy](docs/PRIVACY.md)** · **[🛠️ Development](docs/DEVELOPMENT.md)** · **[📜 Changelog](CHANGELOG.md)**
+**[🌐 Website](https://spectreclient.pages.dev/)** · **[⬇️ Download](https://github.com/booomxd/spectre/releases/latest)** · **[✨ Features](docs/FEATURES.md)** · **[🔒 Privacy](docs/PRIVACY.md)** · **[🛠️ Development](docs/DEVELOPMENT.md)** · **[📜 Changelog](CHANGELOG.md)**
 
 </div>
 

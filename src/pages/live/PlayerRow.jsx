@@ -1,10 +1,10 @@
 import React from 'react'
-import { FiBarChart2, FiCopy, FiEdit3, FiEye, FiEyeOff } from 'react-icons/fi'
+import { FiBarChart2, FiCopy, FiEdit3, FiEye, FiEyeOff, FiUsers } from 'react-icons/fi'
 import { Badge, Item, toast } from '../../ui'
 import { navigate } from '../../nav'
 import { useTiers } from '../../lib/content'
 import { AgentIcon, RankGlow, RankIcon, useRankColor } from './parts'
-import { PARTY_COLORS, cardWide } from './util'
+import { PARTY_COLORS, cardWide, partyLabel } from './util'
 
 const cx = (...c) => c.filter(Boolean).join(' ')
 
@@ -65,7 +65,8 @@ export default function PlayerRow({ p, i, memo, onScout, onSkins }) {
       {/* Rank-colored light behind the portrait. */}
       {rank && <span className='absolute -left-10 top-1/2 -translate-y-1/2 w-44 h-44 rounded-full pointer-events-none opacity-50' style={{ background: `radial-gradient(closest-side, ${rank}40, transparent)` }} />}
       {p.self && <span className='absolute inset-0 bg-gradient-to-r from-accent/[0.10] to-transparent pointer-events-none' />}
-      {color && <span className='absolute left-0 top-4 bottom-4 w-[3px] rounded-r-full' style={{ background: color, boxShadow: `0 0 12px ${color}` }} title='Premade party' />}
+      {color && <span className='absolute left-0 top-4 bottom-4 w-[3px] rounded-r-full' style={{ background: color }} title={p.party === 0 ? 'Your party' : 'Premade party'} />}
+      {color && <span className='absolute inset-0 pointer-events-none' style={{ background: `linear-gradient(90deg, ${color}14, transparent 38%)` }} />}
 
       <div className='relative flex items-center gap-4 pl-4 pr-3.5 py-3.5'>
         <div className='relative shrink-0'>
@@ -82,6 +83,12 @@ export default function PlayerRow({ p, i, memo, onScout, onSkins }) {
             {!p.hidden && p.tagLine && <button className='text-muted opacity-0 group-hover:opacity-100 hover:text-text transition-opacity shrink-0' onClick={copy} title='Copy Riot ID'><FiCopy size={11} /></button>}
             {p.hidden && <span className='text-muted shrink-0' title='Name hidden by streamer mode'><FiEyeOff size={12} /></span>}
             {p.self && <Badge tone='accent'>You</Badge>}
+            {color && partyLabel(p.partySize) && (
+              <span className='inline-flex items-center gap-1 h-5 px-2 rounded-full text-[10.5px] font-semibold shrink-0 border'
+                style={{ color, borderColor: color + '55', background: color + '14' }} title={p.party === 0 ? 'Queued with you' : 'Queued together'}>
+                <FiUsers size={10} />{partyLabel(p.partySize)}
+              </span>
+            )}
             {p.spectre && !p.hidden && <span title='Uses Spectre'><Badge tone='accent'>Spectre</Badge></span>}
           </div>
           <div className='flex items-center gap-2 text-[12px] mt-1 min-w-0'>

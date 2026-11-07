@@ -210,7 +210,7 @@ function LiveBody({ active }) {
             <Team title='Opponents' tone='bad' players={theirs} {...rows} />
           </div>}
         <p className='mt-8 mx-auto max-w-3xl text-center text-[12px] leading-relaxed text-muted'>
-          The colored edge marks a premade party. Scout any player for rank history and recent matches, or use the eye for their skins. Streamer-mode players&apos; names always stay hidden.
+          A colored edge and a Duo, Trio or stack tag mark players who queued together; gold is your party. Scout any player for rank history and recent matches, or use the eye for their skins. Streamer-mode players stay hidden, except you and friends in your party.
         </p>
       </div>
     )
