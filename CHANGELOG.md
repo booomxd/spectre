@@ -1,5 +1,10 @@
 # 📜 Changelog
 
+## 3.0.4
+
+### 🛠️ Fixes
+- Quick search (Ctrl+K) no longer squashes its search bar and footer
+
 ## 3.0.3
 
 ### 🛠️ Updates
