@@ -89,7 +89,7 @@ export function ChatPanel({ cid, friend, statusLine, active, onClose, onSent, ac
   const animFrom = Math.max(0, list.length - 6)
   return (
     <Card className='anim-fade flex flex-col overflow-hidden h-full min-h-[420px] rounded-3xl'>
-      <div className='relative flex items-center gap-3.5 px-5 py-4 border-b border-line'>
+      <div className='relative flex items-center gap-3.5 px-6 py-4 border-b border-line'>
         <span className='halo -top-24 -left-10 w-64 h-64 opacity-60' />
         <div className='relative shrink-0'>
           <PlayerCard id={friend?.status?.card} name={name} size={44} />
@@ -107,7 +107,7 @@ export function ChatPanel({ cid, friend, statusLine, active, onClose, onSent, ac
         <Button variant='ghost' size='icon' className='relative' title='Close chat' onClick={onClose}><FiX /></Button>
       </div>
 
-      <div ref={scroller} className='flex-1 overflow-y-auto px-5 py-5 flex flex-col gap-1.5'>
+      <div ref={scroller} className='flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-1.5'>
         {msgs.loading && !msgs.data ? (
           Array.from({ length: 5 }, (_, i) => <Skeleton key={i} className={cx('h-10 w-2/5 rounded-2xl', i % 2 && 'self-end')} />)
         ) : !list.length ? (
@@ -116,7 +116,7 @@ export function ChatPanel({ cid, friend, statusLine, active, onClose, onSent, ac
           const prev = list[i - 1]
           const gap = !prev || prev.fromMe !== m.fromMe || m.time - prev.time > 5 * 60000
           return (
-            <div key={m.id} className={cx('flex flex-col max-w-[min(72%,640px)]', i >= animFrom && 'anim-rise', m.fromMe ? 'self-end items-end' : 'self-start items-start', gap && i > 0 && 'mt-3')}>
+            <div key={m.id} className={cx('flex flex-col max-w-[72%]', i >= animFrom && 'anim-rise', m.fromMe ? 'self-end items-end' : 'self-start items-start', gap && i > 0 && 'mt-3')}>
               {gap && <span className='text-[10.5px] font-medium text-muted mb-1 px-2'>{m.fromMe ? 'You' : name} · {timeLabel(m.time)}</span>}
               <div className={cx('rounded-[20px] px-4 py-2.5 text-[13px] leading-snug whitespace-pre-wrap break-words select-text',
                 m.fromMe ? 'accent-fill text-bg rounded-br-md' : 'glass-inset text-text rounded-bl-md',

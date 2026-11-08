@@ -69,7 +69,7 @@ function Team({ label, players, tone, showPeak, tiers }) {
 }
 
 function Hint({ children }) {
-  return <div className='h-full flex flex-col items-center justify-center gap-1 px-5 text-center text-[11px] text-muted'>{children}</div>
+  return <div className='h-full flex flex-col items-center justify-center gap-1 px-6 text-center text-[11px] text-muted'>{children}</div>
 }
 
 export default function Overlay() {

@@ -17,8 +17,8 @@ export default function Experimental({ settings, save, active, tool, setTool }) 
   const Tool = TOOLS[current]
   const wanted = EXPERIMENTAL.find(t => t.id === tool)
   return (
-    <section className='flex flex-col gap-5'>
-      <Card className='relative overflow-hidden p-5 rounded-3xl border-warn/30'>
+    <section className='flex flex-col gap-6'>
+      <Card className='relative overflow-hidden p-6 rounded-3xl border-warn/30'>
         <span className='halo -top-24 -left-16 w-72 h-72 opacity-60' style={{ background: 'radial-gradient(closest-side, rgb(var(--warn) / 0.22), transparent)' }} />
         <div className='relative flex items-start gap-4'>
           <div className='w-11 h-11 rounded-2xl shrink-0 flex items-center justify-center text-warn bg-warn/12 border border-warn/30'><FiAlertTriangle size={18} /></div>
@@ -36,7 +36,7 @@ export default function Experimental({ settings, save, active, tool, setTool }) 
         </div>
       </Card>
       {on && (
-        <div className='flex flex-col gap-4'>
+        <div className='flex flex-col gap-5'>
           <SegmentedTabs className='self-start' size='lg' layoutId='exp-tools' value={current} onChange={setTool}
             tabs={EXPERIMENTAL.map(t => ({ value: t.id, label: t.label, icon: t.icon }))} />
           <PageContext.Provider value={EMBED}>

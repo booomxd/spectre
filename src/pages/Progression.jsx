@@ -8,7 +8,6 @@ import { useCatalog, pickPass, rewardItem, fmt } from './dashboard/catalog'
 import { formOf } from './dashboard/Cards'
 import RrChart from './dashboard/RrChart'
 import { CareerBar, StatCell, StatStrip } from './history/career'
-import { TierIcon, timeAgo, useMaps } from './history/shared'
 
 const bar = (v, max) => Math.min(100, Math.max(0, max ? v / max * 100 : 0))
 const signed = n => (n > 0 ? '+' : '') + n
@@ -58,17 +57,17 @@ function BattlePass({ pass, cat }) {
   }, [cat])
 
   return (
-    <Card className='relative overflow-hidden !rounded-3xl p-6'>
+    <Card className='relative overflow-hidden !rounded-3xl p-7'>
       <span className='halo w-96 h-96 -left-24 -top-40' />
-      <div className='relative flex flex-wrap items-end justify-between gap-5 mb-5'>
+      <div className='relative flex flex-wrap items-end justify-between gap-6 mb-6'>
         <div className='min-w-0'>
           <div className='eyebrow'>Active battle pass</div>
-          <div className='display mt-2.5 text-[28px] text-text truncate'>{pass.name}</div>
+          <div className='display mt-2.5 text-[34px] text-text truncate'>{pass.name}</div>
         </div>
-        <div className='flex items-end gap-6'>
+        <div className='flex items-end gap-8'>
           <div>
             <div className='eyebrow !text-[10px]'>Tier</div>
-            <div className='display mt-2 text-[36px] tabular-nums text-text'>{tier}<span className='text-[16px] font-semibold tracking-normal text-muted'> / {flat.length}</span></div>
+            <div className='display mt-2 text-[44px] tabular-nums text-text'>{tier}<span className='text-[16px] font-semibold tracking-normal text-muted'> / {flat.length}</span></div>
           </div>
           <div className='w-60 pb-1'>
             <div className='flex justify-between text-[11px] font-medium text-muted mb-1.5'>
@@ -99,7 +98,7 @@ function BattlePass({ pass, cat }) {
 function Contracts({ contracts, cat, empty }) {
   if (!contracts.length) return <Empty title={empty} hint='Contracts show up here once you start progressing them.' />
   return (
-    <Stagger className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4'>
+    <Stagger className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4'>
       {contracts.map((c, i) => {
         const agent = c.agentId && cat?.items.get(c.agentId)
         const total = c.chapters.reduce((n, ch) => n + ch.levels.length, 0)
@@ -128,55 +127,21 @@ function Contracts({ contracts, cat, empty }) {
 
 function Account({ account }) {
   const a = account.data
-  if (account.error && !a) return <Card className='p-5 h-full'><ErrorState error={account.error} onRetry={account.reload} /></Card>
+  if (account.error && !a) return <Card className='p-6 h-full'><ErrorState error={account.error} onRetry={account.reload} /></Card>
   if (!a) return <Skeleton className='h-full min-h-[300px] rounded-2xl' />
   const maxXp = Math.max(...a.history.map(h => h.xp), 1)
-  const total = a.history.reduce((n, h) => n + h.xp, 0)
   return (
-    <Card className='p-5 h-full flex flex-col'>
+    <Card className='p-6 h-full flex flex-col'>
       <Heading hint='XP earned per match' right={<Badge tone='accent'>{fmt(a.xp)} XP</Badge>}>Account</Heading>
       <div className='flex items-baseline gap-2'>
-        <span className='display text-[52px] tabular-nums text-text'>{a.level}</span>
+        <span className='display text-[64px] tabular-nums text-text'>{a.level}</span>
         <span className='text-[13px] font-semibold text-muted'>Level</span>
       </div>
-      {a.history.length > 0 && (
-        <div className='mt-4 grid grid-cols-3 gap-2'>
-          {[['Recent XP', fmt(total)], ['Per match', fmt(Math.round(total / a.history.length))], ['Best', fmt(maxXp)]].map(([l, v]) => (
-            <div key={l} className='min-w-0 rounded-xl glass-inset px-3 py-2.5'>
-              <div className='eyebrow !text-[10px] truncate'>{l}</div>
-              <div className='mt-1.5 font-display text-[16px] font-bold tracking-tight tabular-nums text-text truncate'>{v}</div>
-            </div>
-          ))}
-        </div>
-      )}
-      <div className='mt-auto pt-5 flex items-end gap-1.5 h-28'>
+      <div className='mt-auto pt-6 flex items-end gap-1.5 h-28'>
         {a.history.slice().reverse().map((h, i) => (
           <div key={i} className='flex-1 h-full flex items-end' title={`${fmt(h.xp)} XP`}>
             <div className='w-full rounded-md bg-gradient-to-t from-accent/40 to-accent-2 opacity-80 hover:opacity-100 transition-opacity origin-bottom anim-rise'
               style={{ height: Math.max(6, bar(h.xp, maxXp)) + '%', animationDelay: `${Math.min(i, 12) * 30}ms` }} />
-          </div>
-        ))}
-      </div>
-    </Card>
-  )
-}
-
-// Latest ranked games as a compact list; fills the fourth column on very wide windows.
-function RecentRanked({ rows, className }) {
-  const maps = useMaps()
-  const list = rows.slice(-6).reverse()
-  return (
-    <Card className={cx('p-5 flex-col min-w-0 overflow-hidden', className)}>
-      <Heading hint='Newest first'>Recent ranked</Heading>
-      <div className='flex flex-col divide-y divide-line'>
-        {list.map(r => (
-          <div key={r.id} className='flex items-center gap-3 py-2 min-w-0'>
-            <TierIcon tier={r.tierAfter} size={24} />
-            <div className='min-w-0 flex-1'>
-              <div className='truncate text-[13px] font-semibold text-text'>{maps[r.mapId]?.displayName || 'Map'}</div>
-              <div className='text-[11px] text-muted tabular-nums'>{timeAgo(r.time)} · {r.rrAfter} RR</div>
-            </div>
-            <span className={cx('shrink-0 font-display text-[15px] font-bold tabular-nums', r.change > 0 ? 'text-good' : r.change < 0 ? 'text-bad' : 'text-muted')}>{signed(r.change)}</span>
           </div>
         ))}
       </div>
@@ -230,9 +195,9 @@ function ProgressionBody({ active }) {
 
       <Swap id={tab}>
         {tab === 'overview' && (
-          <div className='space-y-4'>
-            <div className={cx('grid grid-cols-1 xl:grid-cols-3 gap-4', rr.data?.length > 0 && '2xl:grid-cols-4')}>
-              <Card className='p-5 xl:col-span-2'>
+          <div className='space-y-5'>
+            <div className='grid grid-cols-1 xl:grid-cols-3 gap-5'>
+              <Card className='p-6 xl:col-span-2'>
                 <Heading hint={rr.data?.length ? `Last ${rr.data.length} ranked games` : 'Ranked games'}>Competitive trend</Heading>
                 {rr.error && !rr.data ? <ErrorState error={rr.error} onRetry={rr.reload} />
                   : !rr.data ? <Skeleton className='h-56 rounded-2xl' />
@@ -240,14 +205,13 @@ function ProgressionBody({ active }) {
                       : <RrChart rows={rr.data} />}
               </Card>
               <Account account={account} />
-              {rr.data?.length > 0 && <RecentRanked rows={rr.data} className='hidden 2xl:flex' />}
             </div>
             {passBlock}
           </div>
         )}
         {tab === 'pass' && passBlock}
         {tab === 'contracts' && (
-          <div className='space-y-6'>
+          <div className='space-y-8'>
             <section>
               <Heading hint='Agent recruitment and contract progress'>Agent contracts</Heading>
               {!contracts.data ? <Skeleton className='h-24 rounded-2xl' /> : <Contracts contracts={agents} cat={cat} empty='No agent contracts yet' />}

@@ -5,11 +5,9 @@ import { Badge, Button, Card, Empty, FadeIn, Input, Item, Pill, Skeleton, Stagge
 import { invoke, useInvoke } from '../../lib/ipc'
 import { ModeIcon, PlayerCard, RankIcon } from './parts'
 import { queueName } from './util'
-import { useTiers } from '../../lib/content'
 
 const cx = (...c) => c.filter(Boolean).join(' ')
 const label = 'eyebrow mb-2.5'
-const title = s => (s || '').toLowerCase().replace(/(^|\s)\S/g, c => c.toUpperCase())
 
 // Your party and lobby controls: members, invites, invite codes, mode, matchmaking and party access.
 // `matchState` is the live match state: while in agent select or a match only inviting stays available.
@@ -18,7 +16,6 @@ export default function Lobby({ active, matchState }) {
   const [invite, setInvite] = useState('')
   const [code, setCode] = useState('')
   const [working, setWorking] = useState(null)
-  const tiers = useTiers()
   const p = party.data
   const locked = matchState && matchState !== 'menus'
   const searching = p?.state === 'MATCHMAKING'
@@ -37,27 +34,27 @@ export default function Lobby({ active, matchState }) {
   }
   const join = () => act('join', () => invoke('social:joinCode', code), 'Joined party').then(r => r && setCode(''))
 
-  if (party.loading && !p) return <div className='grid gap-4 xl:grid-cols-[1.25fr_1fr]'><Skeleton className='h-[420px] rounded-3xl' /><Skeleton className='h-[420px] rounded-3xl' /></div>
-  if (!p) return <Card className='p-8 rounded-3xl'><Empty icon={FiUsers} title='No party found' hint='Open VALORANT to see your party and lobby controls here.' /></Card>
+  if (party.loading && !p) return <div className='grid gap-5 xl:grid-cols-[1.25fr_1fr]'><Skeleton className='h-[420px] rounded-3xl' /><Skeleton className='h-[420px] rounded-3xl' /></div>
+  if (!p) return <Card className='p-10 rounded-3xl'><Empty icon={FiUsers} title='No party found' hint='Open VALORANT to see your party and lobby controls here.' /></Card>
 
   const ready = p.members.filter(m => m.ready).length
   const ownerOnly = !p.iOwn ? 'Only the party leader can change this' : undefined
   const open = Math.max(0, 5 - p.members.length)
   const focusInvite = () => document.getElementById('lobby-invite')?.focus()
   return (
-    <div className='flex flex-col gap-4'>
+    <div className='flex flex-col gap-5'>
       {locked && (
         <FadeIn className='glass rounded-2xl px-5 py-3.5 flex items-center gap-3 text-[13px] text-muted !border-warn/30'>
           <FiLock className='text-warn shrink-0' /> Your match is in progress. Matchmaking, mode and access are locked; you can still invite friends.
         </FadeIn>
       )}
-      <Stagger className='grid gap-4 xl:grid-cols-[1.25fr_1fr] items-start' step={0.06}>
-        <Item index={0} className='glass relative overflow-hidden rounded-3xl p-6'>
+      <Stagger className='grid gap-5 xl:grid-cols-[1.25fr_1fr] items-start' step={0.06}>
+        <Item index={0} className='glass relative overflow-hidden rounded-3xl p-7'>
           <span className='halo -left-24 -top-28 w-80 h-80 opacity-60' />
-          <div className='relative flex items-end justify-between gap-3 mb-5'>
+          <div className='relative flex items-end justify-between gap-3 mb-6'>
             <div>
               <div className='eyebrow mb-2'>Party</div>
-              <div className='display text-[26px] text-text'>{p.members.length}<span className='text-muted'>/5</span> <span className='text-[18px] tracking-tight text-muted font-semibold'>players</span></div>
+              <div className='display text-[30px] text-text'>{p.members.length}<span className='text-muted'>/5</span> <span className='text-[18px] tracking-tight text-muted font-semibold'>players</span></div>
               <div className='mt-2 flex items-center gap-2 text-[12px] text-muted tabular-nums'>
                 <span className={cx('w-1.5 h-1.5 rounded-full', ready === p.members.length ? 'bg-good shadow-[0_0_8px_rgb(var(--good))]' : 'bg-warn')} />{ready} of {p.members.length} ready
               </div>
@@ -76,8 +73,8 @@ export default function Lobby({ active, matchState }) {
                     {m.owner && <FaCrown className='text-warn shrink-0' size={11} title='Party leader' />}
                     {m.self && <Badge tone='accent'>You</Badge>}
                   </div>
-                  <div className='flex items-center gap-1.5 text-[11px] text-muted mt-1 tabular-nums min-w-0'>
-                    <RankIcon tier={m.rank} size={16} />{m.rank > 0 && tiers?.[m.rank] && <span className='font-semibold text-text truncate'>{title(tiers[m.rank].tierName)}</span>}{m.level != null && <span className='shrink-0'>Lv {m.level}</span>}
+                  <div className='flex items-center gap-1.5 text-[11px] text-muted mt-1 tabular-nums'>
+                    <RankIcon tier={m.rank} size={16} />{m.level != null && <span>Lv {m.level}</span>}
                   </div>
                 </div>
                 {m.self && !locked
@@ -113,13 +110,13 @@ export default function Lobby({ active, matchState }) {
           </div>
         </Item>
 
-        <Item index={1} className='glass rounded-3xl p-6'>
+        <Item index={1} className='glass rounded-3xl p-7'>
           <div className='eyebrow mb-2'>Mode</div>
           <div className='flex items-center gap-2.5'>
             <ModeIcon queue={p.queueId} size={22} className='text-accent' />
-            <span className='display text-[26px] text-text'>{p.queueId ? queueName(p.queueId) : 'No mode'}</span>
+            <span className='display text-[30px] text-text'>{p.queueId ? queueName(p.queueId) : 'No mode'}</span>
           </div>
-          <div className='grid grid-cols-2 md:grid-cols-3 2xl:grid-cols-4 gap-2 mt-6'>
+          <div className='grid grid-cols-2 md:grid-cols-3 gap-2 mt-6'>
             {p.queues.map(q => (
               <button key={q} disabled={locked || searching || !p.iOwn || working === 'queue'} title={ownerOnly}
                 onClick={() => act('queue', () => invoke('social:queue', q))}

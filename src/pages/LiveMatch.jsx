@@ -48,12 +48,12 @@ function Banner({ m, onChangeSkins }) {
   const ffa = live && m.queueId === 'deathmatch'
   const allies = avgRank(m.players.filter(p => !p.enemy)), enemies = avgRank(m.players.filter(p => p.enemy))
   return (
-    <FadeIn className='glass relative overflow-hidden mb-6 rounded-[28px] h-[208px]'>
+    <FadeIn className='glass relative overflow-hidden mb-8 rounded-[28px] h-[208px]'>
       {m.map?.splash && <img src={m.map.splash} alt='' className='absolute inset-y-0 right-0 w-[78%] h-full object-cover opacity-80' style={SPLASH_MASK} draggable={false} />}
       <div className='absolute inset-0 bg-gradient-to-t from-bg/70 via-transparent to-transparent' />
       <div className='absolute inset-0 pointer-events-none' style={GRID} />
       <span className='halo -left-20 -bottom-32 w-[420px] h-[320px] opacity-80' />
-      <div className='relative h-full flex items-end justify-between gap-5 p-6'>
+      <div className='relative h-full flex items-end justify-between gap-6 p-7'>
         <div className='min-w-0'>
           <div className='flex items-center gap-2 mb-3'>
             <span className={cx('inline-flex items-center gap-2 h-6 px-2.5 rounded-full text-[10.5px] font-bold tracking-[0.12em] uppercase border',
@@ -63,11 +63,11 @@ function Banner({ m, onChangeSkins }) {
             <Badge><ModeIcon queue={m.queueId} size={11} />{queueName(m.queueId)}</Badge>
             {m.server && <Badge className='capitalize'>{m.server}</Badge>}
           </div>
-          <h2 className='display text-[52px] leading-[0.9] text-text drop-shadow-[0_4px_24px_rgb(0_0_0/0.35)]'>{m.map?.name || 'Unknown map'}</h2>
+          <h2 className='display text-[64px] leading-[0.9] text-text drop-shadow-[0_4px_24px_rgb(0_0_0/0.35)]'>{m.map?.name || 'Unknown map'}</h2>
         </div>
-        <div className='flex items-center gap-4 shrink-0'>
+        <div className='flex items-center gap-5 shrink-0'>
           {!ffa && (live
-            ? <div className='glass-strong flex items-center gap-4 rounded-full pl-3 pr-3 py-2.5'>
+            ? <div className='glass-strong flex items-center gap-5 rounded-full pl-3 pr-3 py-2.5'>
               <TeamAvg label='Your team' tier={allies} />
               <span className='display text-[15px] text-muted'>vs</span>
               <TeamAvg label='Opponents' tier={enemies} tone='bad' />
@@ -80,7 +80,7 @@ function Banner({ m, onChangeSkins }) {
   )
 }
 
-function Team({ title: name, tone, players, memos, onScout, onSkins, cols }) {
+function Team({ title: name, tone, players, memos, onScout, onSkins }) {
   const avg = avgRank(players)
   const tiers = useTiers()
   // Allies read green and opponents red in every theme (the game's own convention); free-for-all uses the accent.
@@ -95,7 +95,7 @@ function Team({ title: name, tone, players, memos, onScout, onSkins, cols }) {
         {avg > 0 && <span className='ml-auto flex items-center gap-1.5 text-[11.5px] text-muted'>Avg <RankIcon tier={avg} size={18} /><span className='text-text font-semibold'>{title(tiers?.[avg]?.tierName)}</span></span>}
       </header>
       <div className={cx('h-px mb-4 bg-gradient-to-r to-transparent', line)} />
-      <Stagger className={cx('grid gap-2.5', cols && 'xl:grid-cols-2 xl:gap-x-8')} step={0.04}>
+      <Stagger className='grid gap-2.5' step={0.04}>
         {players.map((p, i) => <PlayerRow key={p.ref || i} p={p} i={i} memo={p.puuid && memos[p.puuid]} onScout={onScout} onSkins={onSkins} />)}
       </Stagger>
     </section>
@@ -106,8 +106,8 @@ function Idle({ active }) {
   const party = useInvoke('social:party', [], { poll: active ? 5000 : undefined })
   const members = party.data?.members || []
   return (
-    <div className='grid gap-4 lg:grid-cols-[1fr_360px] 2xl:grid-cols-[1fr_420px] items-start'>
-      <Card className='relative overflow-hidden p-8 rounded-[28px] min-h-[320px] flex items-center justify-center'>
+    <div className='grid gap-5 lg:grid-cols-[1fr_360px] items-start'>
+      <Card className='relative overflow-hidden p-10 rounded-[28px] min-h-[320px] flex items-center justify-center'>
         <div className='absolute inset-0 pointer-events-none' style={{ ...GRID, WebkitMaskImage: 'radial-gradient(circle at 50% 45%, #000, transparent 65%)', maskImage: 'radial-gradient(circle at 50% 45%, #000, transparent 65%)' }} />
         {/* Radar rings: static, only the inner dot pulses (opacity). */}
         <div className='absolute left-1/2 top-[45%] -translate-x-1/2 -translate-y-1/2 pointer-events-none'>
@@ -118,10 +118,7 @@ function Idle({ active }) {
       <Card className='p-5 rounded-[28px]'>
         <div className='flex items-center justify-between mb-3 px-1'>
           <span className='eyebrow'>Your party</span>
-          {members.length > 0 && <span className='flex items-center gap-2 min-w-0 text-[11px] text-muted tabular-nums'>
-            {party.data?.queueId && <span className='inline-flex items-center gap-1 min-w-0'><ModeIcon queue={party.data.queueId} size={11} className='shrink-0' /><span className='truncate'>{queueName(party.data.queueId)}</span></span>}
-            <span className='shrink-0'>{members.length}/5</span>
-          </span>}
+          {members.length > 0 && <span className='text-[11px] text-muted tabular-nums'>{members.length}/5</span>}
         </div>
         {party.loading && !party.data ? <Skeleton className='h-14 rounded-2xl' />
           : !members.length ? <p className='px-1 py-1.5 text-[12px] text-muted'>No party found.</p>
@@ -129,10 +126,7 @@ function Idle({ active }) {
               {members.map((m, i) => (
                 <Item key={m.puuid} index={i} className='flex items-center gap-3 rounded-2xl px-2.5 py-2 glass-inset'>
                   <PlayerCard id={m.hidden ? null : m.card} name={m.hidden ? null : m.gameName} size={36} />
-                  <div className='min-w-0 flex-1 leading-tight'>
-                    <div className='text-[13px] font-semibold text-text truncate'>{m.hidden ? 'Hidden player' : m.gameName || '...'}<span className='ml-0.5 text-[11px] text-muted font-normal'>{!m.hidden && m.tagLine && ` #${m.tagLine}`}</span></div>
-                    <div className='mt-0.5 text-[11px] text-muted tabular-nums truncate'>{[m.level != null && `Lv ${m.level}`, m.owner && 'Leader', m.ready ? 'Ready' : 'Standby'].filter(Boolean).join(' · ')}</div>
-                  </div>
+                  <div className='min-w-0 flex-1 text-[13px] font-semibold text-text truncate'>{m.hidden ? 'Hidden player' : m.gameName || '...'}<span className='ml-0.5 text-[11px] text-muted font-normal'>{!m.hidden && m.tagLine && ` #${m.tagLine}`}</span></div>
                   <RankIcon tier={m.rank} size={26} />
                 </Item>
               ))}
@@ -190,7 +184,7 @@ function LiveBody({ active }) {
   if (tab === 'lobby') body = <Lobby active={active} matchState={d?.state} />
   else if (live.loading && !d) body = (
     <div className='grid gap-3'>
-      <Skeleton className='h-[208px] rounded-[28px] mb-4' />
+      <Skeleton className='h-[208px] rounded-[28px] mb-5' />
       <div className='grid gap-7 xl:grid-cols-2'>{[0, 1].map(c => <div key={c} className='grid gap-2.5'>{Array.from({ length: 5 }, (_, i) => <Skeleton key={i} className='h-[84px] rounded-[22px]' />)}</div>)}</div>
     </div>
   )
@@ -206,7 +200,7 @@ function LiveBody({ active }) {
       <div>
         <Banner m={d} onChangeSkins={() => setPanel({ kind: 'loadout' })} />
         {d.state === 'pregame'
-          ? <Team title='Your team' tone='good' players={mine} cols {...rows} />
+          ? <div className='max-w-4xl'><Team title='Your team' tone='good' players={mine} {...rows} /></div>
           : ffa ? <div className='grid gap-x-8 gap-y-10 xl:grid-cols-2'>
             <Team title='Players' tone='accent' players={d.players.slice(0, half)} {...rows} />
             <Team title='Players' tone='accent' players={d.players.slice(half)} {...rows} />

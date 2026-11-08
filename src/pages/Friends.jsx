@@ -77,62 +77,22 @@ function Group({ title, items, chatPuuid, offset = 0, ...rest }) {
   )
 }
 
-// Friends in VALORANT right now, as tiles beside the party (fills the detail side when no chat is open).
-function PlayingNow({ items, canInvite, onInvite, onChat }) {
-  if (!items.length) return null
-  return (
-    <Card className='p-5 rounded-3xl'>
-      <Heading hint={`${items.length} in VALORANT`}>Playing now</Heading>
-      <Stagger className='grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-2'>
-        {items.map((f, i) => {
-          const s = f.status
-          return (
-            <Item key={f.puuid} index={i}>
-              <ListRow onClick={() => onChat(f)} className='glass-inset'>
-                <div className='relative shrink-0'>
-                  <PlayerCard id={s.card} name={f.gameName} size={38} />
-                  <StatusDot state={s.state} className='absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5' />
-                </div>
-                <div className='relative min-w-0 flex-1'>
-                  <div className='flex items-baseline gap-1 truncate'>
-                    <span className='text-[13.5px] font-semibold tracking-tight text-text truncate'>{f.gameName}</span>
-                    <span className='text-[11px] text-muted'>#{f.tagLine}</span>
-                  </div>
-                  <div className='text-[11.5px] text-muted truncate mt-0.5'>{statusLine(f)}</div>
-                </div>
-                <div className='relative flex items-center gap-2 shrink-0 group-hover:opacity-0 transition-opacity'>
-                  {s.level != null && <span className='text-[10.5px] font-semibold text-muted tabular-nums'>Lv {s.level}</span>}
-                  {s.partySize > 1 && <span className='text-[10.5px] font-semibold text-muted tabular-nums inline-flex items-center gap-1'><FiUsers size={11} />{s.partySize}/{s.maxPartySize || 5}</span>}
-                  <RankIcon tier={s.rank} size={26} />
-                </div>
-                <div className='absolute right-1.5 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-panel border border-line shadow-lg rounded-full px-0.5'>
-                  <FriendActions f={f} canInvite={canInvite} onInvite={onInvite} />
-                </div>
-              </ListRow>
-            </Item>
-          )
-        })}
-      </Stagger>
-    </Card>
-  )
-}
-
 function PartyPanel({ party, loading, error, reload }) {
   const [busy, setBusy] = useState(false)
   const act = async (p, ok) => { setBusy(true); await withToast(p, ok); setBusy(false); reload(true) }
   if (loading && !party) return <Skeleton className='h-[260px] rounded-3xl' />
-  if (error && !party) return <Card className='p-5 rounded-3xl'><Empty icon={FiUsers} title='Party unavailable' hint='Open VALORANT to use parties.' className='!py-8' /></Card>
-  if (!party) return <Card className='p-5 rounded-3xl'><Empty icon={FiUsers} title='No party' hint='Start VALORANT to get a party.' className='!py-8' /></Card>
+  if (error && !party) return <Card className='p-6 rounded-3xl'><Empty icon={FiUsers} title='Party unavailable' hint='Open VALORANT to use parties.' className='!py-8' /></Card>
+  if (!party) return <Card className='p-6 rounded-3xl'><Empty icon={FiUsers} title='No party' hint='Start VALORANT to get a party.' className='!py-8' /></Card>
   const queued = party.state === 'MATCHMAKING'
   const slots = Math.max(5, party.members.length)
   return (
-    <Card className='relative overflow-hidden p-5 rounded-3xl'>
+    <Card className='relative overflow-hidden p-6 rounded-3xl'>
       <span className='halo -top-32 -left-24 w-96 h-96 opacity-70' />
-      <div className='relative flex items-start justify-between gap-4 mb-5'>
+      <div className='relative flex items-start justify-between gap-4 mb-6'>
         <div>
           <div className='eyebrow mb-2'>Your party</div>
           <div className='flex items-baseline gap-3'>
-            <span className='display text-[26px]'>{queued ? 'In queue' : 'Lobby'}</span>
+            <span className='display text-[30px]'>{queued ? 'In queue' : 'Lobby'}</span>
             {party.queueId && <span className='text-[13px] text-muted'>{queueName(party.queueId)}</span>}
           </div>
         </div>
@@ -164,7 +124,7 @@ function PartyPanel({ party, loading, error, reload }) {
           )
         })}
       </Stagger>
-      <div className='relative mt-6 pt-5 border-t border-line flex items-center justify-between gap-5'>
+      <div className='relative mt-6 pt-5 border-t border-line flex items-center justify-between gap-6'>
         <div className='w-60'>
           <Toggle checked={party.open} disabled={!party.iOwn || busy} label='Open party' hint={party.iOwn ? 'Friends can join freely' : 'Only the leader can change this'}
             onChange={v => act(invoke('social:partyAccess', v), v ? 'Party opened' : 'Party closed')} />
@@ -294,13 +254,12 @@ function FriendsBody({ active }) {
             actions={chatFriend && <FriendActions f={chatFriend} canInvite={canInvite} onInvite={invite} />}
             onClose={() => setChat(null)} onSent={() => convs.reload(true)} />
         ) : (
-          <FadeIn className='flex flex-col gap-4'>
+          <FadeIn className='flex flex-col gap-5'>
             <PartyPanel party={party.data} loading={party.loading} error={party.error} reload={party.reload} />
-            <div className='grid grid-cols-1 xl:grid-cols-2 gap-4'>
+            <div className='grid grid-cols-1 xl:grid-cols-2 gap-5'>
               <AddFriend onDone={requests.reload} />
               <Requests data={requests.data} reload={requests.reload} />
             </div>
-            <PlayingNow items={groups.valorant} {...shared} />
           </FadeIn>
         )}
       </SplitView>

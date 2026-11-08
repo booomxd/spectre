@@ -35,7 +35,7 @@ export function General({ settings, save }) {
   return (
     <section>
       <SectionTitle>General</SectionTitle>
-      <Card className='p-5 rounded-2xl'>
+      <Card className='p-6 rounded-2xl'>
         <Row><Toggle checked={settings.launchAtLogin} onChange={v => save({ launchAtLogin: v })} label='Launch at login' hint='Start Spectre when you sign in to Windows' /></Row>
         <Row><Toggle checked={settings.minimizeToTray} onChange={v => save({ minimizeToTray: v })} label='Minimize to tray' hint='Keep running in the background when minimized' /></Row>
         <Row><Toggle checked={settings.spectrePresence !== false} onChange={v => save({ spectrePresence: v })} label='Show that I use Spectre' hint='Adds a small marker to your Riot presence so friends using Spectre can see you use it' /></Row>
@@ -106,7 +106,7 @@ export function Overlay({ settings, save }) {
   return (
     <section>
       <SectionTitle right={<Button size='sm' icon={FiMonitor} onClick={() => withToast(invoke('overlay:toggle'))}>Show / hide</Button>}>Overlay</SectionTitle>
-      <Card className='p-5 rounded-2xl'>
+      <Card className='p-6 rounded-2xl'>
         <Row>
           <div className='flex items-center justify-between gap-4'>
             <Label hint='Show or hide the overlay from anywhere, even in game. Backspace while recording clears it.'>Toggle overlay</Label>
@@ -123,7 +123,7 @@ export function Overlay({ settings, save }) {
         <Row><Toggle checked={!!o.locked} onChange={v => set({ locked: v })} label='Click-through' hint='Clicks go to the game instead of the overlay. Use the lock hotkey to unlock it in game.' /></Row>
         <Row><Toggle checked={o.showPeak !== false} onChange={v => set({ showPeak: v })} label='Show peak rank' hint='A small peak icon next to players whose peak is above their current rank' /></Row>
         <Row>
-          <div className='grid gap-5 sm:grid-cols-2'>
+          <div className='grid gap-6 sm:grid-cols-2'>
             <Slider label='Opacity' min={0.3} max={1} step={0.05} value={o.opacity} format={v => Math.round(v * 100) + '%'} onCommit={v => set({ opacity: v })} />
             <Slider label='Scale' min={0.7} max={1.5} step={0.05} value={o.scale} format={v => v.toFixed(2) + 'x'} onCommit={v => set({ scale: v })} />
           </div>
@@ -147,7 +147,7 @@ export function Connection() {
   return (
     <section>
       <SectionTitle right={<Badge tone={riot.connected ? 'good' : 'bad'}>{riot.connected ? 'Connected' : 'Offline'}</Badge>}>Connection</SectionTitle>
-      <Card className='p-5 rounded-2xl flex flex-wrap items-center gap-x-10 gap-y-4'>
+      <Card className='p-6 rounded-2xl flex flex-wrap items-center gap-x-10 gap-y-4'>
         <span className={'w-3 h-3 rounded-full ring-4 ' + (riot.connected ? 'bg-good ring-good/20 shadow-[0_0_12px_rgb(var(--good)/0.7)] anim-pulse' : 'bg-bad ring-bad/20')} />
         {cell('Region', riot.region)}
         {cell('Shard', riot.shard)}
@@ -168,7 +168,7 @@ export function Data() {
   return (
     <section>
       <SectionTitle>Data</SectionTitle>
-      <Card className='p-5 rounded-2xl'>
+      <Card className='p-6 rounded-2xl'>
         <Row>
           <div className='flex items-center justify-between gap-4'>
             <div className='min-w-0'>
@@ -240,10 +240,10 @@ export function About() {
   return (
     <section>
       <SectionTitle>About</SectionTitle>
-      <Card className='p-5 rounded-2xl'>
+      <Card className='p-6 rounded-2xl'>
         <div className='flex items-center justify-between gap-4 flex-wrap'>
           <div>
-            <div className='font-display text-[24px] font-bold tracking-tight leading-none'>Spectre <span className='text-accent'>{info.data?.version?.split('.').slice(0, 2).join('.') || ''}</span></div>
+            <div className='font-display text-[28px] font-bold tracking-tight leading-none'>Spectre <span className='text-accent'>{info.data?.version?.split('.').slice(0, 2).join('.') || ''}</span></div>
             <div className='text-[12px] text-muted mt-2 tabular-nums'>
               {info.loading ? <Skeleton className='h-3 w-24' /> : `Version ${info.data?.version || '-'}${info.data?.tauri ? ` · Tauri ${info.data.tauri}` : ''}`}
             </div>

@@ -40,9 +40,9 @@ export default function Weapons() {
     <Page title='Weapons' subtitle='Stats, damage falloff and every skin for each weapon'
       actions={<SegmentedTabs layoutId='weapons-cat' tabs={CATEGORIES.map(c => ({ value: c.key, label: c.label }))} value={cat} onChange={c => { setCat(c); setWid(null); setTier(''); setQ('') }} />}>
       {!weapons ? (
-        <div className='space-y-4'><Skeleton className='h-16 rounded-2xl' /><Skeleton className='h-72 rounded-3xl' /></div>
+        <div className='space-y-5'><Skeleton className='h-16 rounded-2xl' /><Skeleton className='h-72 rounded-3xl' /></div>
       ) : (
-        <div className='space-y-6'>
+        <div className='space-y-8'>
           <div className='glass rounded-full p-1.5 flex gap-1 w-fit max-w-full overflow-x-auto'>
             {inCat.map(w => {
               const on = weapon && lc(w.uuid) === lc(weapon.uuid)
@@ -58,14 +58,14 @@ export default function Weapons() {
           </div>
 
           {weapon && (
-            <Swap id={weapon.uuid} className='space-y-6'>
+            <Swap id={weapon.uuid} className='space-y-8'>
               <div className='bento'>
-                <Card className='col-span-12 xl:col-span-7 relative overflow-hidden rounded-3xl p-6 flex flex-col min-h-[300px]'>
+                <Card className='col-span-12 xl:col-span-7 relative overflow-hidden rounded-3xl p-7 flex flex-col min-h-[300px]'>
                   <span className='halo -top-28 -right-16 w-[420px] h-[420px] opacity-80' />
                   <div className='relative flex items-start justify-between gap-3'>
                     <div>
                       <div className='eyebrow mb-2'>{CATEGORIES.find(c => c.key === cat)?.label}</div>
-                      <h2 className='display text-[36px] text-text'>{weapon.displayName}</h2>
+                      <h2 className='display text-[44px] text-text'>{weapon.displayName}</h2>
                     </div>
                     {weapon.shopData && <Badge tone='accent' className='!h-7 !px-3 !text-[11px]'>{weapon.shopData.cost > 0 ? `${weapon.shopData.cost} credits` : 'Free'}</Badge>}
                   </div>
@@ -81,7 +81,7 @@ export default function Weapons() {
                   ) : <p className='relative text-[13px] text-muted'>The melee weapon has no ballistic stats.</p>}
                 </Card>
 
-                <Card className='col-span-12 xl:col-span-5 rounded-3xl p-5'>
+                <Card className='col-span-12 xl:col-span-5 rounded-3xl p-6'>
                   <Heading hint={stats?.shotgunPelletCount > 1 ? `Per pellet, ${stats.shotgunPelletCount} pellets per shot` : 'Damage per bullet'}>Damage by range</Heading>
                   {stats ? (
                     <>
@@ -102,7 +102,7 @@ export default function Weapons() {
                           {[['Headshots', stats.damageRanges[0].headDamage], ['Body shots', stats.damageRanges[0].bodyDamage]].map(([l, d]) => (
                             <div key={l}>
                               <div className='eyebrow'>{l} to kill</div>
-                              <div className='font-display text-[26px] font-bold tracking-tight tabular-nums mt-1'>{d > 0 ? Math.ceil(150 / d) : '-'}</div>
+                              <div className='font-display text-[30px] font-bold tracking-tight tabular-nums mt-1'>{d > 0 ? Math.ceil(150 / d) : '-'}</div>
                               <div className='text-[11px] text-muted'>150 HP, close range</div>
                             </div>
                           ))}
@@ -114,7 +114,7 @@ export default function Weapons() {
               </div>
 
               <section>
-                <div className='flex items-end justify-between gap-4 mb-4 flex-wrap'>
+                <div className='flex items-end justify-between gap-4 mb-5 flex-wrap'>
                   <div>
                     <h3 className='font-display text-[22px] font-bold tracking-tight text-text'>Skins</h3>
                     <p className='text-[12px] text-muted mt-1'>{skins.length} {skins.length === 1 ? 'skin' : 'skins'} for the {weapon.displayName}</p>
@@ -129,7 +129,7 @@ export default function Weapons() {
                   </div>
                 </div>
                 {skins.length === 0 ? <Empty title='No skins found' hint='Try another tier or clear the search.' /> : (
-                  <Stagger key={filter + tier + q} className='grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 min-[1800px]:grid-cols-6 gap-4'>
+                  <Stagger key={filter + tier + q} className='grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4'>
                     {skins.map((s, i) => {
                       const t = tiers[lc(s.contentTierUuid)]
                       const color = tierColor(t)
@@ -137,7 +137,7 @@ export default function Weapons() {
                       return (
                         <Item key={s.uuid} index={i}>
                           <Card hover onClick={() => setSkin(s)} className='group relative overflow-hidden h-full flex flex-col'>
-                            <div className='relative h-28 flex items-center justify-center px-5 pt-4' style={color ? { background: `linear-gradient(180deg, transparent 35%, ${color}14)` } : undefined}>
+                            <div className='relative h-28 flex items-center justify-center px-6 pt-4' style={color ? { background: `linear-gradient(180deg, transparent 35%, ${color}14)` } : undefined}>
                               <span className='absolute bottom-3 left-1/2 -translate-x-1/2 w-3/5 h-3 rounded-[50%] bg-black/35 blur-md pointer-events-none' />
                               {color && <span className='absolute inset-x-8 bottom-0 h-px pointer-events-none' style={{ background: `linear-gradient(90deg, transparent, ${color}aa, transparent)` }} />}
                               <img src={skinImage(s)} className='relative max-h-full max-w-full object-contain transition-transform duration-500 ease-out group-hover:scale-[1.04]' loading='lazy' />
@@ -185,11 +185,11 @@ function SkinModal({ skin, weapon, owned, showOwned, tiers, onClose }) {
 
   return (
     <Modal open onClose={onClose} width={720} title={skin.displayName}>
-      <div className='space-y-4'>
+      <div className='space-y-5'>
         <div className='glass-inset rounded-2xl overflow-hidden aspect-video flex items-center justify-center'>
           {video
             ? <video key={video} src={video} className='w-full h-full' controls autoPlay loop muted playsInline poster={image || undefined} />
-            : <img key={image} src={image} className='anim-pop max-h-full max-w-full object-contain p-5' />}
+            : <img key={image} src={image} className='anim-pop max-h-full max-w-full object-contain p-6' />}
         </div>
         <div className='flex items-center gap-2 flex-wrap'>
           {t && <Badge className='gap-1.5'><img src={t.displayIcon} className='w-3 h-3' />{t.displayName}</Badge>}

@@ -123,26 +123,17 @@ export default function MatchDetail({ matchId, me, memos = {}, onSearch, onMemo 
     }))
   return (
     <div className='flex flex-col gap-4'>
-      <div className='glass relative overflow-hidden rounded-3xl h-32 flex items-center px-6'>
+      <div className='glass relative overflow-hidden rounded-3xl h-32 flex items-center px-7'>
         {map?.splash && <img src={map.splash} alt='' className='absolute inset-0 w-full h-full object-cover opacity-55' draggable={false} />}
         {/* Fades the map art into the modal's own fill so text stays readable on light and dark themes. */}
         <div className='absolute inset-0 bg-gradient-to-r from-panel via-panel/75 to-panel/10' />
-        <div className='relative flex items-center gap-4 w-full'>
+        <div className='relative flex items-center gap-5 w-full'>
           <div>
             <div className='eyebrow !text-[10px] mb-2'>{data.mode}</div>
-            <div className={cx('display text-[34px]', R.text)}>{R.label}</div>
+            <div className={cx('display text-[40px]', R.text)}>{R.label}</div>
             <div className='text-[12px] text-muted mt-2'>{map?.displayName || 'Unknown map'}</div>
           </div>
-          {!ffa && <div className='display text-[40px] tabular-nums ml-6'>{team(myTeam)?.roundsWon ?? 0}<span className='text-muted mx-1.5'>:</span>{data.teams.find(t => t.id !== myTeam)?.roundsWon ?? 0}</div>}
-          {mine && (
-            <div className='hidden md:flex items-center gap-3 ml-8 min-w-0'>
-              <AgentIcon id={mine.agent} agents={agents} size={44} className='!rounded-xl' />
-              <div className='min-w-0'>
-                <div className='font-display text-[16px] font-bold tracking-tight leading-none tabular-nums'>{mine.kills} / {mine.deaths} / {mine.assists}</div>
-                <div className='text-[11px] text-muted mt-1.5 tabular-nums truncate'>{mine.acs} ACS{mine.adr != null ? ` · ${mine.adr} ADR` : ''}{mine.hs != null ? ` · ${mine.hs}% HS` : ''}</div>
-              </div>
-            </div>
-          )}
+          {!ffa && <div className='display text-[48px] tabular-nums ml-6'>{team(myTeam)?.roundsWon ?? 0}<span className='text-muted mx-1.5'>:</span>{data.teams.find(t => t.id !== myTeam)?.roundsWon ?? 0}</div>}
           <div className='ml-auto text-right text-[12px] text-muted leading-relaxed'>
             <div>{fmtDate(data.start)}</div><div>{fmtLen(data.length)} long</div>
           </div>

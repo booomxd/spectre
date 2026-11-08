@@ -32,7 +32,7 @@ export default function Drawer({ open, onClose, children, width = 'min(820px, 62
 export function PanelHeader({ player: p, sub, actions, onClose }) {
   const color = useRankColor(p.ranked ? p.rank : 0)
   return (
-    <header className='relative shrink-0 overflow-hidden px-6 pt-5 pb-5'>
+    <header className='relative shrink-0 overflow-hidden px-7 pt-6 pb-5'>
       <span className='absolute -left-16 -top-24 w-72 h-72 rounded-full pointer-events-none opacity-70'
         style={{ background: `radial-gradient(closest-side, ${color ? color + '38' : 'rgb(var(--accent) / 0.22)'}, transparent)` }} />
       <div className='relative flex items-center gap-4'>
@@ -40,7 +40,7 @@ export function PanelHeader({ player: p, sub, actions, onClose }) {
         <div className='min-w-0 flex-1'>
           <div className='eyebrow mb-1.5'>{sub}</div>
           <div className='flex items-baseline gap-2 min-w-0'>
-            <h3 className='display text-[24px] text-text truncate'>{p.hidden ? (p.agent?.name || 'Hidden player') : p.gameName || '...'}</h3>
+            <h3 className='display text-[28px] text-text truncate'>{p.hidden ? (p.agent?.name || 'Hidden player') : p.gameName || '...'}</h3>
             {!p.hidden && p.tagLine && <span className='text-[14px] text-muted shrink-0'>#{p.tagLine}</span>}
             {p.hidden && <span className='self-center' title='Name hidden by streamer mode'><Badge><FiEyeOff /> Hidden</Badge></span>}
           </div>

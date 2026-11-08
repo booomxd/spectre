@@ -15,7 +15,7 @@ function Preview({ t }) {
         <span className='w-4 h-1.5 rounded-full bg-muted/40' />
         <span className='w-4 h-1.5 rounded-full bg-muted/40' />
       </div>
-      <div className='flex-1 p-2 pt-6 flex flex-col gap-1.5'>
+      <div className='flex-1 p-2 pt-7 flex flex-col gap-1.5'>
         <span className='h-2 w-14 rounded-full bg-text/80' />
         <div className='flex gap-1.5 flex-1'>
           <span className='glass flex-1 rounded-lg' />
@@ -34,10 +34,10 @@ export default function Appearance() {
   const pick = id => { setTheme(id); setCurrent(id) }
   const [reduce, setReduce] = useState(getReduceMotion)
   return (
-    <section className='flex flex-col gap-6'>
+    <section className='flex flex-col gap-8'>
       <div>
       <SectionTitle>Motion</SectionTitle>
-      <Card className='p-5'>
+      <Card className='p-6'>
         <Toggle checked={reduce} onChange={v => { setReduceMotion(v); setReduce(v) }} label='Reduce motion'
           hint='Turns off page transitions, sliding indicators and the drifting backdrop. Your Windows animation setting is honored too.' />
       </Card>

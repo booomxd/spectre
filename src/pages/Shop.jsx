@@ -50,7 +50,7 @@ function OfferCard({ item, price, base, discount, cat, onOpen, index, currencyId
       <Card hover={clickable} onClick={() => clickable && onOpen(item)} className='group relative overflow-hidden h-full flex flex-col'>
         <div className={cx('relative', size === 'lg' ? 'h-48' : 'h-32')}>
           {color && <div className='absolute inset-x-0 top-0 h-px' style={{ background: `linear-gradient(90deg, transparent, ${color}, transparent)` }} />}
-          <ItemArt item={hidden ? null : item} className={cx('h-full', size === 'lg' ? 'px-5 pt-5 pb-2' : 'px-5 pt-5 pb-1')} />
+          <ItemArt item={hidden ? null : item} className={cx('h-full', size === 'lg' ? 'px-6 pt-6 pb-2' : 'px-5 pt-5 pb-1')} />
           {discount > 0 && <span className='absolute top-3 left-3 inline-flex h-6 items-center px-2.5 rounded-full accent-fill text-bg text-[11px] font-bold tabular-nums'>-{pct(discount)}%</span>}
           {clickable && <span className='absolute top-3 right-3 w-8 h-8 rounded-full glass flex items-center justify-center text-muted opacity-0 group-hover:opacity-100 transition-opacity'><FiPlay size={12} /></span>}
         </div>
@@ -82,7 +82,7 @@ function SkinModal({ item, onClose }) {
   return (
     <Modal open={!!item} onClose={close} title={item?.name} width={680}>
       {item && (
-        <div className='space-y-4'>
+        <div className='space-y-5'>
           <ItemArt item={{ ...item, icon: active?.fullRender || item.icon }} className='glass-inset h-60 rounded-2xl' />
           {chromas.length > 1 && (
             <div>
@@ -115,14 +115,14 @@ function Bundle({ b, cat, onOpen }) {
         {art ? <img src={art} alt='' className='absolute inset-0 w-full h-full object-cover' draggable={false} /> : <span className='halo -top-24 -left-20 w-96 h-96' />}
         <div className='absolute inset-0 bg-gradient-to-r from-black/85 via-black/45 to-transparent' />
         <div className='absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent' />
-        <div className='relative h-full flex flex-col justify-end p-6 gap-4'>
+        <div className='relative h-full flex flex-col justify-end p-8 gap-5'>
           <div>
             <div className='flex items-center gap-2 mb-3'>
               <span className='text-[11px] font-semibold tracking-[0.14em] uppercase text-white/70'>Featured bundle</span>
               {b.discountPercent > 0 && <span className='inline-flex h-5 items-center px-2 rounded-full bg-good/90 text-[10px] font-bold text-black tabular-nums'>-{pct(b.discountPercent)}%</span>}
               {b.wholesaleOnly && <span className='inline-flex h-5 items-center px-2 rounded-full bg-white/15 text-[10px] font-semibold text-white'>Full bundle only</span>}
             </div>
-            <h2 className='display text-[42px] text-white drop-shadow-[0_4px_20px_rgb(0_0_0/0.5)]'>{meta?.displayName || 'Bundle'}</h2>
+            <h2 className='display text-[52px] text-white drop-shadow-[0_4px_20px_rgb(0_0_0/0.5)]'>{meta?.displayName || 'Bundle'}</h2>
           </div>
           <div className='flex flex-wrap items-center justify-between gap-4'>
             <BigCountdown seconds={b.secondsLeft} label='Leaves in' onArt />
@@ -133,7 +133,7 @@ function Bundle({ b, cat, onOpen }) {
           </div>
         </div>
       </Card>
-      <Stagger className='grid grid-cols-2 md:grid-cols-4 gap-3'>
+      <Stagger className='grid grid-cols-2 md:grid-cols-4 xl:grid-cols-4 gap-3'>
         {b.items.map((it, i) => {
           const item = cat?.items.get(it.id)
           const clickable = !!item?.skin
@@ -179,7 +179,7 @@ function ShopBody() {
     <Page title='Store' subtitle='Featured bundles, your daily offers and the accessory store'
       actions={<><Wallet wallet={wallet.data} cat={cat} /><Button size='icon' icon={FiRefreshCw} title='Refresh' loading={store.loading && !!s} onClick={() => { store.reload(); wallet.reload() }} /></>}>
       {store.error && !s ? <ErrorState error={store.error} onRetry={store.reload} /> : !s ? (
-        <div className='space-y-5'><Skeleton className='h-[300px] rounded-3xl' /><div className='grid grid-cols-4 gap-4'>{[0, 1, 2, 3].map(i => <Skeleton key={i} className='h-64 rounded-2xl' />)}</div></div>
+        <div className='space-y-6'><Skeleton className='h-[300px] rounded-3xl' /><div className='grid grid-cols-4 gap-4'>{[0, 1, 2, 3].map(i => <Skeleton key={i} className='h-64 rounded-2xl' />)}</div></div>
       ) : (
         <div className='space-y-12'>
           <section>
@@ -199,7 +199,7 @@ function ShopBody() {
 
           {s.night && (
             <Section title='Night market' hint={!s.night.offers.some(o => o.revealed) ? 'Offers have not been revealed in-game yet' : 'Your personal discounts'} seconds={s.night.secondsLeft} countdownLabel='Ends in'>
-              <Stagger className='grid grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6 gap-4'>
+              <Stagger className='grid grid-cols-2 xl:grid-cols-3 gap-4'>
                 {s.night.offers.map((o, i) => <OfferCard key={o.id} index={i} item={cat?.items.get(o.itemId)} price={o.price} base={o.base} discount={o.discount / 100} cat={cat} onOpen={setOpen} />)}
               </Stagger>
               {!s.night.offers.some(o => o.revealed) && <p className='mt-3 text-xs text-muted flex items-center gap-1.5'><FiMoon /> Reveal them in VALORANT to lock in the discounts.</p>}
@@ -208,7 +208,7 @@ function ShopBody() {
 
           {s.accessories && (
             <Section title='Accessories' hint='Buddies, cards, sprays and titles for Kingdom Credits' seconds={s.accessories.secondsLeft}>
-              <Stagger className='grid grid-cols-2 md:grid-cols-4 gap-4'>
+              <Stagger className='grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4'>
                 {s.accessories.offers.map((o, i) => <OfferCard key={o.id} index={i} size='sm' item={cat?.items.get(o.itemId)} price={o.price} currencyId={o.currencyId} cat={cat} onOpen={setOpen} />)}
               </Stagger>
             </Section>

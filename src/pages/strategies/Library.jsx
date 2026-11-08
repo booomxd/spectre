@@ -25,12 +25,12 @@ export default function Library({ playbooks, loading, maps, sel, onSelect, onNew
   return (
     <div className='glass h-full flex flex-col rounded-[28px] overflow-hidden'>
       <div className='p-5 pb-3 flex flex-col gap-3.5'>
-        <div className='flex items-end justify-between gap-2'>
-          <div className='min-w-0'>
+        <div className='flex items-end justify-between'>
+          <div>
             <div className='eyebrow mb-1'>Library</div>
-            <h2 className='display text-[21px] text-text truncate'>Playbooks</h2>
+            <h2 className='display text-[22px] text-text'>Playbooks</h2>
           </div>
-          <Button size='sm' variant='glow' icon={FiPlus} onClick={onNewPlaybook} title='New playbook' aria-label='New playbook' className='shrink-0 max-[1200px]:w-7 max-[1200px]:px-0'><span className='max-[1200px]:hidden'>New</span></Button>
+          <Button size='sm' variant='glow' icon={FiPlus} onClick={onNewPlaybook}>New</Button>
         </div>
         <div className='relative'>
           <FiSearch className='absolute left-3 top-1/2 -translate-y-1/2 text-muted text-sm' />

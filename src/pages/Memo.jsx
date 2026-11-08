@@ -98,9 +98,9 @@ function ItemList({ items, empty, icon, fields, onAdd, onRemove, row }) {
         <Button type='submit' variant='primary' icon={FiPlus} disabled={!ready} className='shrink-0'>Add</Button>
       </form>
       {!items.length ? <Empty icon={icon} title={empty.title} hint={empty.hint} />
-        : <Stagger className='grid grid-cols-1 2xl:grid-cols-2 gap-2'>
+        : <Stagger className='flex flex-col gap-2'>
           {items.map((it, i) => (
-            <Item key={it.id} index={i} className='group glass-inset min-w-0 flex items-center gap-3 rounded-2xl px-4 py-3 2xl:last:odd:col-span-2'>
+            <Item key={it.id} index={i} className='group glass-inset flex items-center gap-3 rounded-2xl px-4 py-3'>
               <div className='min-w-0 flex-1'>{row(it)}</div>
               <button title='Remove' onClick={() => onRemove(it.id)}
                 className='w-8 h-8 shrink-0 rounded-full flex items-center justify-center text-muted opacity-0 group-hover:opacity-100 hover:text-bad hover:bg-bad/15 transition-[transform,opacity,background-color,border-color,color] duration-200'><FiTrash2 size={14} /></button>
@@ -194,7 +194,7 @@ export default function Memo({ params }) {
               </ListRow>
             </Item>
           ))}
-          {!shown.length && <p className='px-3 py-5 text-center text-[12px] text-muted'>No sections match.</p>}
+          {!shown.length && <p className='px-3 py-6 text-center text-[12px] text-muted'>No sections match.</p>}
         </Stagger>
       )}
     </Pane>
@@ -209,7 +209,7 @@ export default function Memo({ params }) {
             : (
               <Card className='relative h-full min-h-[460px] flex flex-col rounded-3xl overflow-hidden'>
                 <span className={cx('halo -top-32 -right-24 w-96 h-96 opacity-50')} />
-                <div className='relative flex items-start justify-between gap-4 px-6 pt-5'>
+                <div className='relative flex items-start justify-between gap-4 px-7 pt-6'>
                   <div className='flex items-center gap-4 min-w-0'>
                     <SectionIcon s={s} size='w-12 h-12 text-[20px] rounded-2xl' />
                     <div className='min-w-0'>
@@ -221,7 +221,7 @@ export default function Memo({ params }) {
                           onBlur={() => { if (!s.name.trim()) update({ name: 'Untitled' }); setRenaming(false) }}
                           onKeyDown={e => { if (e.key === 'Enter' || e.key === 'Escape') e.currentTarget.blur() }} />
                         : <button title='Rename' onClick={() => setRenaming(true)}
-                          className='block max-w-full truncate display text-[24px] text-text hover:text-accent transition-colors text-left mt-1'>{s.name}</button>}
+                          className='block max-w-full truncate display text-[28px] text-text hover:text-accent transition-colors text-left mt-1'>{s.name}</button>}
                     </div>
                   </div>
                   <div className='flex items-center gap-1.5 shrink-0'>
@@ -230,12 +230,12 @@ export default function Memo({ params }) {
                       onClick={() => setConfirm({ kind: 'section', id: s.id, name: s.name })}><FiTrash2 /></Button>
                   </div>
                 </div>
-                <div className='relative px-6 pt-5 pb-4'>
+                <div className='relative px-7 pt-5 pb-4'>
                   <SegmentedTabs tabs={TABS.map(t => ({ ...t, count: t.value === 'notes' ? undefined : s[t.value]?.length || undefined }))} value={tab} onChange={setTab} layoutId='notes-tabs' />
                 </div>
                 <div className='hairline' />
 
-                <div className='relative flex-1 min-h-0 overflow-y-auto px-6 py-5 flex flex-col'>
+                <div className='relative flex-1 min-h-0 overflow-y-auto px-7 py-6 flex flex-col'>
                   <Swap id={s.id + tab} className='flex-1 flex flex-col min-h-0'>
                     {tab === 'notes' && (
                       <div className='flex-1 flex flex-col min-h-0'>

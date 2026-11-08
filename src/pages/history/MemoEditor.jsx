@@ -82,7 +82,7 @@ export function MemoForm({ target, memo, onSaved, onDeleted, onCancel, allTags =
 
   const needsId = !target?.puuid
   return (
-    <div className='flex flex-col gap-4'>
+    <div className='flex flex-col gap-5'>
       {needsId && (
         <div>
           <Label hint='Looked up when you save'>Riot ID</Label>

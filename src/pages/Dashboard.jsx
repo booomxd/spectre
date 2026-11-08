@@ -31,7 +31,7 @@ function DashboardBody({ active }) {
 
   return (
     // No page header: the hero tile is the header here (name, date, quick stats).
-    <Page bodyClassName='pt-6'>
+    <Page bodyClassName='pt-7'>
       <Stagger className='bento' step={0.045}>
         {tiles.map(([span, el], i) => <Item key={i} index={i} className={'col-span-12 ' + span}>{el}</Item>)}
       </Stagger>

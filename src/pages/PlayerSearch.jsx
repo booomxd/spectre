@@ -30,7 +30,7 @@ function ScoutStats({ scout }) {
   const stat = (label, value, sub) => (
     <div className='flex-1 min-w-[120px] px-5 py-4 first:pl-6'>
       <div className='eyebrow'>{label}</div>
-      <div className='font-display text-[26px] font-bold tracking-tight leading-tight tabular-nums mt-1.5'>{value}</div>
+      <div className='font-display text-[30px] font-bold tracking-tight leading-tight tabular-nums mt-1.5'>{value}</div>
       {sub && <div className='text-[11px] text-muted tabular-nums'>{sub}</div>}
     </div>
   )
@@ -40,7 +40,6 @@ function ScoutStats({ scout }) {
     <Card className='rounded-3xl flex flex-wrap divide-x divide-line'>
       {stat('Headshot %', r.hs != null ? `${r.hs}%` : '-', `last ${r.matches} competitive`)}
       {stat('K/D', kd(r.kills, r.deaths), `${r.kills} / ${r.deaths}`)}
-      {r.matches > 0 && stat('Kills per match', (r.kills / r.matches).toFixed(1), `${(r.deaths / r.matches).toFixed(1)} deaths per match`)}
       {r.team > 0 && stat('Recent win rate', `${Math.round(r.wins / r.team * 100)}%`, `${r.wins}W ${r.team - r.wins}L`)}
     </Card>
   )
@@ -52,7 +51,7 @@ function ActHistory({ scout, seasons }) {
   if (scout.error && !scout.data) return <ErrorState error={scout.error} onRetry={scout.reload} />
   const start = id => Date.parse(seasons[id]?.startTime) || 0
   const acts = [...(scout.data?.acts || [])].sort((a, b) => start(b.seasonId) - start(a.seasonId))
-  if (!acts.length) return <Empty icon={FiClock} title='No competitive acts' hint='No ranked act data is available for this player.' className='py-6' />
+  if (!acts.length) return <Empty icon={FiClock} title='No competitive acts' hint='No ranked act data is available for this player.' className='py-8' />
   // All-time peak act: highest peak, earliest act to reach it.
   const best = Math.max(...acts.map(a => a.peak))
   const peakAct = [...acts].reverse().find(a => a.peak === best)?.seasonId
@@ -106,13 +105,13 @@ function Profile({ puuid }) {
   const wr = data.current?.games ? Math.round(data.current.wins / data.current.games * 100) : null
 
   return (
-    <FadeIn className='flex flex-col gap-4'>
+    <FadeIn className='flex flex-col gap-5'>
       <Card className='relative overflow-hidden rounded-3xl min-h-[250px]'>
         {data.cardId && card?.wideArt && <img src={card.wideArt} alt='' className='absolute inset-0 w-full h-full object-cover' draggable={false} />}
         {/* Dark scrim over the card art: the name stays white and legible on every theme. Without art the plain glass shows through. */}
         {data.cardId && card?.wideArt && <div className='absolute inset-0 bg-gradient-to-t from-black/75 via-black/35 to-black/5' />}
         {!(data.cardId && card?.wideArt) && <span className='halo -top-32 -right-24 w-96 h-96' />}
-        <div className='relative h-full min-h-[250px] flex flex-col justify-end p-6 gap-4'>
+        <div className='relative h-full min-h-[250px] flex flex-col justify-end p-7 gap-4'>
           <div className='flex flex-wrap items-end justify-between gap-4'>
             <div className='min-w-0'>
               <div className='flex items-center gap-2 mb-2.5'>
@@ -120,7 +119,7 @@ function Profile({ puuid }) {
                 {data.level != null && <Badge>Level {data.level}</Badge>}
                 {data.leaderboardRank && <Badge tone='warn'>Leaderboard #{data.leaderboardRank}</Badge>}
               </div>
-              <h2 className={cx('display text-[36px] truncate', data.cardId && card?.wideArt ? 'text-white drop-shadow-[0_2px_12px_rgb(0_0_0/0.45)]' : 'text-text')}>{name || 'Hidden player'}</h2>
+              <h2 className={cx('display text-[44px] truncate', data.cardId && card?.wideArt ? 'text-white drop-shadow-[0_2px_12px_rgb(0_0_0/0.45)]' : 'text-text')}>{name || 'Hidden player'}</h2>
               {title?.titleText && <div className={cx('text-sm mt-2', data.cardId && card?.wideArt ? 'text-white/75' : 'text-muted')}>{title.titleText}</div>}
             </div>
             <div className='flex flex-wrap gap-3'>
@@ -136,8 +135,8 @@ function Profile({ puuid }) {
 
       <ScoutStats scout={scout} />
 
-      <div className='grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_340px] gap-4 items-start'>
-        <div className='flex flex-col gap-5'>
+      <div className='grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_340px] gap-5 items-start'>
+        <div className='flex flex-col gap-6'>
           <div>
             <Heading hint='Final rank and peak for every competitive act'>Act history</Heading>
             <ActHistory scout={scout} seasons={seasons} />
@@ -208,7 +207,7 @@ export default function PlayerSearch({ params }) {
           </Stagger>
           <button onClick={clear} className='mt-2 mx-2.5 inline-flex items-center gap-1.5 text-[11.5px] font-medium text-muted hover:text-bad transition-colors'><FiX size={12} /> Clear recent searches</button>
         </>
-      ) : <p className='px-3 py-5 text-center text-[12px] text-muted leading-relaxed'>Players you look up show up here for one click access.</p>}
+      ) : <p className='px-3 py-6 text-center text-[12px] text-muted leading-relaxed'>Players you look up show up here for one click access.</p>}
     </Pane>
   )
 

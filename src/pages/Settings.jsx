@@ -39,7 +39,7 @@ export default function Settings({ active, params }) {
     <Page title='Settings' subtitle='Appearance, behavior, overlay and connection'>
       <SegmentedTabs className='mb-7' layoutId='settings-tabs' tabs={SETTINGS_TABS} value={tab} onChange={setTab} />
       {error ? <ErrorState error={error} /> : !settings ? (
-        <div className='grid gap-4 max-w-4xl'>{[0, 1, 2].map(i => <Skeleton key={i} className='h-32 rounded-2xl' />)}</div>
+        <div className='grid gap-5 max-w-4xl'>{[0, 1, 2].map(i => <Skeleton key={i} className='h-32 rounded-2xl' />)}</div>
       ) : (
         <Swap id={tab} className={tab === 'experimental' ? 'max-w-6xl' : 'max-w-4xl'}>{body()}</Swap>
       )}

@@ -68,18 +68,18 @@ function SkinsView({ active }) {
             })}
           </Pane>
         }>
-          <Card className='relative overflow-hidden rounded-3xl p-5 min-w-0'>
+          <Card className='relative overflow-hidden rounded-3xl p-6 min-w-0'>
             <span className='halo -top-28 -right-24 w-96 h-96' />
             {!weapon || !value || !owned ? <div className='relative space-y-3'><Skeleton className='h-32 rounded-2xl' /><Skeleton className='h-40 rounded-2xl' /></div> : (
               <Swap id={weapon.uuid} className='relative'>
-                <div className='flex items-end justify-between mb-4'>
+                <div className='flex items-end justify-between mb-5'>
                   <div>
                     <div className='eyebrow mb-1.5'>{CATEGORIES.find(c => c.key === catKey(weapon))?.label}</div>
-                    <h2 className='display text-[26px] text-text'>{weapon.displayName}</h2>
+                    <h2 className='display text-[30px] text-text'>{weapon.displayName}</h2>
                   </div>
                   {dirty ? <Badge tone='warn'>Not equipped yet</Badge> : <Badge tone='good'>Equipped</Badge>}
                 </div>
-                <SkinPicker weapon={weapon} owned={owned} value={value} onChange={setSel} maxHeight='max(340px, calc(100vh - 500px))' />
+                <SkinPicker weapon={weapon} owned={owned} value={value} onChange={setSel} maxHeight={340} />
               </Swap>
             )}
           </Card>

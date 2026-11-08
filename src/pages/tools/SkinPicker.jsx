@@ -26,7 +26,7 @@ export default function SkinPicker({ weapon, owned, value, onChange, maxHeight =
   return (
     <div className='flex flex-col gap-4'>
       {skin && (
-        <div className='glass-inset flex gap-4 rounded-2xl p-4 anim-fade'>
+        <div className='glass-inset flex gap-5 rounded-2xl p-4 anim-fade'>
           <div className='w-56 h-28 shrink-0 flex items-center justify-center rounded-xl bg-[radial-gradient(closest-side,rgb(var(--accent)/0.16),transparent)]'>
             <img key={selectionImage(skin, value.chromaId)} src={selectionImage(skin, value.chromaId)} className='anim-pop max-h-full max-w-full object-contain p-2' />
           </div>
@@ -77,8 +77,8 @@ export default function SkinPicker({ weapon, owned, value, onChange, maxHeight =
           <FiSearch className='absolute left-3.5 top-1/2 -translate-y-1/2 text-muted' />
           <Input value={q} onChange={e => setQ(e.target.value)} placeholder={`Search your ${weapon.displayName} skins`} className='pl-10 rounded-full' />
         </div>
-        {shown.length === 0 ? <Empty title='No owned skins match' hint='Only skins you own can be equipped.' className='py-6' /> : (
-          <div className='grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-3 overflow-y-auto pr-1 stagger' style={{ maxHeight }}>
+        {shown.length === 0 ? <Empty title='No owned skins match' hint='Only skins you own can be equipped.' className='py-8' /> : (
+          <div className='grid grid-cols-3 gap-3 overflow-y-auto pr-1 stagger' style={{ maxHeight }}>
             {shown.map((s, i) => {
               const on = lc(s.uuid) === lc(value.skinId)
               const tier = tiers[lc(s.contentTierUuid)]

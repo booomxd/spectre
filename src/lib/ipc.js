@@ -5,9 +5,7 @@ import { getCurrentWindow } from '@tauri-apps/api/window'
 
 // Demo mode (screenshots / UI work): Vite dev server + plain browser + `?demo` answers every channel from sample
 // fixtures in ./demo. import.meta.env.DEV is false in builds, so the demo code is dropped from production bundles.
-// VITE_DEMO=1 (set only by the Figma code-layer dev script) forces demo mode without the URL flag. The DEV gate stays
-// first so production builds fold DEMO to false and drop the demo fixtures from the bundle.
-const DEMO = import.meta.env.DEV && typeof window !== 'undefined' && !window.__TAURI_INTERNALS__ && (import.meta.env.VITE_DEMO === '1' || new URLSearchParams(window.location.search).has('demo'))
+const DEMO = import.meta.env.DEV && typeof window !== 'undefined' && !window.__TAURI_INTERNALS__ && new URLSearchParams(window.location.search).has('demo')
 const demo = DEMO ? import('./demo/index.js').then(m => { m.demoBoot(); return m }) : null
 
 // Calls a backend channel (one Rust `ipc` command routes them all); resolves with its data or throws its error message.

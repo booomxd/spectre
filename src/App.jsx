@@ -33,7 +33,7 @@ function UpdateButton() {
   return (
     <>
       <button onClick={go} disabled={pct != null} title={s.canInstall ? 'Download, install and restart' : 'Open the download page'}
-        className='accent-fill h-8 mr-1.5 px-3.5 shrink-0 whitespace-nowrap rounded-full text-xs font-semibold flex items-center gap-1.5 text-bg hover:brightness-110 disabled:opacity-80 transition-[filter,opacity]'>
+        className='accent-fill h-8 mr-1.5 px-3.5 rounded-full text-xs font-semibold flex items-center gap-1.5 text-bg hover:brightness-110 disabled:opacity-80 transition-[filter,opacity]'>
         <FiDownload size={13} />{pct != null ? `Updating ${pct}%` : `${s.canInstall ? 'Update' : 'Download'} ${s.latest}`}
       </button>
       <Modal open={prompt} onClose={() => setPrompt(false)} title={`Spectre ${s.latest} is here`} width={420}
@@ -51,7 +51,7 @@ function WindowControls() {
   return (
     <div className='flex items-center'>
       {[['win:minimize', FiMinus, 'hover:bg-surface-2 hover:text-text'], ['win:maximize', FiSquare, 'hover:bg-surface-2 hover:text-text'], ['win:close', FiX, 'hover:bg-bad hover:text-white']].map(([ch, Icon, hov]) => (
-        <button key={ch} onClick={() => invoke(ch)} aria-label={ch.slice(4)} className={cx('w-9 h-8 flex items-center justify-center text-muted rounded-full transition-colors', hov)}>
+        <button key={ch} onClick={() => invoke(ch)} aria-label={ch.slice(4)} className={cx('w-10 h-8 flex items-center justify-center text-muted rounded-full transition-colors', hov)}>
           <Icon size={ch === 'win:maximize' ? 12 : 15} />
         </button>
       ))}
@@ -67,10 +67,10 @@ function Dock({ section, onSection }) {
         const on = section === s.id
         return (
           <button key={s.id} onClick={() => onSection(s.id)} title={s.label} aria-current={on ? 'page' : undefined}
-            className={cx('relative h-8 px-3 rounded-full flex items-center gap-1.5 text-[12.5px] font-semibold transition-colors duration-200', on ? 'text-text' : 'text-muted hover:text-text')}>
+            className={cx('relative h-9 px-3.5 rounded-full flex items-center gap-2 text-[13px] font-semibold transition-colors duration-200', on ? 'text-text' : 'text-muted hover:text-text')}>
             {on && <Pill layoutId='dock-pill' />}
-            <s.icon className={cx('relative shrink-0', on && 'text-accent')} size={14} />
-            <span className='relative max-[1100px]:hidden'>{s.label}</span>
+            <s.icon className={cx('relative shrink-0', on && 'text-accent')} size={15} />
+            <span className='relative max-[1200px]:hidden'>{s.label}</span>
           </button>
         )
       })}
@@ -82,7 +82,7 @@ function Brand() {
   const riot = useRiot()
   return (
     <div className='flex items-center gap-3 min-w-0'>
-      <img src={logo} alt='' className='w-7 h-7 rounded-[9px] shadow-[0_6px_18px_-6px_rgb(var(--accent)/0.6)]' draggable={false} />
+      <img src={logo} alt='' className='w-8 h-8 rounded-[10px] shadow-[0_6px_18px_-6px_rgb(var(--accent)/0.6)]' draggable={false} />
       <div className='min-w-0 leading-none'>
         <div className='font-brand text-[13px] text-text'>Spectre</div>
         <div className='mt-1 flex items-center gap-1.5 text-[11px] text-muted truncate max-[1200px]:hidden'>
@@ -99,7 +99,7 @@ function Utilities({ page, onOpen, onPalette }) {
   return (
     <div className='flex items-center gap-2'>
       <button onClick={onPalette} title='Search (Ctrl+K)'
-        className='glass h-8 pl-3 pr-1.5 rounded-full flex items-center gap-2 text-[12px] text-muted hover:text-text transition-colors'>
+        className='glass h-9 pl-3 pr-1.5 rounded-full flex items-center gap-2 text-[12px] text-muted hover:text-text transition-colors'>
         <FiSearch size={14} /><span className='max-[1200px]:hidden'>Search</span><span className='kbd max-[1200px]:hidden'>Ctrl K</span>
       </button>
       <div className='glass flex items-center gap-0.5 p-1 rounded-full'>
@@ -213,20 +213,20 @@ function Shell() {
       <div className='backdrop' aria-hidden='true'><div className='backdrop-fields'><span className='orb orb-1' /><span className='orb orb-2' /><span className='orb orb-3' /><span className='orb orb-4' />{BUBBLES.map((b, i) => <span key={i} className='bubble' style={b} />)}</div></div>
 
       {/* Row 1: brand, dock, update + window controls. The bar itself is the window drag region. */}
-      {/* Three-column grid (1fr auto 1fr): the middle stays centered but can never slide under either side. */}
-      <header data-tauri-drag-region className='drag relative z-20 h-14 shrink-0 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 pl-4 pr-1.5'>
+      <header data-tauri-drag-region className='drag relative z-20 h-16 shrink-0 flex items-center justify-between pl-5 pr-2'>
         <Brand />
-        <Dock section={section?.id} onSection={openSection} />
-        <div className='flex items-center justify-end min-w-0'>
+        <div className='absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2'>
+          <Dock section={section?.id} onSection={openSection} />
+        </div>
+        <div className='flex items-center'>
           <UpdateButton />
           <WindowControls />
         </div>
       </header>
 
       {/* Row 2: section sub-tabs (centered), search + utility pages (right). */}
-      <div data-tauri-drag-region className='drag relative z-20 h-11 shrink-0 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 px-4'>
-        <span />
-        <div>
+      <div data-tauri-drag-region className='drag relative z-20 h-12 shrink-0 flex items-center justify-end px-5'>
+        <div className='absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2'>
           <AnimatePresence mode='popLayout' initial={false}>
             {sub && (
               <m.div key={sub.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.12 }}>
@@ -236,7 +236,7 @@ function Shell() {
             )}
           </AnimatePresence>
         </div>
-        <div className='flex justify-end min-w-0'><Utilities page={page} onOpen={go} onPalette={() => setPalette(true)} /></div>
+        <Utilities page={page} onOpen={go} onPalette={() => setPalette(true)} />
       </div>
 
       <main className='flex-1 relative min-h-0 z-10'>
