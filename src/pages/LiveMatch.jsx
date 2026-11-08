@@ -115,16 +115,16 @@ function Idle({ active }) {
         </div>
         <Empty icon={FiRadio} title='Waiting for a match' hint='Queue up and this page fills with both teams, and your party as soon as agent select starts.' className='relative' />
       </Card>
-      <Card className='p-5 rounded-[28px]'>
+      <Card className='p-5 rounded-[28px] min-w-0 overflow-hidden'>
         <div className='flex items-center justify-between mb-3 px-1'>
           <span className='eyebrow'>Your party</span>
           {members.length > 0 && <span className='text-[11px] text-muted tabular-nums'>{members.length}/5</span>}
         </div>
         {party.loading && !party.data ? <Skeleton className='h-14 rounded-2xl' />
           : !members.length ? <p className='px-1 py-1.5 text-[12px] text-muted'>No party found.</p>
-            : <Stagger className='grid gap-1.5'>
+            : <Stagger className='grid grid-cols-[minmax(0,1fr)] gap-1.5'>
               {members.map((m, i) => (
-                <Item key={m.puuid} index={i} className='flex items-center gap-3 rounded-2xl px-2.5 py-2 glass-inset'>
+                <Item key={m.puuid} index={i} className='min-w-0 flex items-center gap-3 rounded-2xl px-2.5 py-2 glass-inset'>
                   <PlayerCard id={m.hidden ? null : m.card} name={m.hidden ? null : m.gameName} size={36} />
                   <div className='min-w-0 flex-1 text-[13px] font-semibold text-text truncate'>{m.hidden ? 'Hidden player' : m.gameName || '...'}<span className='ml-0.5 text-[11px] text-muted font-normal'>{!m.hidden && m.tagLine && ` #${m.tagLine}`}</span></div>
                   <RankIcon tier={m.rank} size={26} />

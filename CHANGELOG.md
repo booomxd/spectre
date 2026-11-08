@@ -1,5 +1,17 @@
 # 📜 Changelog
 
+## 3.0.5
+
+### 🪟 Windows
+- Spectre now starts with Windows by default, straight into the hidden tray icons
+- Closing Spectre keeps it running in the tray (new Close to tray setting, on by default); use Quit in the tray menu to exit
+
+### 🛠️ Fixes
+- Changing game mode in Lobby & Party no longer fails with "404 resource not found"
+- Feed no longer logs fake adds and removals when you switch Riot accounts
+- Lookup: your note no longer covers the act history on smaller windows
+- Your party card on Live Match no longer spills past its edge
+
 ## 3.0.4
 
 ### 🛠️ Fixes

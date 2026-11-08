@@ -288,7 +288,8 @@ pub fn register(reg: &mut Registry, _ctx: &Ctx) {
     // Lobby controls for your own party. Riot rejects them (with an error shown to the user) while a match is running.
     reg.add("social:queue", |ctx, a: Args| async move {
         let id = in_party(&ctx).await?;
-        ctx.riot.glz("post", &format!("parties/v1/parties/{id}/makedefault?queueID={}", enc(&js_string(a.0.first()))), None).await?;
+        // The old makedefault?queueID= route now returns 404; the client uses POST .../queue with a JSON body.
+        ctx.riot.glz("post", &format!("parties/v1/parties/{id}/queue"), Some(json!({ "queueID": js_string(a.0.first()) }))).await?;
         Ok(json!(true))
     });
     reg.add("social:matchmaking", |ctx, a: Args| async move {

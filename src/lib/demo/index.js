@@ -21,7 +21,7 @@ export function emit(channel, payload) { listeners.get(channel)?.forEach(fn => {
 // ---- in-memory stores (reset on reload; nothing leaves the page) ----
 const SPRAY_TYPE = 'd5f120f8-ff8c-4aac-92ea-f2b5acbe9475'
 const settingsDefaults = {
-  launchAtLogin: false, minimizeToTray: false,
+  launchAtLogin: true, minimizeToTray: false, closeToTray: true,
   overlay: { opacity: 0.9, scale: 1, autoShow: false, locked: false, showPeak: true, hotkey: 'Ctrl+Shift+O', lockHotkey: 'Ctrl+Shift+L' },
   discord: {
     enabled: false, showMode: true, showMap: true, showAgent: false, agentImage: false, showRank: true, showPeak: false,

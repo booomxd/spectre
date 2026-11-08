@@ -36,7 +36,8 @@ export function General({ settings, save }) {
     <section>
       <SectionTitle>General</SectionTitle>
       <Card className='p-6 rounded-2xl'>
-        <Row><Toggle checked={settings.launchAtLogin} onChange={v => save({ launchAtLogin: v })} label='Launch at login' hint='Start Spectre when you sign in to Windows' /></Row>
+        <Row><Toggle checked={settings.launchAtLogin} onChange={v => save({ launchAtLogin: v })} label='Launch at login' hint='Start Spectre in the tray when you sign in to Windows' /></Row>
+        <Row><Toggle checked={settings.closeToTray !== false} onChange={v => save({ closeToTray: v })} label='Close to tray' hint='The close button keeps Spectre running in the hidden icons; use Quit in its tray menu to exit' /></Row>
         <Row><Toggle checked={settings.minimizeToTray} onChange={v => save({ minimizeToTray: v })} label='Minimize to tray' hint='Keep running in the background when minimized' /></Row>
         <Row><Toggle checked={settings.spectrePresence !== false} onChange={v => save({ spectrePresence: v })} label='Show that I use Spectre' hint='Adds a small marker to your Riot presence so friends using Spectre can see you use it' /></Row>
         <Row>

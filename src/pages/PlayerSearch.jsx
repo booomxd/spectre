@@ -62,7 +62,7 @@ function ActHistory({ scout, seasons }) {
         const isPeak = a.seasonId === peakAct
         return (
           <Item key={a.seasonId} index={i}
-            className={cx('flex items-center gap-4 rounded-2xl px-4 py-2.5', isPeak ? 'accent-soft' : 'glass')}>
+            className={cx('flex items-center gap-4 rounded-2xl px-4 py-2.5 min-w-0 overflow-hidden', isPeak ? 'accent-soft' : 'glass')}>
             <div className='w-[64px] shrink-0 font-display text-[13px] font-bold tracking-tight'>{seasonName(seasons, a.seasonId) || 'Act'}</div>
             <div className='flex items-center gap-2 w-[150px] shrink-0' title='Final rank'>
               <TierIcon tier={a.tier} size={30} />
@@ -135,7 +135,7 @@ function Profile({ puuid }) {
 
       <ScoutStats scout={scout} />
 
-      <div className='grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_340px] gap-5 items-start'>
+      <div className='grid grid-cols-1 2xl:grid-cols-[minmax(0,1fr)_340px] gap-5 items-start'>
         <div className='flex flex-col gap-6'>
           <div>
             <Heading hint='Final rank and peak for every competitive act'>Act history</Heading>
@@ -146,7 +146,7 @@ function Profile({ puuid }) {
             <HistoryPanel puuid={puuid} step={10} />
           </div>
         </div>
-        <Card className='p-5 rounded-3xl xl:sticky xl:top-0'>
+        <Card className='p-5 rounded-3xl 2xl:sticky 2xl:top-0'>
           <Heading hint='Only you can see this'>Your note</Heading>
           <MemoForm target={{ puuid, name }} memo={memo} onSaved={reloadMemo} onDeleted={reloadMemo} />
         </Card>

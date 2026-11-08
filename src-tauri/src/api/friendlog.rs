@@ -23,8 +23,21 @@ fn mine(ctx: &Ctx, all: &Value) -> Value {
 type Scan = Shared<BoxFuture<'static, Res<Value>>>;
 static SCANNING: Lazy<Mutex<Option<Scan>>> = Lazy::new(|| Mutex::new(None));
 
+/// The account the Riot Client is signed in to right now, straight from the client.
+async fn live_puuid(ctx: &Ctx) -> Option<String> {
+    let s = ctx.riot.local("get", "chat/v1/session", None).await.ok()?;
+    let p = js_string(&js::or(&s["puuid"], json!("")));
+    if p.is_empty() { None } else { Some(p) }
+}
+
 async fn run_scan(ctx: &Ctx) -> Res<Value> {
+    // Switching accounts: Spectre's cached puuid can lag behind the client for a moment, so the new account's
+    // friends would be diffed against the old account's snapshot (hundreds of fake adds and removals). Only scan
+    // when the client confirms the same account before and after reading the list.
+    let key = my_key(ctx);
+    if live_puuid(ctx).await.as_deref() != Some(key.as_str()) { return Ok(mine(ctx, &load(ctx))); }
     let res = ctx.riot.local("get", "chat/v4/friends", None).await?;
+    if live_puuid(ctx).await.as_deref() != Some(key.as_str()) { return Ok(mine(ctx, &load(ctx))); }
     let mut now = Map::new();
     for f in js::arr(&js::or(&res["friends"], json!([]))) {
         if truthy(&f["puuid"]) {
@@ -70,7 +83,7 @@ async fn run_scan(ctx: &Ctx) -> Res<Value> {
     events.truncate(MAX_EVENTS);
     let next = json!({ "snapshot": now, "lastScan": at, "events": events });
     if !all.is_object() { all = json!({}); }
-    all[my_key(ctx)] = next.clone();
+    all[key.as_str()] = next.clone();
     ctx.riot.write_store("friendlog", &all)?;
     if !found.is_empty() { ctx.emit("friendlog:changed", json!({ "count": found.len() })); }
     Ok(next)

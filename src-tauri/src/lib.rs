@@ -58,8 +58,9 @@ pub fn register_core(reg: &mut Registry) {
         if w.is_maximized()? { w.unmaximize()?; } else { w.maximize()?; }
         Ok(Value::Null)
     });
+    // With "Close to tray" on (the default), the close button hides Spectre to the tray; Quit in the tray menu exits.
     reg.add("win:close", |ctx, _| async move {
-        ctx.app()?.exit(0);
+        if truthy(&api::settings::load(&ctx)["closeToTray"]) { main_window(&ctx)?.hide()?; } else { ctx.app()?.exit(0); }
         Ok(Value::Null)
     });
 }
@@ -83,7 +84,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
-        .plugin(tauri_plugin_autostart::init(tauri_plugin_autostart::MacosLauncher::LaunchAgent, None))
+        .plugin(tauri_plugin_autostart::init(tauri_plugin_autostart::MacosLauncher::LaunchAgent, Some(vec!["--minimized"])))
         .setup(|app| {
             let riot = Arc::new(Riot::new());
             riot.set_store_dir(data_dir().join("store"));
@@ -93,6 +94,18 @@ pub fn run() {
             api::register_all(&mut reg, &ctx);
             app.manage(Arc::new(Backend { ctx: ctx.clone(), reg }));
             migrate::run(&ctx);
+
+            // Launch at login is on by default. Keep the Windows startup entry in sync with the setting (this also
+            // refreshes older entries so they pass --minimized). Dev builds never touch it.
+            if !ctx.is_dev {
+                use tauri_plugin_autostart::ManagerExt;
+                let al = app.autolaunch();
+                let _ = if truthy(&api::settings::load(&ctx)["launchAtLogin"]) { al.enable() } else { al.disable() };
+            }
+            // Started by Windows at login: stay in the tray. Otherwise show the window (it starts hidden).
+            if !std::env::args().any(|a| a == "--minimized") {
+                if let Some(w) = app.get_webview_window("main") { let _ = w.show(); let _ = w.set_focus(); }
+            }
 
             // Tray: click (or "Show Spectre") brings the window back; used by "Minimize to tray".
             let show = MenuItem::with_id(app, "show", "Show Spectre", true, None::<&str>)?;
@@ -115,9 +128,18 @@ pub fn run() {
             connect_loop(ctx);
             Ok(())
         })
-        // Closing the main window quits Spectre, overlay included.
+        // Alt+F4 / taskbar close follow "Close to tray"; if the main window is really destroyed, Spectre quits.
         .on_window_event(|w, e| {
-            if w.label() == "main" { if let WindowEvent::Destroyed = e { w.app_handle().exit(0); } }
+            if w.label() != "main" { return; }
+            match e {
+                WindowEvent::CloseRequested { api, .. } => {
+                    let to_tray = w.app_handle().try_state::<Arc<Backend>>()
+                        .map(|b| truthy(&api::settings::load(&b.ctx)["closeToTray"])).unwrap_or(false);
+                    if to_tray { api.prevent_close(); let _ = w.hide(); }
+                }
+                WindowEvent::Destroyed => w.app_handle().exit(0),
+                _ => {}
+            }
         })
         .invoke_handler(tauri::generate_handler![ipc])
         .run(tauri::generate_context!())
