@@ -14,12 +14,25 @@ function markTheme(key) {
   const t = Theme?.themes[key]
   if (t) bind('theme-name').forEach(el => { el.textContent = t[0] })
 }
+// The new colours open in a circle from the swatch that was clicked. The browser snapshots the page once per
+// theme, so nothing is repainted frame by frame. Without view transitions (or with reduced motion) it just switches.
+function switchTheme(key, from) {
+  const run = () => { Theme.apply(key, true); markTheme(key) }
+  if (reduced || !document.startViewTransition || key === document.documentElement.dataset.theme) return run()
+  const r = from.getBoundingClientRect()
+  const x = r.left + r.width / 2
+  const y = r.top + r.height / 2
+  const end = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y))
+  document.startViewTransition(run).ready.then(() => {
+    document.documentElement.animate(
+      { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${end}px at ${x}px ${y}px)`] },
+      { duration: 650, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', pseudoElement: '::view-transition-new(root)' },
+    )
+  }).catch(() => {})
+}
 if (Theme) {
   markTheme(document.documentElement.dataset.theme)
-  $$('.swatches button').forEach(b => b.addEventListener('click', () => {
-    Theme.apply(b.dataset.theme, true)
-    markTheme(b.dataset.theme)
-  }))
+  $$('.swatches button').forEach(b => b.addEventListener('click', () => switchTheme(b.dataset.theme, b)))
 }
 
 // ---------- Dock: denser glass after scrolling, mobile menu, current section ----------
@@ -40,13 +53,35 @@ document.addEventListener('click', e => { if (dock.classList.contains('open') &&
 
 const navLinks = $$('.dock-links a[href^="#"]')
 const sections = $$('main > section')
-const sectionObserver = new IntersectionObserver(entries => entries.forEach(e => {
-  if (!e.isIntersecting) return
-  navLinks.forEach(a => {
-    if (a.getAttribute('href') === `#${e.target.id}`) a.setAttribute('aria-current', 'true')
-    else a.removeAttribute('aria-current')
+// One underline slides between the links instead of each link switching its own on and off.
+const ind = document.createElement('span')
+ind.className = 'dock-ind'
+ind.setAttribute('aria-hidden', 'true')
+links.append(ind)
+function moveInd() {
+  const a = navLinks.find(l => l.getAttribute('aria-current') === 'true')
+  if (!a || !a.offsetWidth) { ind.classList.remove('on'); return }
+  const to = `translateX(${a.offsetLeft + a.offsetWidth / 2 - 7}px)`
+  if (ind.classList.contains('on')) { ind.style.transform = to; return }
+  // Appearing: start under the link rather than sliding in from the edge.
+  ind.style.transition = 'none'
+  ind.style.transform = to
+  void ind.offsetWidth
+  ind.style.transition = ''
+  ind.classList.add('on')
+}
+const sectionObserver = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return
+    navLinks.forEach(a => {
+      if (a.getAttribute('href') === `#${e.target.id}`) a.setAttribute('aria-current', 'true')
+      else a.removeAttribute('aria-current')
+    })
   })
-}), { rootMargin: '-45% 0px -50% 0px' })
+  moveInd()
+}, { rootMargin: '-45% 0px -50% 0px' })
+addEventListener('resize', moveInd, { passive: true })
+document.fonts?.ready.then(moveInd)
 sections.forEach(s => sectionObserver.observe(s))
 
 // ---------- Hero depth: scroll flattens the window, layers drift at different speeds, pointer adds a little parallax ----------
@@ -98,7 +133,7 @@ onScroll()
 // ---------- Scroll reveals: once in view, settle and then hand control back to the element's own styles ----------
 const reveals = $$('.reveal')
 function settle(el) {
-  el.classList.add('in')
+  el.classList.add('in', 'seen')
   const done = e => {
     if (e.target !== el || e.propertyName !== 'opacity') return
     el.removeEventListener('transitionend', done)
@@ -130,6 +165,19 @@ $$('.card').forEach(c => c.addEventListener('pointermove', e => {
   c.style.setProperty('--cy', `${e.clientY - r.top}px`)
 }))
 
+// ---------- Big screenshots lean a little toward the pointer (the CSS transition smooths the follow) ----------
+if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
+  $$('.shot-big').forEach(el => {
+    el.addEventListener('pointermove', e => {
+      if (reduced) return
+      const r = el.getBoundingClientRect()
+      el.style.setProperty('--ry', `${(((e.clientX - r.left) / r.width) - 0.5) * 5}deg`)
+      el.style.setProperty('--rx', `${(0.5 - (e.clientY - r.top) / r.height) * 4}deg`)
+    })
+    el.addEventListener('pointerleave', () => { el.style.removeProperty('--rx'); el.style.removeProperty('--ry') })
+  })
+}
+
 // ---------- Screenshots: skeleton until the file exists, lightbox for the rest ----------
 const shots = $$('[data-shot]')
 function markMissing(btn) {
@@ -157,10 +205,11 @@ function gallery() {
     return true
   })
 }
-function lbShow(i) {
+function lbShow(i, swap) {
   lbIndex = (i + lbList.length) % lbList.length
   const img = lbList[lbIndex]
   lbImg.src = img.getAttribute('src')
+  if (swap && !reduced) lbImg.animate({ opacity: [0.3, 1] }, { duration: 180, easing: 'ease-out' })
   lbImg.alt = img.alt
   $('#lb-cap').textContent = img.dataset.text ? `${img.dataset.title}: ${img.dataset.text}` : img.alt
 }
@@ -173,11 +222,11 @@ shots.forEach(btn => btn.addEventListener('click', () => {
   lb.showModal()
 }))
 $('.lb-close').addEventListener('click', () => lb.close())
-$$('[data-lb]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); lbShow(lbIndex + Number(b.dataset.lb)) }))
+$$('[data-lb]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); lbShow(lbIndex + Number(b.dataset.lb), true) }))
 lb.addEventListener('click', e => { if (e.target === lb || e.target.tagName === 'FIGURE') lb.close() })
 lb.addEventListener('keydown', e => {
-  if (e.key === 'ArrowRight') lbShow(lbIndex + 1)
-  if (e.key === 'ArrowLeft') lbShow(lbIndex - 1)
+  if (e.key === 'ArrowRight') lbShow(lbIndex + 1, true)
+  if (e.key === 'ArrowLeft') lbShow(lbIndex - 1, true)
 })
 
 // ---------- Live release info: version, download link, size, checksum and release notes ----------
