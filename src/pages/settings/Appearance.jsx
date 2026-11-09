@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { FiCheck } from 'react-icons/fi'
-import { Card, SectionTitle, Toggle } from '../../ui'
+import { Card, SectionTitle, Select, Toggle } from '../../ui'
+import { LANGS, useLang } from '../../lib/i18n'
 import { THEMES, getReduceMotion, getTheme, setReduceMotion, setTheme } from '../../lib/theme'
 
 // Mini glass app mock drawn with the theme's own tokens (data-theme scopes the CSS variables):
@@ -33,8 +34,16 @@ export default function Appearance() {
   const [theme, setCurrent] = useState(getTheme())
   const pick = id => { setTheme(id); setCurrent(id) }
   const [reduce, setReduce] = useState(getReduceMotion)
+  const [lang, setLang] = useLang()
   return (
     <section className='flex flex-col gap-8'>
+      <div>
+      <SectionTitle>Language</SectionTitle>
+      <Card className='p-6 flex items-center justify-between gap-4'>
+        <span className='min-w-0'><span className='block text-[13px] font-medium text-text'>Display language</span><span className='block text-[11.5px] text-muted mt-0.5'>Menus, titles and buttons. Longer descriptions and game content stay in English for now.</span></span>
+        <span translate='no'><Select aria-label='Display language' value={lang} onChange={e => setLang(e.target.value)} options={LANGS.map(([value, label]) => ({ value, label }))} /></span>
+      </Card>
+      </div>
       <div>
       <SectionTitle>Motion</SectionTitle>
       <Card className='p-6'>

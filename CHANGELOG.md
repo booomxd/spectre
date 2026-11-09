@@ -1,5 +1,16 @@
 # 📜 Changelog
 
+## 3.0.7
+
+### ✨ New
+- **Languages:** pick Chinese, Russian, Hindi, Japanese, Korean, French, Spanish, German or Portuguese in Settings → Appearance. Menus, titles and buttons are translated; longer descriptions and game content stay in English for now
+- **Store wishlist:** press the heart on any skin in Weapons and Spectre sends a Windows notification when it reaches your daily offers, Night Market or a featured bundle
+- **Lobby read:** Live Match shows which team is ranked higher, the premades on each side, the highest rank, and low-level accounts at Platinum or above
+- **This session:** a Home tile with your net RR, wins, losses and streak for the current sitting
+
+### 🛠️ Fixes
+- Screen readers now get proper labels for the window buttons, dock, search, switches and note ratings
+
 ## 3.0.6
 
 ### 🛠️ Fixes

@@ -179,6 +179,9 @@ const H = {
     return { id: `local-${Date.now()}`, cid, body: text, time: Date.now(), puuid: F.ME.puuid, gameName: F.ME.gameName, tagLine: F.ME.tagLine, fromMe: true }
   },
 
+  'wishlist:list': () => db.wishlist || [],
+  'wishlist:toggle': w => { const l = db.wishlist || []; db.wishlist = l.some(i => i.id === w.id) ? l.filter(i => i.id !== w.id) : [...l, w]; return db.wishlist },
+  'wishlist:check': ok({ hits: [] }),
   'store:wallet': ok({ vp: 2350, rad: 45, kc: 8450 }),
   'store:storefront': () => storefront(),
   'store:rank': ok({ tier: F.ME.tier, rr: F.ME.rr, lastChange: 21, peak: F.ME.peak, seasonId: F.ACTS[0] }),

@@ -22,6 +22,7 @@ pub mod social;
 pub mod store;
 pub mod tools;
 pub mod updates;
+pub mod wishlist;
 
 pub fn register_all(reg: &mut Registry, ctx: &Ctx) {
     discord::register(reg, ctx);
@@ -42,4 +43,5 @@ pub fn register_all(reg: &mut Registry, ctx: &Ctx) {
     store::register(reg, ctx);
     tools::register(reg, ctx);
     updates::register(reg, ctx);
+    wishlist::register(reg, ctx);
 }

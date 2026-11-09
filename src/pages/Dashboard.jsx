@@ -2,7 +2,7 @@ import { Page, RequireRiot, Stagger, Item } from '../ui'
 import { useRiot } from '../lib/riot'
 import { useInvoke } from '../lib/ipc'
 import { useCatalog, pickPass } from './dashboard/catalog'
-import { Hero, RankTile, TrendTile, FormTile, WalletCard, BundleCard, DailyCard, PassCard, FriendsCard } from './dashboard/Cards'
+import { Hero, RankTile, TrendTile, FormTile, SessionTile, WalletCard, BundleCard, DailyCard, PassCard, FriendsCard } from './dashboard/Cards'
 
 // Home bento: identity + rank, ranked trend + recent form, then store, battle pass, wallet, daily offers and friends.
 function DashboardBody({ active }) {
@@ -20,7 +20,8 @@ function DashboardBody({ active }) {
   const tiles = [
     ['xl:col-span-8', <Hero riot={riot} identity={identity.data} account={account.data} rr={rr.data} />],
     ['md:col-span-6 xl:col-span-4', <RankTile rank={rank.data} />],
-    ['xl:col-span-8', <TrendTile rr={rr} />],
+    ['xl:col-span-5', <TrendTile rr={rr} />],
+    ['md:col-span-6 xl:col-span-3', <SessionTile rr={rr} />],
     ['md:col-span-6 xl:col-span-4', <FormTile rr={rr} />],
     ['md:col-span-6 xl:col-span-5', <BundleCard bundles={store.data?.bundles} cat={cat} />],
     ['md:col-span-6 xl:col-span-4', <PassCard pass={pickPass(contracts.data?.contracts)} cat={cat} loading={contracts.loading && !contracts.data} />],

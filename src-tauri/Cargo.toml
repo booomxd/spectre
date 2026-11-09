@@ -1,6 +1,6 @@
 [package]
 name = "spectre"
-version = "3.0.6"
+version = "3.0.7"
 description = "Spectre"
 authors = ["booomxd"]
 edition = "2021"
@@ -28,6 +28,7 @@ tauri-plugin-global-shortcut = "2"
 tauri-plugin-autostart = "2"
 tauri-plugin-opener = "2"
 tauri-plugin-dialog = "2"
+tauri-plugin-notification = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["preserve_order"] }
 tokio = { version = "1", features = ["full"] }

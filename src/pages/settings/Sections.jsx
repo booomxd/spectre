@@ -39,6 +39,7 @@ export function General({ settings, save }) {
         <Row><Toggle checked={settings.launchAtLogin} onChange={v => save({ launchAtLogin: v })} label='Launch at login' hint='Start Spectre in the tray when you sign in to Windows' /></Row>
         <Row><Toggle checked={settings.closeToTray !== false} onChange={v => save({ closeToTray: v })} label='Close to tray' hint='The close button keeps Spectre running in the hidden icons; use Quit in its tray menu to exit' /></Row>
         <Row><Toggle checked={settings.minimizeToTray} onChange={v => save({ minimizeToTray: v })} label='Minimize to tray' hint='Keep running in the background when minimized' /></Row>
+        <Row><Toggle checked={settings.wishlistAlerts !== false} onChange={v => save({ wishlistAlerts: v })} label='Wishlist alerts' hint='A Windows notification when a skin on your wishlist is in your store' /></Row>
         <Row><Toggle checked={settings.spectrePresence !== false} onChange={v => save({ spectrePresence: v })} label='Show that I use Spectre' hint='Adds a small marker to your Riot presence so friends using Spectre can see you use it' /></Row>
         <Row>
           <Label hint='The page Spectre opens on'>Start page</Label>

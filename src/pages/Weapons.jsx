@@ -2,12 +2,14 @@ import { useMemo, useState } from 'react'
 import { FiLock, FiPlay, FiSearch } from 'react-icons/fi'
 import { Badge, Card, Empty, Heading, Input, Item, Modal, Page, SectionTitle, SegmentedTabs, Select, Skeleton, Stagger, Stat, Swap, cx, Pill } from '../ui'
 import { useRiot } from '../lib/riot'
+import { WishButton, useWishlist } from '../lib/wishlist'
 import { CATEGORIES, catKey, chromaOwned, isStandard, lc, levelItemLabel, levelOwned, skinImage, skinOwned, tierColor, useContentTiers, useOwned, useWeapons } from './tools/gear'
 
 const pen = p => (p || '').split('::').pop() || '-'
 const num = (v, d = 2) => v == null ? '-' : String(Math.round(v * 10 ** d) / 10 ** d)
 
 export default function Weapons() {
+  const wish = useWishlist()
   const riot = useRiot()
   const weapons = useWeapons()
   const { owned } = useOwned(!riot.connected)
@@ -134,6 +136,7 @@ export default function Weapons() {
                       const t = tiers[lc(s.contentTierUuid)]
                       const color = tierColor(t)
                       const own = riot.connected && skinOwned(weapon, s, owned)
+                      const wishId = !own && s.contentTierUuid && s.levels[0]?.uuid
                       return (
                         <Item key={s.uuid} index={i}>
                           <Card hover onClick={() => setSkin(s)} className='group relative overflow-hidden h-full flex flex-col'>
@@ -141,6 +144,7 @@ export default function Weapons() {
                               <span className='absolute bottom-3 left-1/2 -translate-x-1/2 w-3/5 h-3 rounded-[50%] bg-black/35 blur-md pointer-events-none' />
                               {color && <span className='absolute inset-x-8 bottom-0 h-px pointer-events-none' style={{ background: `linear-gradient(90deg, transparent, ${color}aa, transparent)` }} />}
                               <img src={skinImage(s)} className='relative max-h-full max-w-full object-contain transition-transform duration-500 ease-out group-hover:scale-[1.04]' loading='lazy' />
+                              {wishId && <WishButton id={wishId} name={s.displayName} className={cx('absolute top-2.5 right-2.5 z-10', !wish.has(wishId) && 'opacity-0 group-hover:opacity-100 focus-visible:opacity-100')} />}
                             </div>
                             <div className='px-4 pb-4 pt-2'>
                               <div className='flex items-center gap-1.5'>

@@ -10,6 +10,7 @@ pub fn defaults() -> Value {
         "launchAtLogin": true,
         "minimizeToTray": false,
         "closeToTray": true,
+        "wishlistAlerts": true,
         "overlay": {
             "opacity": 0.9, "scale": 1, "autoShow": false, "locked": false, "showPeak": true,
             "hotkey": "Ctrl+Shift+O", "lockHotkey": "Ctrl+Shift+L",

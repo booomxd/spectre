@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { FiRefreshCw, FiMoon, FiPackage, FiPlay } from 'react-icons/fi'
+import { FiRefreshCw, FiMoon, FiPackage, FiPlay, FiHeart, FiX } from 'react-icons/fi'
 import { Page, Card, Heading, Button, Badge, Skeleton, Empty, ErrorState, RequireRiot, Modal, SegmentedTabs, Stagger, Item, Swap, cx } from '../ui'
 import { useInvoke } from '../lib/ipc'
+import { useWishlist } from '../lib/wishlist'
 import { CUR, useCatalog, fmt, useCountdown } from './dashboard/catalog'
 import { Price, ItemArt } from './dashboard/bits'
 
@@ -166,6 +167,42 @@ function Section({ title, hint, seconds, countdownLabel = 'Resets in', children 
   )
 }
 
+const WHERE = { daily: 'In your daily offers', night: 'In your Night Market', bundle: 'In a featured bundle' }
+
+// Skins you are waiting for. Spectre checks the store in the background and sends a Windows notification on a match.
+function Wishlist({ cat }) {
+  const { items, toggle } = useWishlist()
+  const check = useInvoke('wishlist:check', [], { deps: [items.length] })
+  const hits = new Map((check.data?.hits || []).map(h => [h.id, h]))
+  return (
+    <section>
+      <Heading hint='You get a Windows notification when one of these reaches your store'>Wishlist</Heading>
+      {items.length === 0
+        ? <Card className='rounded-2xl'><Empty icon={FiHeart} title='Nothing on your wishlist yet' hint='Open Weapons and press the heart on any skin you want.' /></Card>
+        : (
+          <div className='grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3'>
+            {items.map(i => {
+              const item = cat?.items.get(i.id)
+              const hit = hits.get(i.id)
+              const name = item?.name || i.name
+              return (
+                <Card key={i.id} className={cx('relative flex items-center gap-3 p-3 pr-10 rounded-2xl min-w-0', hit && 'accent-glow')}>
+                  <div className='w-20 h-12 shrink-0 flex items-center justify-center'>{item?.icon && <img src={item.icon} alt='' className='max-w-full max-h-full object-contain' loading='lazy' />}</div>
+                  <div className='min-w-0'>
+                    <div className='truncate text-[13px] font-semibold text-text'>{name}</div>
+                    <div className={cx('mt-0.5 text-[11px] truncate', hit ? 'text-good font-semibold' : 'text-muted')}>{hit ? WHERE[hit.where] : 'Not in your store'}</div>
+                  </div>
+                  <button type='button' aria-label={`Remove ${name} from wishlist`} title='Remove from wishlist' onClick={() => toggle(i.id, name)}
+                    className='absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center text-muted hover:text-text hover:bg-surface-2 transition-colors'><FiX size={12} /></button>
+                </Card>
+              )
+            })}
+          </div>
+        )}
+    </section>
+  )
+}
+
 function ShopBody() {
   const cat = useCatalog()
   const store = useInvoke('store:storefront')
@@ -196,6 +233,8 @@ function ShopBody() {
               {s.daily.map((o, i) => <OfferCard key={o.id} index={i} item={cat?.items.get(o.itemId)} price={o.price} cat={cat} onOpen={setOpen} />)}
             </Stagger> : <Empty title='No daily offers' />}
           </Section>
+
+          <Wishlist cat={cat} />
 
           {s.night && (
             <Section title='Night market' hint={!s.night.offers.some(o => o.revealed) ? 'Offers have not been revealed in-game yet' : 'Your personal discounts'} seconds={s.night.secondsLeft} countdownLabel='Ends in'>

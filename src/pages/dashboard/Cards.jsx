@@ -37,6 +37,41 @@ export function formOf(rows) {
   return { games: list.length, wins, net, streak, rate: list.length ? Math.round(wins / list.length * 100) : null }
 }
 
+// The latest run of ranked games: newest within 12 hours, with no gap over 3 hours between games.
+export function sessionOf(rows) {
+  const list = (rows || []).filter(r => r.time)
+  const out = []
+  for (let i = list.length - 1; i >= 0; i--) {
+    const next = out[0]
+    if (!next ? Date.now() - list[i].time > 12 * 3600e3 : next.time - list[i].time > 3 * 3600e3) break
+    out.unshift(list[i])
+  }
+  return out
+}
+
+// Ranked results of the current session: net RR, wins and losses, and the streak.
+export function SessionTile({ rr }) {
+  const rows = sessionOf(rr.data)
+  const f = formOf(rows)
+  const losses = rows.filter(r => r.change < 0).length
+  const streak = Math.abs(f.streak) >= 2 ? `${Math.abs(f.streak)} ${f.streak > 0 ? 'wins' : 'losses'} in a row` : null
+  return (
+    <Card hover onClick={go('history')} className='group h-full p-6 flex flex-col'>
+      <Heading hint='Ranked games in one sitting' right={<Arrow />}>This session</Heading>
+      {!rr.data ? <Skeleton className='flex-1 min-h-[120px] rounded-2xl' /> : !rows.length ? <Empty icon={FiActivity} title='No ranked games yet' hint='Play a competitive match and it shows up here.' className='py-6' /> : (
+        <div className='flex-1 flex flex-col justify-end'>
+          <div className={cx('font-display text-[44px] leading-none font-750 tracking-tight tabular-nums', f.net >= 0 ? 'text-good' : 'text-bad')}>{signed(f.net)}<span className='ml-1.5 text-[15px] font-semibold text-muted'>RR</span></div>
+          <div className='mt-4 grid grid-cols-2 gap-2'>
+            <div className='glass-inset rounded-xl px-3.5 py-2.5'><div className='text-[11px] text-muted'>Wins</div><div className='text-[17px] font-semibold text-good tabular-nums'>{f.wins}</div></div>
+            <div className='glass-inset rounded-xl px-3.5 py-2.5'><div className='text-[11px] text-muted'>Losses</div><div className='text-[17px] font-semibold text-bad tabular-nums'>{losses}</div></div>
+          </div>
+          <div className='mt-3 text-[12px] text-muted'>{streak || `${f.games} ${f.games === 1 ? 'game' : 'games'} played`}</div>
+        </div>
+      )}
+    </Card>
+  )
+}
+
 // Hero: name over the player card art, quick stats in a recessed strip.
 // Long names (or wide CJK names) step down so the hero never crowds the card art.
 function nameSize(name = '') {

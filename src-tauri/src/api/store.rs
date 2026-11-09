@@ -37,7 +37,7 @@ fn reward(o: &Value, k: &str) -> Option<Value> { o.get("Rewards").and_then(|r| r
 /// `Math.max` over numbers (NaN if any is NaN).
 fn max(a: f64, b: f64) -> f64 { if a.is_nan() || b.is_nan() { f64::NAN } else { a.max(b) } }
 
-async fn storefront(ctx: &Ctx) -> Res<Value> {
+pub(crate) async fn storefront(ctx: &Ctx) -> Res<Value> {
     let p = ctx.riot.puuid();
     match ctx.riot.pd("post", &format!("store/v3/storefront/{p}"), Some(json!({}))).await {
         Ok(v) => Ok(v),

@@ -9,6 +9,7 @@ import Drawer from './live/Drawer'
 import ScoutPanel from './live/ScoutPanel'
 import SkinsPanel from './live/SkinsPanel'
 import Lobby from './live/Lobby'
+import LobbyRead from './live/LobbyRead'
 import Loadout from './Loadout'
 import { GunIcon, ModeIcon, PlayerCard, RankGlow, RankIcon } from './live/parts'
 import { queueName, useMemos } from './live/util'
@@ -199,6 +200,7 @@ function LiveBody({ active }) {
     body = (
       <div>
         <Banner m={d} onChangeSkins={() => setPanel({ kind: 'loadout' })} />
+        {!ffa && <LobbyRead players={d.players} pregame={d.state === 'pregame'} />}
         {d.state === 'pregame'
           ? <div className='max-w-4xl'><Team title='Your team' tone='good' players={mine} {...rows} /></div>
           : ffa ? <div className='grid gap-x-8 gap-y-10 xl:grid-cols-2'>
