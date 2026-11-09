@@ -112,7 +112,7 @@ export default function Discord({ active }) {
                     ? <p className='mt-3 inline-flex items-center h-7 px-3 rounded-full border border-good/30 bg-good/12 text-[11.5px] font-medium text-good'>Showing on {s.user?.username || 'your'}'s profile · updates every 15s</p>
                     : s.error && <p className='mt-3 rounded-xl border border-bad/30 bg-bad/12 px-3.5 py-2.5 text-xs text-bad'>{s.error}</p>)}
                 </div>
-                <div className='pt-1'><Toggle checked={!!d.enabled} disabled={busy} onChange={setEnabled} /></div>
+                <div className='pt-1'><Toggle checked={s.enabled ?? !!d.enabled} disabled={busy} onChange={setEnabled} /></div>
               </div>
 
               <div className='relative px-7 pb-7'>

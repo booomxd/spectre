@@ -152,6 +152,24 @@ async fn in_party(ctx: &Ctx) -> Res<String> {
     Ok(js::s(&id))
 }
 
+// Queue ids Riot has switched on right now (parties/customgameconfigs), cached for five minutes. Empty when unknown.
+static QUEUES_ON: Lazy<Mutex<(i64, Vec<String>)>> = Lazy::new(|| Mutex::new((0, Vec::new())));
+async fn enabled_queues(ctx: &Ctx) -> Vec<String> {
+    {
+        let c = QUEUES_ON.lock().unwrap();
+        if !c.1.is_empty() && now_ms() - c.0 < 5 * 60 * 1000 { return c.1.clone(); }
+    }
+    let Ok(cfg) = ctx.riot.glz("get", "parties/v1/parties/customgameconfigs", None).await else { return Vec::new() };
+    let list: Vec<String> = js::arr(&cfg["Queues"]).iter().filter(|q| truthy(&q["Enabled"]))
+        .filter_map(|q| q["QueueID"].as_str().map(String::from)).collect();
+    if !list.is_empty() { *QUEUES_ON.lock().unwrap() = (now_ms(), list.clone()); }
+    list
+}
+/// Riot's "queue is disabled" refusal in plain words.
+fn queue_off(e: crate::core::error::Error) -> crate::core::error::Error {
+    if e.to_string().to_lowercase().contains("queue is disabled") { msg("Riot has this mode turned off for your party right now. Pick another mode.") } else { e }
+}
+
 // Party members' current ranks (the party data doesn't carry them), cached for five minutes.
 static RANK_CACHE: Lazy<Mutex<HashMap<String, (i64, Value)>>> = Lazy::new(|| Mutex::new(HashMap::new()));
 
@@ -269,7 +287,19 @@ pub fn register(reg: &mut Registry, _ctx: &Ctx) {
         o.insert("open".into(), json!(p["Accessibility"] == "OPEN"));
         o.insert("iOwn".into(), json!(i_own));
         o.insert("queueId".into(), js::or(&mm["QueueID"], Value::Null));
-        o.insert("queues".into(), js::or(&p["EligibleQueues"], json!([])));
+        // Modes to offer: the standard modes Riot has switched on, in the game's order, plus anything else the party
+        // lists. The party's own EligibleQueues leaves out Competitive even when the game lets you pick it, so it
+        // can't be the only source. If Riot refuses a mode, the error says so.
+        let on = enabled_queues(&ctx).await;
+        let is_on = |q: &str| on.is_empty() || on.iter().any(|x| x == q);
+        let mut queues: Vec<String> = ["unrated", "competitive", "swiftplay", "spikerush", "deathmatch", "hurm", "ggteam"].iter()
+            .filter(|q| is_on(q)).map(|q| q.to_string()).collect();
+        for q in js::arr(&p["EligibleQueues"]).iter().filter_map(|q| q.as_str().map(String::from)) {
+            if is_on(&q) && !queues.contains(&q) { queues.push(q); }
+        }
+        let cur = js::s(&js::or(&mm["QueueID"], json!("")));
+        o.insert("queueOk".into(), json!(cur.is_empty() || is_on(&cur)));
+        o.insert("queues".into(), json!(queues));
         o.insert("inviteCode".into(), js::or(&p["InviteCode"], Value::Null));
         o.insert("members".into(), Value::Array(rows));
         Ok(Value::Object(o))
@@ -291,12 +321,12 @@ pub fn register(reg: &mut Registry, _ctx: &Ctx) {
     reg.add("social:queue", |ctx, a: Args| async move {
         let id = in_party(&ctx).await?;
         // The old makedefault?queueID= route now returns 404; the client uses POST .../queue with a JSON body.
-        ctx.riot.glz("post", &format!("parties/v1/parties/{id}/queue"), Some(json!({ "queueID": js_string(a.0.first()) }))).await?;
+        ctx.riot.glz("post", &format!("parties/v1/parties/{id}/queue"), Some(json!({ "queueID": js_string(a.0.first()) }))).await.map_err(queue_off)?;
         Ok(json!(true))
     });
     reg.add("social:matchmaking", |ctx, a: Args| async move {
         let id = in_party(&ctx).await?;
-        ctx.riot.glz("post", &format!("parties/v1/parties/{id}/matchmaking/{}", if a.truthy(0) { "join" } else { "leave" }), None).await?;
+        ctx.riot.glz("post", &format!("parties/v1/parties/{id}/matchmaking/{}", if a.truthy(0) { "join" } else { "leave" }), None).await.map_err(queue_off)?;
         Ok(json!(true))
     });
     reg.add("social:ready", |ctx, a: Args| async move {

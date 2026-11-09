@@ -487,7 +487,11 @@ fn status(ctx: &Ctx) -> Value {
 fn set_enabled(ctx: &Ctx, on: bool) -> Res<()> {
     let cur = load(ctx);
     let discord = merge(&cur["discord"], &json!({ "enabled": on }));
-    ctx.riot.write_store("settings", &merge(&cur, &json!({ "discord": discord })))
+    let next = merge(&cur, &json!({ "discord": discord }));
+    ctx.riot.write_store("settings", &next)?;
+    // The Discord page's switch reads the settings, so tell the UI the saved value changed.
+    ctx.emit("settings:changed", next);
+    Ok(())
 }
 
 pub fn register(reg: &mut Registry, ctx: &Ctx) {

@@ -1,5 +1,12 @@
 # 📜 Changelog
 
+## 3.0.8
+
+### 🛠️ Fixes
+- Lobby & Party: Competitive is back in the mode picker, along with every other mode Riot has switched on
+- A mode Riot refuses now shows a plain message instead of "403 The selected queue is disabled"
+- Discord: the Rich Presence switch now turns on and off properly
+
 ## 3.0.7
 
 ### ✨ New

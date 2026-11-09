@@ -116,6 +116,7 @@ export default function Lobby({ active, matchState }) {
             <ModeIcon queue={p.queueId} size={22} className='text-accent' />
             <span className='display text-[30px] text-text'>{p.queueId ? queueName(p.queueId) : 'No mode'}</span>
           </div>
+          {p.queueOk === false && <p className='mt-3 text-[12px] leading-snug text-warn'>Riot has {queueName(p.queueId)} turned off right now. Pick another mode to queue.</p>}
           <div className='grid grid-cols-2 md:grid-cols-3 gap-2 mt-6'>
             {p.queues.map(q => (
               <button key={q} disabled={locked || searching || !p.iOwn || working === 'queue'} title={ownerOnly}
@@ -127,7 +128,7 @@ export default function Lobby({ active, matchState }) {
             ))}
           </div>
           <Button variant={searching ? 'subtle' : 'primary'} size='lg' className='w-full mt-5 !h-12 text-[14px]' icon={searching ? FiSquare : FiPlay}
-            loading={working === 'mm'} disabled={locked || !p.iOwn} title={ownerOnly}
+            loading={working === 'mm'} disabled={locked || !p.iOwn || (!searching && p.queueOk === false)} title={ownerOnly}
             onClick={() => act('mm', () => invoke('social:matchmaking', !searching), searching ? 'Search cancelled' : 'Searching for a match')}>
             {searching ? 'Cancel search' : 'Find match'}
           </Button>
