@@ -12,6 +12,7 @@ Spectre doesn't ask for your Riot username or password. When the Riot Client is 
 | Riot game services (`*.a.pvp.net`) | Store, match history, ranks, loadout and live match data |
 | `valorant-api.com` | Public game content: agent, map, weapon and rank images and names |
 | `playvalorant.com` | Official patch notes |
+| `api.github.com` and GitHub downloads | Checking for Spectre updates and downloading the installer you choose to install |
 | Discord on your PC (local pipe) | Rich Presence, only if you turn it on |
 
 Spectre has no servers or accounts of its own, no analytics, and no telemetry.
@@ -22,7 +23,7 @@ Settings, your notebook, player notes, a list of your friends' Riot IDs (to spot
 
 ## Other players
 
-- **Streamer mode is respected in your matches.** If a player in your current agent select or match hides their name, Spectre never shows their name, Riot ID, account level or player card anywhere in the app, match histories included. It never even asks Riot's name service about them. They're shown only by their agent.
+- **Streamer mode is respected in your matches.** If a player in your current agent select or match hides their name, Spectre never shows their name, Riot ID, account level or player card anywhere in the app, match histories included. It never even asks Riot's name service about them. They're shown only by their agent. The only exceptions are you and friends who are in your own party, since you already know who they are.
 - **Match history** names the players of past matches, like other trackers do. Riot doesn't record who had streamer mode on in a past match, so hiding follows your current match.
 - **Scouting a hidden player** shows only their rank and recent competitive form. The app's interface refers to them by a random code that changes every match, so no identifying data reaches the screen.
 - **Agent select:** ranks are shown for your own team only. Opponents aren't looked up until the match starts.
@@ -30,4 +31,4 @@ Settings, your notebook, player notes, a list of your friends' Riot IDs (to spot
 
 ## Disclaimer
 
-Spectre is a fan-made project and isn't endorsed by Riot Games. It uses the Riot Client's local API and Riot's game services, which aren't official public APIs. Using third-party tools is at your own risk.
+Spectre is a fan-made project and isn't endorsed by Riot Games. It uses the Riot Client's local API and Riot's game services, which aren't official public APIs, so Riot can change them at any time. Spectre is free, open-source software provided as is, without warranty. The Experimental tools in Settings change how your profile appears to other players; they're off by default.

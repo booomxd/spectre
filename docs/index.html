@@ -137,7 +137,7 @@
             </ul>
           </div>
           <button class="shot shot-big glass reveal" type="button" data-shot aria-label="Open the Live Match screenshot full size" style="--d:120ms">
-            <img src="screenshots/live.png" width="1280" height="800" alt="Live Match: both teams with current rank, peak rank and Vandal and Phantom skins" loading="lazy" decoding="async" data-title="Live Match" data-text="Both teams with current-act rank, RR, peak rank and Vandal / Phantom skins. Your party is marked with a coloured bar.">
+            <img src="screenshots/live.png" width="1280" height="800" alt="Live Match: both teams with current rank, peak rank and Vandal and Phantom skins" loading="lazy" decoding="async" data-title="Live Match" data-text="Both teams with current-act rank, RR, peak rank and Vandal / Phantom skins. Your party is marked with a coloured bar, and premade duos, trios and stacks on both teams are tagged.">
           </button>
         </div>
 
@@ -229,8 +229,8 @@
         <div class="split split-rev">
           <div class="split-copy reveal">
             <span class="kicker"><svg class="i"><use href="#i-drop"/></svg>Themes</span>
-            <h2>Twelve themes for your setup</h2>
-            <p>From Midnight to the light Pearl theme. Pick one here and this page switches with it.</p>
+            <h2>Sixteen themes for your setup</h2>
+            <p>From Midnight to the light Pearl, plus Frutiger Aero, Vaporwave, Y2K Chrome and Lo-fi. Pick one here and this page switches with it.</p>
             <div class="swatches" role="group" aria-label="Theme">
               <button type="button" data-theme="midnight" style="--sw:#ff4655;--gl:#ff8c78;--i:0" aria-label="Midnight"></button>
               <button type="button" data-theme="onyx" style="--sw:#ebebf0;--gl:#a0a0aa;--i:1" aria-label="Onyx"></button>
@@ -244,11 +244,15 @@
               <button type="button" data-theme="abyss" style="--sw:#5c84ff;--gl:#78dcff;--i:9" aria-label="Abyss"></button>
               <button type="button" data-theme="sunset" style="--sw:#ff5e8c;--gl:#ffb05c;--i:10" aria-label="Sunset"></button>
               <button type="button" data-theme="pearl" style="--sw:#635bff;--gl:#d65cff;--i:11" aria-label="Pearl (light)"></button>
+              <button type="button" data-theme="aero" style="--sw:#1ea0e6;--gl:#8be36a;--i:12" aria-label="Frutiger Aero (light)"></button>
+              <button type="button" data-theme="vaporwave" style="--sw:#ff71ce;--gl:#01cdfe;--i:13" aria-label="Vaporwave"></button>
+              <button type="button" data-theme="y2k" style="--sw:#78e6ff;--gl:#d68cff;--i:14" aria-label="Y2K Chrome"></button>
+              <button type="button" data-theme="lofi" style="--sw:#ffaa78;--gl:#c8a0ff;--i:15" aria-label="Lo-fi"></button>
             </div>
             <p class="swatch-name" aria-live="polite"><span data-bind="theme-name">Midnight</span> theme</p>
           </div>
           <button class="shot shot-big shot-glow glass reveal" type="button" data-shot aria-label="Open the themes screenshot full size" style="--d:120ms">
-            <img src="screenshots/themes.png" width="1280" height="800" alt="Spectre's theme picker in Settings" loading="lazy" decoding="async" data-title="Themes" data-text="Twelve themes, from the dark Midnight to the light Pearl, picked in Settings.">
+            <img src="screenshots/themes.png" width="1280" height="800" alt="Spectre's theme picker in Settings" loading="lazy" decoding="async" data-title="Themes" data-text="Sixteen themes, from the dark Midnight to the light Pearl and Frutiger Aero, picked in Settings.">
           </button>
         </div>
       </div>
@@ -277,7 +281,7 @@
             <ul class="checks">
               <li><svg class="i"><use href="#i-check"/></svg>No Riot password: it uses the Riot Client you're already signed in to</li>
               <li><svg class="i"><use href="#i-check"/></svg>No servers of its own, no analytics, no telemetry</li>
-              <li><svg class="i"><use href="#i-check"/></svg>Streamer-mode players in your match are never named</li>
+              <li><svg class="i"><use href="#i-check"/></svg>Streamer-mode players in your match are never named (only you and friends in your party are shown)</li>
               <li><svg class="i"><use href="#i-check"/></svg><span>Settings and notes stay on your PC in <code>%APPDATA%\Spectre</code></span></li>
             </ul>
           </article>
@@ -334,7 +338,11 @@
         <div class="faq">
           <details class="glass reveal">
             <summary>Can I get banned for using Spectre?<svg class="i"><use href="#i-chevron"/></svg></summary>
-            <div class="faq-a"><p>Spectre isn't a cheat. It never reads or changes the game, doesn't touch Vanguard, and talks to Riot the same way the VALORANT client does. It's still an unofficial, fan-made tool, so use it at your own risk.</p></div>
+            <div class="faq-a"><p>Spectre isn't a cheat. It never reads or changes the game, doesn't touch Vanguard, and talks to Riot the same way the VALORANT client does. It's an unofficial, fan-made tool that Riot hasn't reviewed or approved, so nobody outside Riot can promise how they treat third-party apps. The Experimental tools in Settings change how your profile looks to others; they're off by default, so leave them off if you want to play it safe.</p></div>
+          </details>
+          <details class="glass reveal">
+            <summary>Is Spectre made by Riot?<svg class="i"><use href="#i-chevron"/></svg></summary>
+            <div class="faq-a"><p>No. Spectre is an independent, open-source project. It isn't made, endorsed or supported by Riot Games, and it's provided as is, without any warranty. All of its code is on <a class="link" href="https://github.com/booomxd/spectre">GitHub</a>, so anyone can check what it does. Only download it from this site or the GitHub releases page.</p></div>
           </details>
           <details class="glass reveal">
             <summary>Spectre says it's waiting for the Riot Client<svg class="i"><use href="#i-chevron"/></svg></summary>
@@ -360,7 +368,7 @@
   <footer class="footer">
     <div class="wrap">
       <div class="footer-top">
-        <a class="brand" href="#top"><img src="site/logo.svg" alt="" width="26" height="26">Spectre</a>
+        <a class="brand" href="#top" aria-label="Spectre, back to top"><img src="site/logo.svg" alt="" width="26" height="26">Spectre</a>
         <nav aria-label="Links">
           <a class="link" href="https://github.com/booomxd/spectre">GitHub</a>
           <a class="link" href="https://github.com/booomxd/spectre/releases">Releases</a>
@@ -369,7 +377,7 @@
           <a class="link" href="https://github.com/booomxd/spectre/blob/main/docs/PRIVACY.md">Privacy</a>
         </nav>
       </div>
-      <p class="legal">Spectre was created under Riot Games' "Legal Jibber Jabber" policy using assets owned by Riot Games. Riot Games does not endorse or sponsor this project. VALORANT and Riot Games are trademarks or registered trademarks of Riot Games, Inc. Screenshots use made-up players and stats.</p>
+      <p class="legal">Spectre was created under Riot Games' "Legal Jibber Jabber" policy using assets owned by Riot Games. Riot Games does not endorse or sponsor this project. Spectre is free, open-source software provided as is, without warranty of any kind. VALORANT and Riot Games are trademarks or registered trademarks of Riot Games, Inc. Screenshots use made-up players and stats.</p>
       <p class="legal">Made by <a class="link" href="https://github.com/booomxd">booomxd</a>. Inter typeface under the SIL Open Font License.</p>
     </div>
   </footer>

@@ -7,9 +7,9 @@ import { cx } from './shared'
 export const PRESET_TAGS = ['Good teammate', 'Toxic', 'Smurf', 'Thrower', 'Shotcaller', 'Duo-able']
 
 const RATINGS = [
-  { value: -1, icon: FiThumbsDown, active: 'border-bad/50 bg-bad/15 text-bad' },
-  { value: 0, icon: FiMinus, active: 'accent-soft border-transparent text-text' },
-  { value: 1, icon: FiThumbsUp, active: 'border-good/50 bg-good/15 text-good' },
+  { value: -1, label: 'Bad', icon: FiThumbsDown, active: 'border-bad/50 bg-bad/15 text-bad' },
+  { value: 0, label: 'Neutral', icon: FiMinus, active: 'accent-soft border-transparent text-text' },
+  { value: 1, label: 'Good', icon: FiThumbsUp, active: 'border-good/50 bg-good/15 text-good' },
 ]
 
 export function RatingIcon({ rating, className }) {
@@ -93,7 +93,7 @@ export function MemoForm({ target, memo, onSaved, onDeleted, onCancel, allTags =
         <Label>Rating</Label>
         <div className='flex gap-2'>
           {RATINGS.map(r => (
-            <button key={r.value} onClick={() => setRating(r.value)}
+            <button key={r.value} onClick={() => setRating(r.value)} aria-label={r.label} title={r.label} aria-pressed={rating === r.value}
               className={cx('h-9 w-14 rounded-full border flex items-center justify-center transition duration-200 active:scale-95',
                 rating === r.value ? r.active : 'glass text-muted hover:text-text hover:bg-surface-2')}>
               <r.icon />

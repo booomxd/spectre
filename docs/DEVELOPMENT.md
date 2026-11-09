@@ -21,10 +21,10 @@ Vite. React changes hot-reload; Rust changes rebuild and restart the app automat
 
 ```
 src/                 React UI
-  nav.js             Page registry: sidebar groups, ids and components
+  nav.js             Page registry: dock sections, sub-pages, ids and components
   lib/ipc.js         invoke(), useInvoke() and useEvent() for talking to the backend
   lib/theme.js       Theme list; tokens live in index.css
-  ui/                Component kit (Button, Card, Badge, Page, ...)
+  ui/                Component kit (Button, Card, Badge, Page, CommandPalette, motion helpers, ...)
   pages/             One file per page, with sub-folders for larger pages
 src-tauri/           Tauri 2 app (Rust)
   tauri.conf.json    Window, bundle and installer settings
@@ -81,7 +81,7 @@ useEvent('settings:changed', s => setSettings(s))
 ### Adding a page
 
 1. Create `src/pages/MyPage.jsx`.
-2. Register it in a group in `src/nav.js` with an `id`, `label` and icon.
+2. Register it under a section in `src/nav.js` with an `id`, `label` and icon. It shows up in the dock and in the Ctrl+K search.
 3. Navigate to it from anywhere with `navigate('my-page', params)`.
 
 ### Privacy rules in code
@@ -126,11 +126,14 @@ see `src-tauri/BACKEND.md` > Migration from Electron.
 
 ## Releasing
 
-1. Bump `version` in `package.json` (`tauri.conf.json` reads it from there) and add an entry to `CHANGELOG.md`.
-2. Commit, then build with `npm run app:build`.
-3. Publish the build as a GitHub release with the GitHub CLI. The in-app updater installs the newest release asset whose
-   name matches `setup*.exe`:
+1. Bump `version` in `package.json` (`tauri.conf.json` reads it from there) and in `src-tauri/Cargo.toml`, and add a
+   section to `CHANGELOG.md`.
+2. Build with `npm run app:build`, then commit and push.
+3. Publish the build as a GitHub release with the GitHub CLI, using that CHANGELOG section as the notes. The in-app
+   updater picks the release with the highest version and installs its asset whose name matches `setup*.exe`
+   (silently, with `/P /UPDATE /R`), so keep `setup` in the file name:
 
 ```
-gh release create vX.Y.Z "src-tauri/target/release/bundle/nsis/Spectre_X.Y.Z_x64-setup.exe" --repo booomxd/spectre --title "Spectre X.Y.Z" --notes-file notes.md
+cp "src-tauri/target/release/bundle/nsis/Spectre_X.Y.Z_x64-setup.exe" Spectre-X.Y.Z-setup.exe
+gh release create vX.Y.Z Spectre-X.Y.Z-setup.exe --repo booomxd/spectre --title "Spectre X.Y.Z" --notes-file notes.md --latest
 ```

@@ -47,11 +47,12 @@ function UpdateButton() {
   )
 }
 
+const WIN_LABEL = { 'win:minimize': 'Minimize', 'win:maximize': 'Maximize', 'win:close': 'Close to tray' }
 function WindowControls() {
   return (
     <div className='flex items-center'>
       {[['win:minimize', FiMinus, 'hover:bg-surface-2 hover:text-text'], ['win:maximize', FiSquare, 'hover:bg-surface-2 hover:text-text'], ['win:close', FiX, 'hover:bg-bad hover:text-white']].map(([ch, Icon, hov]) => (
-        <button key={ch} onClick={() => invoke(ch)} aria-label={ch.slice(4)} className={cx('w-10 h-8 flex items-center justify-center text-muted rounded-full transition-colors', hov)}>
+        <button key={ch} onClick={() => invoke(ch)} aria-label={WIN_LABEL[ch]} title={WIN_LABEL[ch]} className={cx('w-10 h-8 flex items-center justify-center text-muted rounded-full transition-colors', hov)}>
           <Icon size={ch === 'win:maximize' ? 12 : 15} />
         </button>
       ))}
@@ -66,7 +67,7 @@ function Dock({ section, onSection }) {
       {SECTIONS.map(s => {
         const on = section === s.id
         return (
-          <button key={s.id} onClick={() => onSection(s.id)} title={s.label} aria-current={on ? 'page' : undefined}
+          <button key={s.id} onClick={() => onSection(s.id)} title={s.label} aria-label={s.label} aria-current={on ? 'page' : undefined}
             className={cx('relative h-9 px-3.5 rounded-full flex items-center gap-2 text-[13px] font-semibold transition-colors duration-200', on ? 'text-text' : 'text-muted hover:text-text')}>
             {on && <Pill layoutId='dock-pill' />}
             <s.icon className={cx('relative shrink-0', on && 'text-accent')} size={15} />
@@ -98,7 +99,7 @@ function Brand() {
 function Utilities({ page, onOpen, onPalette }) {
   return (
     <div className='flex items-center gap-2'>
-      <button onClick={onPalette} title='Search (Ctrl+K)'
+      <button onClick={onPalette} title='Search (Ctrl+K)' aria-label='Search (Ctrl+K)'
         className='glass h-9 pl-3 pr-1.5 rounded-full flex items-center gap-2 text-[12px] text-muted hover:text-text transition-colors'>
         <FiSearch size={14} /><span className='max-[1200px]:hidden'>Search</span><span className='kbd max-[1200px]:hidden'>Ctrl K</span>
       </button>

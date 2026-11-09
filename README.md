@@ -21,20 +21,21 @@ Live match ranks, scouting, skins, your party, Discord presence and more, all th
 ---
 
 > [!NOTE]
-> Spectre is a fan-made project. It isn't endorsed by Riot Games, and using third-party tools is at your own risk.
+> Spectre is an independent, open-source fan project. It isn't made or endorsed by Riot Games and is provided as is, without warranty.
 
 ## ✨ Highlights
 
 | | |
 | --- | --- |
-| 🎯 **Live Match** | Every player's current-act rank, RR and peak, their skins, and a one-click **Scout** with rank history, recent form and matches. |
+| 🎯 **Live Match** | Every player's current-act rank, RR and peak, their skins, premade party tags, and a one-click **Scout** with rank history, recent form and matches. |
 | 👥 **Lobby & Party** | Invite friends, share invite codes, pick a mode, ready up and start matchmaking without opening the game. |
 | 🔫 **Skins** | See anyone's loadout in a match, and change your own skins right from agent select. |
 | 🎮 **Discord presence** | "Playing Spectre" with your mode, map art, score, rank and party, all fully customizable. |
-| 🕶️ **Streamer-safe** | Players who hide their name in your match stay hidden everywhere in Spectre. No names, IDs or cards. |
+| 🕶️ **Streamer-safe** | Players who hide their name in your match stay hidden everywhere in Spectre (except you and friends in your party). No names, IDs or cards. |
 | 🖥️ **In-game overlay** | Both teams' ranks over the game, toggled with a hotkey, with optional click-through and auto-show. |
 | ⬆️ **Auto updates** | New versions show up in the app and install in one click. |
-| 🎨 **Twelve glass themes** | Midnight, Onyx, Ember, Glacier, Verdant, Amethyst, Gilded, Aurora, Sakura, Abyss, Sunset and the light Pearl. |
+| 🪟 **Stays out of the way** | Starts with Windows in the tray, and closing keeps it running in the hidden icons. |
+| 🎨 **Sixteen glass themes** | Midnight, Onyx, Ember, Glacier, Verdant, Amethyst, Gilded, Aurora, Sakura, Abyss, Sunset, the light Pearl, plus Frutiger Aero, Vaporwave, Y2K Chrome and Lo-fi. |
 
 ## 📸 Preview
 
@@ -55,7 +56,7 @@ Live match ranks, scouting, skins, your party, Discord presence and more, all th
 | [![Friends, party and lobby](docs/screenshots/squad.png)](docs/screenshots/squad.png) | [![In-game overlay with both teams' ranks](docs/screenshots/overlay.png)](docs/screenshots/overlay.png) |
 
 <p align="center">
-  <a href="docs/screenshots/themes.png"><img src="docs/screenshots/themes.png" alt="Home in six of the twelve themes" /></a>
+  <a href="docs/screenshots/themes.png"><img src="docs/screenshots/themes.png" alt="Home in six of Spectre's themes" /></a>
 </p>
 
 <sub>Screenshots use sample data: the players, names and stats are made up. Streamer-mode players show only their agent, just like in a real match.</sub>
@@ -66,7 +67,7 @@ Grab the latest version from **[Releases](https://github.com/booomxd/spectre/rel
 
 | File | What it is |
 | --- | --- |
-| 📦 `Spectre_x.y.z_x64-setup.exe` | Installer. One click, installs for your user only, adds a desktop shortcut. |
+| 📦 `Spectre-x.y.z-setup.exe` | Installer. One click, installs for your user only, adds a desktop shortcut. |
 
 **Requirements:** Windows 10 or 11 (64-bit), VALORANT installed, and the Riot Client open and signed in.
 
@@ -77,11 +78,13 @@ Grab the latest version from **[Releases](https://github.com/booomxd/spectre/rel
 
 | Section | Pages |
 | --- | --- |
-| 🔴 **Live** | Dashboard · Friends & chat · Live Match (with Lobby & Party and an always-on-top overlay) |
-| 📊 **Stats** | Progression · Loadout · Player Search · Match History · Notes · Activity · Encounters |
-| 🧭 **Explore** | Shop & Night Market · Discord · Weapons · Leaderboard |
-| 🎭 **LARP** | Rank Editor · Customize (any card or title) · Premier · Status |
-| 🗺️ **Tactics** | Strategy board with maps, agents, abilities and saved playbooks |
+| 🏠 **Home** | Rank, RR, wallet, battle pass, daily offers and online friends |
+| 🔴 **Live** | Live Match with party tags, Lobby & Party, Scout, Skins and an always-on-top overlay |
+| 📊 **Career** | Progression · Matches · Encounters · Leaderboard |
+| 👥 **Squad** | Friends & chat · Feed · Notes · Lookup |
+| 🎒 **Arsenal** | Loadout · Store & Night Market · Weapons |
+| 🗺️ **Playbook** | Strategy board with maps, agents, abilities and saved playbooks |
+| ⚙️ **Dock** | Discord · What's new · Feedback · Settings (with an opt-in **Experimental** tab) · Ctrl+K quick search |
 
 Every page is explained in **[docs/FEATURES.md](docs/FEATURES.md)**.
 
@@ -104,7 +107,7 @@ Spectre is **not a cheat** and never touches the game itself.
 - 👀 It only changes things when you ask, like equipping a skin or inviting a friend.
 
 > [!NOTE]
-> Spectre is unofficial, so use it at your own risk 💜
+> Spectre is unofficial and not affiliated with Riot Games 💜
 
 ## 🛠️ Build from source
 
@@ -127,13 +130,19 @@ Open the Riot Client and sign in. Spectre connects on its own within a few secon
 <details>
 <summary><b>Live Match is empty</b></summary>
 
-It fills in once agent select starts. Before that, the Lobby & Party tab shows your party.
+It fills in once agent select starts. Before that, the Lobby & Party tab in Live shows your party.
 </details>
 
 <details>
-<summary><b>My LARP edits disappeared</b></summary>
+<summary><b>My Experimental profile edits disappeared</b></summary>
 
 VALORANT resets your presence when your party, queue or match changes. Turn on <b>Keep applied</b> and Spectre re-sends your edits automatically.
+</details>
+
+<details>
+<summary><b>How do I quit Spectre completely?</b></summary>
+
+Closing the window keeps Spectre in the hidden tray icons. Right-click its tray icon and choose <b>Quit</b>, or turn off <b>Close to tray</b> in Settings.
 </details>
 
 <details>

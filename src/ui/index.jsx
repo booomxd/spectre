@@ -170,7 +170,7 @@ export function Toggle({ checked, onChange, label, hint, disabled }) {
   return (
     <label className={cx('flex items-center justify-between gap-4 cursor-pointer', disabled && 'opacity-50 pointer-events-none')}>
       {(label || hint) && <span className='min-w-0'><span className='block text-[13px] font-medium text-text'>{label}</span>{hint && <span className='block text-[11.5px] text-muted mt-0.5'>{hint}</span>}</span>}
-      <button type='button' role='switch' aria-checked={!!checked} onClick={() => onChange(!checked)}
+      <button type='button' role='switch' aria-checked={!!checked} aria-label={typeof label === 'string' ? label : undefined} onClick={() => onChange(!checked)}
         className={cx('relative w-11 h-6 rounded-full transition-[background-color,box-shadow] duration-300 shrink-0', checked ? 'accent-fill' : 'glass-field')}>
         <span className={cx('absolute top-[3px] left-[3px] w-[18px] h-[18px] rounded-full bg-white shadow-[0_2px_6px_rgb(0_0_0/0.35)] transition-transform duration-300 ease-spring', checked && 'translate-x-5')} />
       </button>
