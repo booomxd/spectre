@@ -1,5 +1,12 @@
 # 📜 Changelog
 
+## 3.0.9
+
+### 🛠️ Fixes
+- Lobby & Party: **Cancel search** now appears as soon as the queue starts, and the button can no longer spin forever
+- Lobby & Party: a warning shows when Spectre can't read your party, instead of quietly showing old information
+- Skin changer: picking a skin or a variant now equips the highest level you own, instead of level 1
+
 ## 3.0.8
 
 ### 🛠️ Fixes
