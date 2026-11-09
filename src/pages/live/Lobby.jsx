@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { FiCheck, FiKey, FiLock, FiPlay, FiSquare, FiUnlock, FiUserPlus, FiUsers } from 'react-icons/fi'
 import { FaCrown } from 'react-icons/fa'
 import { Badge, Button, Card, Empty, FadeIn, Input, Item, Pill, Skeleton, Stagger, toast, withToast } from '../../ui'
@@ -18,11 +18,23 @@ export default function Lobby({ active, matchState }) {
   const [working, setWorking] = useState(null)
   const p = party.data
   const locked = matchState && matchState !== 'menus'
-  const searching = p?.state === 'MATCHMAKING'
+  // What Find match / Cancel search just asked for (true = searching). It shows at once and is dropped as soon as the
+  // party agrees, or after 15 seconds, so the button never waits on the next party refresh.
+  const [asked, setAsked] = useState(null)
+  const inQueue = p?.state === 'MATCHMAKING'
+  const searching = asked ?? inQueue
+  useEffect(() => { if (asked != null && inQueue === asked) setAsked(null) }, [asked, inQueue])
+  useEffect(() => {
+    if (asked == null) return
+    const t = setTimeout(() => setAsked(null), 15000)
+    return () => clearTimeout(t)
+  }, [asked])
 
   const act = async (key, fn, ok) => {
     setWorking(key)
-    const r = await withToast(fn(), ok)
+    // A request that never comes back must not leave the button spinning forever.
+    const late = new Promise((_, no) => setTimeout(() => no(new Error("Riot didn't answer. Try again.")), 15000))
+    const r = await withToast(Promise.race([fn(), late]), ok)
     setWorking(null)
     party.reload(true)
     return r
@@ -43,6 +55,11 @@ export default function Lobby({ active, matchState }) {
   const focusInvite = () => document.getElementById('lobby-invite')?.focus()
   return (
     <div className='flex flex-col gap-5'>
+      {party.error && (
+        <FadeIn className='glass rounded-2xl px-5 py-3.5 flex items-center gap-3 text-[13px] text-muted !border-bad/30'>
+          <FiLock className='text-bad shrink-0' /> Spectre can't read your party right now, so this may be out of date. If it stays like this, restart VALORANT.
+        </FadeIn>
+      )}
       {locked && (
         <FadeIn className='glass rounded-2xl px-5 py-3.5 flex items-center gap-3 text-[13px] text-muted !border-warn/30'>
           <FiLock className='text-warn shrink-0' /> Your match is in progress. Matchmaking, mode and access are locked; you can still invite friends.
@@ -129,7 +146,7 @@ export default function Lobby({ active, matchState }) {
           </div>
           <Button variant={searching ? 'subtle' : 'primary'} size='lg' className='w-full mt-5 !h-12 text-[14px]' icon={searching ? FiSquare : FiPlay}
             loading={working === 'mm'} disabled={locked || !p.iOwn || (!searching && p.queueOk === false)} title={ownerOnly}
-            onClick={() => act('mm', () => invoke('social:matchmaking', !searching), searching ? 'Search cancelled' : 'Searching for a match')}>
+            onClick={() => { const want = !searching; act('mm', () => invoke('social:matchmaking', want).then(r => { setAsked(want); return r }), want ? 'Searching for a match' : 'Search cancelled') }}>
             {searching ? 'Cancel search' : 'Find match'}
           </Button>
 
