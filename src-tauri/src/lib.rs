@@ -95,6 +95,18 @@ pub fn run() {
             app.manage(Arc::new(Backend { ctx: ctx.clone(), reg }));
             migrate::run(&ctx);
 
+            // One time per install: put window behaviour back on the shipped defaults (minimize stays on the taskbar,
+            // close goes to the tray), overriding older saved choices. Later changes in Settings are kept.
+            {
+                let mut flags = ctx.riot.read_store("flags", json!({}));
+                if !flags.is_object() { flags = json!({}); }
+                if !truthy(&flags["trayDefaults1"]) {
+                    let _ = api::settings::update(&ctx, &json!({ "minimizeToTray": false, "closeToTray": true }));
+                    flags["trayDefaults1"] = json!(true);
+                    let _ = ctx.riot.write_store("flags", &flags);
+                }
+            }
+
             // Launch at login is on by default. Keep the Windows startup entry in sync with the setting (this also
             // refreshes older entries so they pass --minimized). Dev builds never touch it.
             if !ctx.is_dev {

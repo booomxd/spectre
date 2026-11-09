@@ -85,7 +85,9 @@ async fn presences(ctx: &Ctx) -> Res<HashMap<String, Value>> {
     let res = ctx.riot.local("get", "chat/v4/presences", None).await?;
     let mut out: HashMap<String, Value> = HashMap::new();
     for p in js::arr(&res["presences"]) {
-        if !truthy(&p["puuid"]) || p["product"] == "riot_client" { continue; }
+        // state "mobile" is Riot's placeholder for someone who is offline (it comes tagged league_of_legends even if
+        // they never play it); the game's own friends list shows them as offline, so do the same.
+        if !truthy(&p["puuid"]) || p["product"] == "riot_client" || p["state"] == "mobile" || p["state"] == "offline" { continue; }
         let id = js::s(&p["puuid"]);
         if out.get(&id).is_some_and(|o| o["product"] == "valorant") { continue; }
         let d = if p["product"] == "valorant" { decode(&p) } else { Value::Null };

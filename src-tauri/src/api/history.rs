@@ -288,8 +288,17 @@ pub fn register(reg: &mut Registry, _ctx: &Ctx) {
             };
             let list = js::arr(&res["Matches"]);
             for u in &list {
+                // Riot reports the RR change itself. After - before is wrong across a rank-up or derank (RR resets each
+                // tier, so a promotion showed as -82 and a derank as +79); only fall back to it, tier-corrected, if missing.
+                let (tb, ta) = (n(u.get("TierBeforeUpdate")), n(u.get("TierAfterUpdate")));
+                let diff = n(u.get("RankedRatingAfterUpdate")) - n(u.get("RankedRatingBeforeUpdate"));
+                let earned = match u.get("RankedRatingEarned").and_then(Value::as_f64) {
+                    Some(e) => e,
+                    None if tb > 0.0 && ta > 0.0 && tb < 24.0 && ta < 24.0 => diff + (ta - tb) * 100.0,
+                    None => diff,
+                };
                 let v = O::new()
-                    .v("earned", js::number(n(u.get("RankedRatingAfterUpdate")) - n(u.get("RankedRatingBeforeUpdate"))))
+                    .v("earned", js::number(earned))
                     .u("before", u.get("RankedRatingBeforeUpdate")).u("after", u.get("RankedRatingAfterUpdate"))
                     .u("tierBefore", u.get("TierBeforeUpdate")).u("tierAfter", u.get("TierAfterUpdate"))
                     .v("placement", truthy(&u["IsPlacementMatch"])).done();

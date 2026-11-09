@@ -1,5 +1,12 @@
 # 📜 Changelog
 
+## 3.0.6
+
+### 🛠️ Fixes
+- Match History: RR change is now correct on games where you ranked up or down (a promotion no longer shows as a big RR loss, a derank as a big gain)
+- Friends: people who are offline no longer show as "Playing League of Legends" under Elsewhere
+- Minimizing keeps Spectre on the taskbar and closing sends it to the hidden tray icons; this update puts both back on these defaults once
+
 ## 3.0.5
 
 ### 🪟 Windows
