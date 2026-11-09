@@ -21,7 +21,10 @@ export default function SkinPicker({ weapon, owned, value, onChange, maxHeight =
   const shown = skins.filter(s => s.displayName.toLowerCase().includes(q.toLowerCase()))
   const skin = weapon.skins.find(s => lc(s.uuid) === lc(value.skinId))
 
-  const pick = s => onChange({ skinId: s.uuid, levelId: s.levels[0].uuid, chromaId: s.chromas[0].uuid })
+  // The highest level you own. Picking a skin or a variant equips it at this level, so effects, finisher and
+  // variants work without choosing the level by hand first.
+  const best = s => [...s.levels].reverse().find(l => levelOwned(s, l, owned)) || s.levels[0]
+  const pick = s => onChange({ skinId: s.uuid, levelId: best(s).uuid, chromaId: s.chromas[0].uuid })
 
   return (
     <div className='flex flex-col gap-4'>
@@ -59,7 +62,7 @@ export default function SkinPicker({ weapon, owned, value, onChange, maxHeight =
                     if (!ok) return null
                     const on = lc(c.uuid) === lc(value.chromaId)
                     return (
-                      <button key={c.uuid} onClick={() => onChange({ ...value, chromaId: c.uuid })} title={c.displayName}
+                      <button key={c.uuid} onClick={() => onChange({ ...value, chromaId: c.uuid, levelId: best(skin).uuid })} title={c.displayName}
                         className={cx('w-9 h-9 rounded-xl border flex items-center justify-center transition-[transform,opacity,background-color,border-color,color] duration-200 hover:-translate-y-0.5', on ? 'accent-soft border-transparent' : 'glass')}>
                         {(c.swatch || c.fullRender) ? <img src={c.swatch || c.fullRender} className='w-6 h-6 object-contain' /> : <span className='text-[10px] text-muted'>{i + 1}</span>}
                       </button>
