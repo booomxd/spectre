@@ -2,7 +2,7 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react'
 import { FiArrowUpRight, FiEdit3, FiGrid, FiMapPin, FiMaximize, FiMinus, FiMousePointer, FiPlus, FiRotateCw, FiSquare, FiType } from 'react-icons/fi'
 import { RiEraserLine } from 'react-icons/ri'
-import { COLORS, SIZE, TOKEN_R, WIDTHS, arrowHead, bbox, clamp, isToken, moveItem, penPath, snapVal, teamColor, uid } from './model'
+import { COLORS, SIZE, TOKEN_R, WIDTHS, arrowHead, bbox, clamp, isToken, moveItem, penPath, pivot, snapVal, teamColor, uid, xform } from './model'
 import { KIND_COLOR, ppmOf, utilGeom } from './utility'
 
 // View rotation (degrees, around the board centre). Items keep board coordinates; only the view turns.
@@ -58,21 +58,23 @@ function Shape({ it, side, hit, ppm = 7, vr = 0 }) {
       {g?.shape === 'circle' && <circle cx={it.x} cy={it.y} r={g.r} fill={col} fillOpacity={g.kind === 'smoke' ? 0.42 : g.kind === 'reveal' ? 0.08 : 0.24}
         stroke={col} strokeOpacity={0.85} strokeWidth={2} strokeDasharray={g.kind === 'reveal' ? '8 6' : undefined} pointerEvents='none' />}
       {g?.shape === 'beam' && <line x1={g.x1} y1={g.y1} x2={g.x2} y2={g.y2} stroke={col} strokeOpacity={g.w > 12 ? 0.26 : 0.8} strokeWidth={g.w} strokeLinecap={g.w > 12 ? 'butt' : 'round'} pointerEvents='none' />}
-      <g transform={`translate(${it.x} ${it.y}) rotate(${-vr})`} pointerEvents={hit ? 'all' : 'none'}>
+      <g transform={`translate(${it.x} ${it.y}) rotate(${-vr}) scale(${g ? it.sc ?? 1 : 1})`} pointerEvents={hit ? 'all' : 'none'}>
         <circle r={r} fill='rgba(10,10,14,.82)' stroke={col || 'rgba(255,255,255,.5)'} strokeWidth={2} />
         <image href={it.icon} x={-ic / 2} y={-ic / 2} width={ic} height={ic} />
         <title>{it.name}</title>
       </g>
     </>
   }
-  return <g data-id={it.id} opacity={op} className={isToken(it) && hit ? 'transition-[filter] duration-150 hover:brightness-125' : undefined}>{body}</g>
+  // Scaled utility keeps its to-scale area; only its icon grows (handled above). Everything else turns and scales as a whole.
+  const tf = it.type === 'ability' && utilGeom(it, ppm) ? undefined : xform(it)
+  return <g data-id={it.id} opacity={op} transform={tf} className={isToken(it) && hit ? 'transition-[filter] duration-150 hover:brightness-125' : undefined}>{body}</g>
 }
 
 const Board = forwardRef(function Board({ items, map, side, active, locked, onLive, onEnd, onCommit, onUndo, onRedo, onPickAgent }, ref) {
   const wrap = useRef(null)
   const svg = useRef(null)
   const [view, setView] = useState({ x: 0, y: 0, k: 0.6 })
-  const [tool, setTool] = useState('pen')
+  const [tool, setTool] = useState('select')
   const [color, setColor] = useState(COLORS[1])
   const [width, setWidth] = useState(WIDTHS[1])
   const [snap, setSnap] = useState(true)
@@ -146,6 +148,15 @@ const Board = forwardRef(function Board({ items, map, side, active, locked, onLi
       if (sn) { x = snapVal(x); y = snapVal(y) }
       const it = { id: uid(), x, y, ...payload }
       onCommit([...its, it]); setSel(it.id)
+      // Placing something switches to Select so it can be moved, resized or turned right away.
+      setTool('select')
+    },
+    // Drop from the side panel (pointer-based drag; native drag and drop is swallowed by the app window).
+    dropAt(payload, cx, cy) {
+      const r = svg.current?.getBoundingClientRect()
+      if (!r || P.current.locked || cx < r.left || cx > r.right || cy < r.top || cy > r.bottom) return false
+      this.addItem(payload, toBoard({ clientX: cx, clientY: cy }))
+      return true
     },
   }))
 
@@ -205,12 +216,24 @@ const Board = forwardRef(function Board({ items, map, side, active, locked, onLi
     }
     if (e.button !== 0) return
     const [x, y] = toBoard(e), { tool: t, color: c, width: w } = P.current
-    if (t === 'select' && e.target.closest?.('[data-rot]')) {
+    if (e.target.closest?.('[data-rot]')) {
       svg.current.setPointerCapture(e.pointerId)
       s.rot = { id: sel, moved: false }; return
     }
-    if (t === 'select') {
-      const id = e.target.closest?.('[data-id]')?.getAttribute('data-id')
+    // resize / rotate handles on the selection box
+    const handle = e.target.closest?.('[data-scale]') ? 'scale' : e.target.closest?.('[data-turn]') ? 'turn' : null
+    if (handle && sel) {
+      const o = P.current.items.find(i => i.id === sel); if (!o) return
+      svg.current.setPointerCapture(e.pointerId)
+      const [px, py] = pivot(o)
+      s.xf = { id: sel, kind: handle, px, py, d0: Math.max(Math.hypot(x - px, y - py), 1), a0: Math.atan2(y - py, x - px), sc0: o.sc ?? 1, ang0: o.ang ?? 0, moved: false }
+      return
+    }
+    // Tokens can be grabbed and moved with any tool, so you never have to switch back to Select first.
+    const hitId = e.target.closest?.('[data-id]')?.getAttribute('data-id')
+    const hitTok = t !== 'select' && t !== 'eraser' && hitId && P.current.items.find(i => i.id === hitId)
+    if (t === 'select' || (hitTok && isToken(hitTok))) {
+      const id = hitId
       setSel(id || null)
       if (id) {
         svg.current.setPointerCapture(e.pointerId)
@@ -236,6 +259,18 @@ const Board = forwardRef(function Board({ items, map, side, active, locked, onLi
     const s = st.current
     if (s.pan) { setView(v => ({ ...v, x: s.pan.vx + e.clientX - s.pan.sx, y: s.pan.vy + e.clientY - s.pan.sy })); return }
     if (s.erased && e.buttons & 1) { erase(e); return }
+    if (s.xf) {
+      const [x, y] = toBoard(e), f = s.xf
+      f.moved = true
+      let patch
+      if (f.kind === 'scale') patch = { sc: Math.round(clamp(f.sc0 * Math.hypot(x - f.px, y - f.py) / f.d0, 0.3, 4) * 100) / 100 }
+      else {
+        let ang = f.ang0 + (Math.atan2(y - f.py, x - f.px) - f.a0) * 180 / Math.PI
+        if (e.shiftKey) ang = Math.round(ang / 15) * 15
+        patch = { ang: Math.round(((ang % 360) + 360) % 360) }
+      }
+      onLive(P.current.items.map(i => i.id === f.id ? { ...i, ...patch } : i)); return
+    }
     if (s.rot) {
       const [x, y] = toBoard(e), o = P.current.items.find(i => i.id === s.rot.id); if (!o) return
       let a = Math.atan2(y - o.y, x - o.x)
@@ -278,6 +313,7 @@ const Board = forwardRef(function Board({ items, map, side, active, locked, onLi
     try { svg.current.releasePointerCapture(e.pointerId) } catch (err) { /* not captured */ }
     if (s.pan) { s.pan = null; setPanning(false); return }
     if (s.rot) { const m = s.rot.moved; s.rot = null; if (m) onEnd(); return }
+    if (s.xf) { const m = s.xf.moved; s.xf = null; if (m) onEnd(); return }
     if (s.erased) { const had = s.erased.size; s.erased = null; if (had) onEnd(); return }
     if (s.drag) { const m = s.drag.moved; s.drag = null; if (m) onEnd(); return }
     if (s.drawing) {
@@ -336,14 +372,39 @@ const Board = forwardRef(function Board({ items, map, side, active, locked, onLi
             <text key={i} x={c.x} y={c.y} transform={vr ? `rotate(${-vr} ${c.x} ${c.y})` : undefined} textAnchor='middle' dominantBaseline='middle'
               fontSize={13} fontWeight={700} fill='rgba(255,255,255,.78)' stroke='rgba(0,0,0,.8)' strokeWidth={3.5} paintOrder='stroke' pointerEvents='none' style={{ userSelect: 'none' }}>{c.name}</text>
           ))}
-          {items.map(it => <Shape key={it.id} it={it} side={side} ppm={ppm} vr={vr} hit={hit || (tool === 'select' && !locked)} />)}
+          {items.map(it => <Shape key={it.id} it={it} side={side} ppm={ppm} vr={vr} hit={hit || (!locked && isToken(it))} />)}
           {draft && <Shape it={draft} side={side} ppm={ppm} vr={vr} />}
+          {sb && !locked && tool === 'select' && (() => {
+            // The selection box lives in the item's own transform, so it turns and scales with it.
+            const geo = selItem.type === 'ability' && utilGeom(selItem, ppm)
+            const sc = selItem.sc ?? 1, u = 1 / (view.k * sc) // handle size stays constant on screen
+            const pad = 8 * u, cx = (sb[0] + sb[2]) / 2
+            const H = 'rgb(var(--accent))'
+            return (
+              <g transform={geo ? xform(selItem, false) : xform(selItem)}>
+                <rect x={sb[0] - pad} y={sb[1] - pad} width={sb[2] - sb[0] + pad * 2} height={sb[3] - sb[1] + pad * 2} rx={8 * u} fill='none' stroke={H} strokeWidth={2 * u} strokeDasharray={`${6 * u} ${4 * u}`} pointerEvents='none' />
+                <g data-del transform={`translate(${sb[2] + pad} ${sb[1] - pad}) scale(${u})`} style={{ cursor: 'pointer' }}>
+                  <title>Delete (Del)</title>
+                  <circle r={10} fill='#ff4655' /><path d='M-4 -4L4 4M4 -4L-4 4' stroke='#fff' strokeWidth={2} strokeLinecap='round' />
+                </g>
+                <g data-scale transform={`translate(${sb[2] + pad} ${sb[3] + pad}) scale(${u})`} style={{ cursor: 'nwse-resize' }}>
+                  <title>Drag to resize</title>
+                  <rect x={-7} y={-7} width={14} height={14} rx={4} fill='#fff' stroke={H} strokeWidth={2.5} />
+                </g>
+                {!geo && (
+                  <g transform={`translate(${cx} ${sb[1] - pad}) scale(${u})`}>
+                    <line y1={0} y2={-22} stroke={H} strokeWidth={2} pointerEvents='none' />
+                    <g data-turn transform='translate(0 -28)' style={{ cursor: 'grab' }}>
+                      <title>Drag to rotate (Shift snaps to 15°)</title>
+                      <circle r={8} fill='#fff' stroke={H} strokeWidth={2.5} />
+                    </g>
+                  </g>
+                )}
+              </g>
+            )
+          })()}
           {sb && !locked && tool === 'select' && (
             <g>
-              <rect x={sb[0] - 8} y={sb[1] - 8} width={sb[2] - sb[0] + 16} height={sb[3] - sb[1] + 16} rx={8} fill='none' stroke='rgb(var(--accent))' strokeWidth={2 / view.k} strokeDasharray={`${6 / view.k} ${4 / view.k}`} pointerEvents='none' />
-              <g data-del transform={`translate(${sb[2] + 8} ${sb[1] - 8}) scale(${1 / view.k})`} style={{ cursor: 'pointer' }}>
-                <circle r={10} fill='#ff4655' /><path d='M-4 -4L4 4M4 -4L-4 4' stroke='#fff' strokeWidth={2} strokeLinecap='round' />
-              </g>
               {(() => {
                 const g = utilGeom(selItem, ppm)
                 return g?.shape === 'beam' && (
