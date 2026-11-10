@@ -259,6 +259,8 @@ Waiting for the Riot Client.|等待 Riot 客户端。|Ожидание Riot Clie
 Waiting for the Riot Client...|等待 Riot 客户端...|Ожидание Riot Client...|Riot Client का इंतज़ार...|Riot Clientを待機中...|Riot Client 대기 중...|En attente du Riot Client...|Esperando al Riot Client...|Warte auf den Riot Client...|Aguardando o Riot Client...
 With notes|有备注|С заметками|नोट वाले|メモあり|메모 있음|Avec notes|Con notas|Mit Notizen|Com notas
 Your position|你的排名|Ваша позиция|आपकी स्थिति|あなたの順位|내 순위|Votre position|Tu posición|Deine Platzierung|Sua posição
+Match MVP|全场 MVP|MVP матча|मैच MVP|マッチMVP|매치 MVP|MVP du match|MVP de la partida|Match-MVP|MVP da partida
+Team MVP|队伍 MVP|MVP команды|टीम MVP|チームMVP|팀 MVP|MVP de l'équipe|MVP del equipo|Team-MVP|MVP do time
 Evenly ranked|段位相当|Ранги примерно равны|रैंक लगभग बराबर|ランクは互角|랭크 비슷함|Rangs équilibrés|Rangos parejos|Ränge ausgeglichen|Ranks equilibrados
 All solo|全部单排|Все соло|सभी सोलो|全員ソロ|모두 솔로|Tous en solo|Todos en solitario|Alle solo|Todos solo
 Duo|双排|Дуо|डुओ|デュオ|듀오|Duo|Dúo|Duo|Dupla

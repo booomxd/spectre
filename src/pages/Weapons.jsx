@@ -3,6 +3,7 @@ import { FiLock, FiPlay, FiSearch } from 'react-icons/fi'
 import { Badge, Card, Empty, Heading, Input, Item, Modal, Page, SectionTitle, SegmentedTabs, Select, Skeleton, Stagger, Stat, Swap, cx, Pill } from '../ui'
 import { useRiot } from '../lib/riot'
 import { WishButton, useWishlist } from '../lib/wishlist'
+import { useStored } from '../lib/stored'
 import { CATEGORIES, catKey, chromaOwned, isStandard, lc, levelItemLabel, levelOwned, skinImage, skinOwned, tierColor, useContentTiers, useOwned, useWeapons } from './tools/gear'
 
 const pen = p => (p || '').split('::').pop() || '-'
@@ -14,9 +15,10 @@ export default function Weapons() {
   const weapons = useWeapons()
   const { owned } = useOwned(!riot.connected)
   const tiers = useContentTiers()
-  const [cat, setCat] = useState('Rifle')
-  const [wid, setWid] = useState(null)
-  const [filter, setFilter] = useState('all')
+  // The category, weapon and All / Owned choice are remembered between launches.
+  const [cat, setCat] = useStored('weapons-cat', 'Rifle')
+  const [wid, setWid] = useStored('weapons-wid', null)
+  const [filter, setFilter] = useStored('weapons-filter', 'all', ['all', 'owned'])
   const [tier, setTier] = useState('')
   const [q, setQ] = useState('')
   const [skin, setSkin] = useState(null)

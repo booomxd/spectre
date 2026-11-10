@@ -4,7 +4,7 @@
   var root = document.documentElement
   root.classList.add('js')
 
-  // The same sixteen themes as the app: [name, accent, second glow].
+  // The same eighteen themes as the app: [name, accent, second glow].
   var THEMES = {
     midnight: ['Midnight', '#ff4655', '#ff8c78'],
     onyx: ['Onyx', '#ebebf0', '#a0a0aa'],
@@ -22,6 +22,8 @@
     vaporwave: ['Vaporwave', '#ff71ce', '#01cdfe'],
     y2k: ['Y2K Chrome', '#78e6ff', '#d68cff'],
     lofi: ['Lo-fi', '#ffaa78', '#c8a0ff'],
+    jamun: ['Minty Jamun', '#a860ff', '#6ef0be'],
+    musashi: ['Musashi', '#c82424', '#eceae2'],
   }
 
   var hex = function (h) { return [1, 3, 5].map(function (i) { return parseInt(h.slice(i, i + 2), 16) }) }

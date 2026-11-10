@@ -1,6 +1,7 @@
 // Data model + geometry helpers + PNG rasterizer for the strategy board.
 // Board space is a 1000x1000 square (the map minimap); items store board coordinates.
 import { invoke } from '../../lib/ipc'
+import { KIND_COLOR, ppmOf, utilGeom } from './utility'
 // PNG export text uses the app's font stack.
 const FONT = '"SF Pro Text", "SF Pro Display", "SF Pro", -apple-system, BlinkMacSystemFont, Inter, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif'
 
@@ -122,8 +123,17 @@ export async function renderPng({ map, strat, step }) {
       g.lineWidth = 6; g.strokeStyle = 'rgba(0,0,0,.85)'; g.strokeText(it.text, it.x, it.y)
       g.fillText(it.text, it.x, it.y)
     } else if (isToken(it)) {
-      const ring = it.type === 'agent' ? teamColor(it.team, strat.side) : 'rgba(255,255,255,.55)'
-      const r = it.type === 'agent' ? TOKEN_R : 24
+      const u = utilGeom(it, ppmOf(map)), col = u && KIND_COLOR[u.kind]
+      if (u?.shape === 'circle') {
+        g.beginPath(); g.arc(it.x, it.y, u.r, 0, Math.PI * 2)
+        g.globalAlpha = u.kind === 'smoke' ? 0.42 : u.kind === 'reveal' ? 0.08 : 0.24; g.fillStyle = col; g.fill()
+        g.globalAlpha = 0.85; g.strokeStyle = col; g.lineWidth = 2; if (u.kind === 'reveal') g.setLineDash([8, 6]); g.stroke(); g.setLineDash([]); g.globalAlpha = 1
+      } else if (u?.shape === 'beam') {
+        g.globalAlpha = u.w > 12 ? 0.26 : 0.8; g.strokeStyle = col; g.lineWidth = u.w; g.lineCap = u.w > 12 ? 'butt' : 'round'
+        g.beginPath(); g.moveTo(u.x1, u.y1); g.lineTo(u.x2, u.y2); g.stroke(); g.globalAlpha = 1; g.lineCap = 'round'
+      }
+      const ring = it.type === 'agent' ? teamColor(it.team, strat.side) : col || 'rgba(255,255,255,.55)'
+      const r = it.type === 'agent' ? TOKEN_R : u ? 12 : 24
       g.beginPath(); g.arc(it.x, it.y, r, 0, Math.PI * 2); g.fillStyle = '#111'; g.fill()
       const im = imgs[it.icon]
       if (im) {

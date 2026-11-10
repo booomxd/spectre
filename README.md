@@ -35,7 +35,7 @@ Live match ranks, scouting, skins, your party, Discord presence and more, all th
 | 🖥️ **In-game overlay** | Both teams' ranks over the game, toggled with a hotkey, with optional click-through and auto-show. |
 | ⬆️ **Auto updates** | New versions show up in the app and install in one click. |
 | 🪟 **Stays out of the way** | Starts with Windows in the tray, and closing keeps it running in the hidden icons. |
-| 🎨 **Sixteen glass themes** | Midnight, Onyx, Ember, Glacier, Verdant, Amethyst, Gilded, Aurora, Sakura, Abyss, Sunset, the light Pearl, plus Frutiger Aero, Vaporwave, Y2K Chrome and Lo-fi. |
+| 🎨 **Eighteen glass themes** | Midnight, Onyx, Ember, Glacier, Verdant, Amethyst, Gilded, Aurora, Sakura, Abyss, Sunset, the light Pearl, plus Frutiger Aero, Vaporwave, Y2K Chrome, Lo-fi, Minty Jamun and Musashi. |
 
 ## 📸 Preview
 

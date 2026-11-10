@@ -29,6 +29,7 @@ export default function Strategies({ active }) {
   const [anim, setAnim] = useState(null)
   const [playing, setPlaying] = useState(false)
   const [exporting, setExporting] = useState(false)
+  const [focusAgent, setFocusAgent] = useState(null) // last picked agent: its abilities sit under the agent grid
   const [, bump] = useState(0)
 
   const pbsRef = useRef(null)
@@ -289,7 +290,7 @@ export default function Strategies({ active }) {
 
             <div className='flex-1 min-h-0 relative'>
               <Board ref={boardRef} items={shown} map={map} side={strat.side} active={active !== false} locked={playing}
-                onLive={onLive} onEnd={onEnd} onCommit={onCommit} onUndo={onUndo} onRedo={onRedo} />
+                onLive={onLive} onEnd={onEnd} onCommit={onCommit} onUndo={onUndo} onRedo={onRedo} onPickAgent={setFocusAgent} />
               <div className='absolute right-4 top-4 z-10 pointer-events-none max-[1440px]:hidden'><Badge tone={strat.side === 'attack' ? 'bad' : 'accent'}>{map?.displayName || 'Map'} · {strat.side}</Badge></div>
             </div>
 
@@ -321,7 +322,7 @@ export default function Strategies({ active }) {
       </div>
 
       <div className='w-[260px] max-[1200px]:w-[224px] shrink-0 min-h-0'>
-        <Palette agents={agents} side={strat?.side || 'attack'} placed={placed} notes={strat?.notes || ''}
+        <Palette agents={agents} side={strat?.side || 'attack'} placed={placed} notes={strat?.notes || ''} focus={focusAgent} onFocus={setFocusAgent}
           onNotes={notes => strat && updateStrat(s => ({ ...s, notes }))}
           onPlace={payload => strat && !playing && boardRef.current?.addItem(payload)} />
       </div>

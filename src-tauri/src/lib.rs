@@ -47,6 +47,22 @@ pub fn register_core(reg: &mut Registry) {
         ctx.app()?.opener().open_url(a.str(0), None::<&str>).map_err(|e| msg(e.to_string()))?;
         Ok(Value::Null)
     });
+    // Saves a share card (a PNG as base64) to Pictures\Spectre and shows it in Explorer. The UI uses this when the
+    // clipboard won't take the image.
+    reg.add("share:save", |ctx, a: Args| async move {
+        use base64::Engine;
+        use tauri_plugin_opener::OpenerExt;
+        let name: String = a.str(0).chars().filter(|c| c.is_ascii_alphanumeric() || matches!(c, '-' | '_' | '.')).take(80).collect();
+        let name = if name.len() > 4 && name.to_lowercase().ends_with(".png") && !name.starts_with('.') { name } else { "spectre-card.png".to_string() };
+        let bytes = base64::engine::general_purpose::STANDARD.decode(a.str(1)).map_err(|_| msg("Bad image data"))?;
+        if bytes.len() > 8 * 1024 * 1024 || !bytes.starts_with(&[0x89, b'P', b'N', b'G']) { return Err(msg("Bad image data")); }
+        let dir = ctx.app()?.path().picture_dir().map_err(|e| msg(e.to_string()))?.join("Spectre");
+        std::fs::create_dir_all(&dir)?;
+        let file = dir.join(name);
+        std::fs::write(&file, bytes)?;
+        let _ = ctx.app()?.opener().reveal_item_in_dir(&file);
+        Ok(json!(file.to_string_lossy()))
+    });
     // With "Minimize to tray" on, minimizing hides Spectre to the tray instead of the taskbar.
     reg.add("win:minimize", |ctx, _| async move {
         let w = main_window(&ctx)?;

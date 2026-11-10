@@ -237,6 +237,12 @@ fn summarize(m: &Value, puuid: &str) -> Option<Value> {
     let mut result = if mine.map(|t| truthy(&t["won"])).unwrap_or(false) { "win" } else { "loss" };
     if teams.len() == 2 && !teams.iter().any(|t| truthy(&t["won"])) { result = "draw"; }
     let ffa = teams.len() > 2;
+    // The game's own MVP rule: the top combat score on the winning team is Match MVP, the top score on the other
+    // team is Team MVP (both teams' tops in a draw). No MVP in free-for-all modes.
+    let score_of = |p: &Value| js::num(&js::or(&p["stats"]["score"], json!(0)));
+    let top = players.iter().filter(|p| p["team"] == me["team"]).map(|p| score_of(p)).fold(0.0_f64, f64::max);
+    let mvp = if ffa || teams.len() != 2 || top <= 0.0 || score_of(me) < top { Value::Null }
+        else if result == "win" { json!("match") } else { json!("team") };
     let score = if ffa { Value::Null } else {
         json!({
             "us": js::nullish(&mine.map(|t| t["roundsWon"].clone()).unwrap_or(Value::Null), json!(0)),
@@ -245,7 +251,7 @@ fn summarize(m: &Value, puuid: &str) -> Option<Value> {
     };
     Some(O::new().u("matchId", m.get("id")).u("mapId", m.get("mapId")).v("queue", m["queue"].clone()).v("mode", mode_name(&js::s(&m["queue"])))
         .u("start", m.get("start")).u("length", m.get("length"))
-        .v("agent", me["agent"].clone()).v("tier", me["tier"].clone()).v("result", result).v("ffa", ffa).v("score", score)
+        .v("agent", me["agent"].clone()).v("tier", me["tier"].clone()).v("result", result).v("ffa", ffa).v("score", score).v("mvp", mvp)
         .ext(player_stats(m, me)).done())
 }
 

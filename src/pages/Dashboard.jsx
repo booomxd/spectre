@@ -2,9 +2,11 @@ import { Page, RequireRiot, Stagger, Item } from '../ui'
 import { useRiot } from '../lib/riot'
 import { useInvoke } from '../lib/ipc'
 import { useCatalog, pickPass } from './dashboard/catalog'
-import { Hero, RankTile, TrendTile, FormTile, SessionTile, WalletCard, BundleCard, DailyCard, PassCard, FriendsCard } from './dashboard/Cards'
+import { TrendTile, FormTile, SessionTile, WalletCard, PassCard } from './dashboard/Cards'
+import { HomeHero, ShopCard, FriendsPanel } from './dashboard/HomeLayout'
 
-// Home bento: identity + rank, ranked trend + recent form, then store, battle pass, wallet, daily offers and friends.
+// Home: a hero with your overview and session, today's shop beside your online friends, then the smaller tiles
+// (ranked trend, this session, recent form, battle pass, wallet).
 function DashboardBody({ active }) {
   const riot = useRiot()
   const cat = useCatalog()
@@ -17,17 +19,18 @@ function DashboardBody({ active }) {
   const contracts = useInvoke('progression:contracts')
   const friends = useInvoke('social:friends', [], { poll: 30000, skip: !active })
 
+  const party = useInvoke('social:party', [], { poll: 15000, skip: !active })
+
   const tiles = [
-    ['xl:col-span-8', <Hero riot={riot} identity={identity.data} account={account.data} rr={rr.data} />],
-    ['md:col-span-6 xl:col-span-4', <RankTile rank={rank.data} />],
+    ['', <HomeHero riot={riot} identity={identity.data} account={account.data} rank={rank.data} rr={rr} party={party} />],
+    ['lg:col-span-8', <ShopCard store={store.data} cat={cat} />],
+    // The friends list takes the shop's height and scrolls inside it.
+    ['lg:col-span-4 relative min-h-[440px]', <FriendsPanel friends={friends} />],
     ['xl:col-span-5', <TrendTile rr={rr} />],
     ['md:col-span-6 xl:col-span-3', <SessionTile rr={rr} />],
     ['md:col-span-6 xl:col-span-4', <FormTile rr={rr} />],
-    ['md:col-span-6 xl:col-span-5', <BundleCard bundles={store.data?.bundles} cat={cat} />],
-    ['md:col-span-6 xl:col-span-4', <PassCard pass={pickPass(contracts.data?.contracts)} cat={cat} loading={contracts.loading && !contracts.data} />],
-    ['md:col-span-6 xl:col-span-3', <WalletCard wallet={wallet.data} cat={cat} />],
-    ['xl:col-span-8', <DailyCard store={store.data} cat={cat} />],
-    ['md:col-span-6 xl:col-span-4', <FriendsCard friends={friends} />],
+    ['md:col-span-6 xl:col-span-7', <PassCard pass={pickPass(contracts.data?.contracts)} cat={cat} loading={contracts.loading && !contracts.data} />],
+    ['md:col-span-6 xl:col-span-5', <WalletCard wallet={wallet.data} cat={cat} />],
   ]
 
   return (

@@ -479,7 +479,11 @@ export const PLAYBOOKS = [{
     {
       id: 'st-ascent-a', name: 'A split', mapId: MAP.ascent.uuid, side: 'attack', notes: 'Smoke heaven + tree, Sova dart from A main.', updatedAt: NOW - DAY,
       steps: [
-        { id: 'sp1', name: 'Setup', items: [tokenItem('t1', AGENT.jett, 300, 720, 'ally'), tokenItem('t2', AGENT.sova, 360, 760, 'ally'), tokenItem('t3', AGENT.omen, 520, 640, 'ally'), { id: 'a1', type: 'arrow', x1: 300, y1: 700, x2: 260, y2: 420, color: '#ff4655', width: 6 }] },
+        { id: 'sp1', name: 'Setup', items: [tokenItem('t1', AGENT.jett, 300, 720, 'ally'), tokenItem('t2', AGENT.sova, 360, 760, 'ally'), tokenItem('t3', AGENT.omen, 520, 640, 'ally'),
+          { id: 'u1', type: 'ability', agentId: AGENT.omen, name: 'Omen: Dark Cover', icon: `https://media.valorant-api.com/agents/${AGENT.omen}/abilities/ability2/displayicon.png`, x: 330, y: 330 },
+          { id: 'u2', type: 'ability', agentId: AGENT.omen, name: 'Omen: Dark Cover', icon: `https://media.valorant-api.com/agents/${AGENT.omen}/abilities/ability2/displayicon.png`, x: 420, y: 300 },
+          { id: 'u3', type: 'ability', agentId: AGENT.sova, name: 'Sova: Recon Bolt', icon: `https://media.valorant-api.com/agents/${AGENT.sova}/abilities/ability2/displayicon.png`, x: 250, y: 260 },
+          { id: 'a1', type: 'arrow', x1: 300, y1: 700, x2: 260, y2: 420, color: '#ff4655', width: 6 }] },
         { id: 'sp2', name: 'Execute', items: [tokenItem('t1', AGENT.jett, 250, 380, 'ally'), tokenItem('t2', AGENT.sova, 330, 520, 'ally'), { id: 'x1', type: 'text', x: 200, y: 300, text: 'Plant default', color: '#ffffff', size: 24 }] },
       ],
     },

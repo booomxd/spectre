@@ -116,15 +116,32 @@
 [data-theme='y2k'] .glass, [data-theme='y2k'] .glass-strong { background-image: linear-gradient(135deg, rgb(255 255 255 / 0.07), rgb(255 255 255 / 0.015) 40%, rgb(255 255 255 / 0.06)); }
 [data-theme='lofi'] { --bg: 20 14 16; --panel: 40 30 32; --accent: 255 170 120; --accent-2: 200 160 255; --orb-1: 255 150 110; --orb-2: 190 150 255;  --orb-3: 120 80 110; --orb-a: 0.38; --muted: 186 166 160; --orb-v: 1.3; }
 
+/* Minty Jamun: deep jamun purple with cool mint, frosted like a chilled glass. A cluster of glossy berries sits in
+   the bottom corner of the backdrop (static, drawn with gradients). */
+[data-theme='jamun'] { --bg: 13 7 22; --panel: 30 18 46; --accent: 168 96 255; --accent-2: 110 240 190; --orb-1: 132 58 224; --orb-2: 84 226 176; --orb-3: 92 18 112; --orb-a: 0.4; --muted: 180 162 204; --hi-a: 0.14; --good: 110 240 190; }
+[data-theme='jamun'] .backdrop-fields::after {
+  content: ""; position: absolute; right: -20px; bottom: -30px; width: 440px; height: 440px; opacity: 0.4; pointer-events: none;
+  background: url('./assets/jamun-grapes.svg') no-repeat center / contain;
+}
+
+/* Musashi: black-and-white manga ink. Pure black ground, neutral greys, paper-white text, and one blood-red accent
+   (the only colour, like a seal stamp). The artwork fills the backdrop from the right; the grid is off, grain is up. */
+[data-theme='musashi'] { --bg: 4 4 4; --panel: 22 22 22; --text: 242 241 236; --accent: 200 36 36; --accent-2: 236 234 226; --orb-1: 90 90 90; --orb-2: 160 160 156; --orb-3: 70 14 14; --orb-a: 0; --orb-v: 1.2; --muted: 176 176 172; --grid-a: 0; --noise-a: 0.1; --hi-a: 0.07; }
+[data-theme='musashi'] .backdrop-fields::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0.36;
+  background: url('./assets/musashi.webp') no-repeat right center / cover;
+  -webkit-mask-image: linear-gradient(90deg, transparent 12%, #000 52%); mask-image: linear-gradient(90deg, transparent 12%, #000 52%);
+}
+
 /* Frutiger Aero bubbles: small glossy spheres drifting up, only in that theme. Transform-only, like the orbs. */
 .bubble {
   display: none; position: absolute; bottom: -12vmax; border-radius: 50%;
   background: radial-gradient(circle at 32% 28%, rgb(255 255 255 / 0.95), rgb(255 255 255 / 0.35) 18%, rgb(120 210 255 / 0.18) 46%, rgb(80 180 240 / 0.28) 70%, rgb(255 255 255 / 0.6) 100%);
   box-shadow: inset 0 0 18px rgb(255 255 255 / 0.6);
-  will-change: transform; animation: bubble-up var(--d, 26s) linear infinite; animation-delay: var(--dl, 0s);
+  will-change: transform; animation: bubble-up var(--d, 26s) steps(312, end) infinite; animation-delay: var(--dl, 0s);
 }
 @keyframes bubble-up { 0% { transform: translate3d(0, 0, 0); } 50% { transform: translate3d(var(--sway, 4vmax), -60vh, 0); } 100% { transform: translate3d(0, -125vh, 0); } }
-html[data-hidden] .bubble { animation-play-state: paused; }
+html[data-hidden] .bubble, html[data-idle] .bubble { animation-play-state: paused; }
 @media (prefers-reduced-motion: reduce) { .bubble { animation: none !important; } }
 html[data-reduce-motion] .bubble { animation: none !important; }
 
@@ -171,7 +188,9 @@ button:focus-visible, a:focus-visible, [role='tab']:focus-visible, [role='button
 .orb {
   position: absolute; width: 72vmax; height: 72vmax; border-radius: 50%;
   will-change: transform; backface-visibility: hidden; transform: translate3d(0, 0, 0);
-  animation: var(--orb-anim) ease-in-out infinite alternate;
+  /* The fields drift slowly, so they move in small steps about 15 times a second instead of on every screen
+     refresh. It looks the same, but the window is redrawn 15 times a second, not 144 or 240. */
+  animation: var(--orb-anim) steps(180, end) infinite alternate;
   --v: var(--orb-v, 1.55);   /* vibrance: how strong the drifting color fields are */
 }
 .orb-1 { left: -20vmax; top: -28vmax; --orb-anim: orb-a 22s; background: radial-gradient(closest-side, rgb(var(--orb-1) / calc(var(--orb-a) * var(--v))), rgb(var(--orb-1) / calc(var(--orb-a) * var(--v) * 0.45)) 50%, transparent); }
@@ -182,7 +201,7 @@ button:focus-visible, a:focus-visible, [role='tab']:focus-visible, [role='button
 @keyframes orb-b { 0% { transform: translate3d(0, 0, 0) scale(1); } 50% { transform: translate3d(-26vmax, 18vmax, 0) scale(0.86); } 100% { transform: translate3d(-8vmax, -6vmax, 0) scale(1.16); } }
 @keyframes orb-c { 0% { transform: translate3d(0, 0, 0) scale(1.05); } 50% { transform: translate3d(-20vmax, -16vmax, 0) scale(0.9); } 100% { transform: translate3d(16vmax, -6vmax, 0) scale(1.14); } }
 @keyframes orb-d { 0% { transform: translate3d(0, 0, 0) scale(0.9); } 50% { transform: translate3d(-18vmax, 20vmax, 0) scale(1.2); } 100% { transform: translate3d(14vmax, 8vmax, 0) scale(1); } }
-html[data-hidden] .orb { animation-play-state: paused; }
+html[data-hidden] .orb, html[data-idle] .orb { animation-play-state: paused; }
 [data-theme='pearl'] .orb, [data-theme='aero'] .orb { --orb-v: 1.25; }
 @media (prefers-reduced-motion: reduce) { .orb { animation: none !important; } }
 html[data-reduce-motion] .orb { animation: none !important; }
@@ -232,6 +251,14 @@ html[data-reduce-motion] .orb { animation: none !important; }
 }
 .glass-field:focus, .glass-field:focus-within { border-color: rgb(var(--accent) / 0.6); box-shadow: 0 0 0 4px rgb(var(--accent) / 0.14); }
 .glass-inset { background: rgb(var(--line) / calc(var(--line-a) * 0.35)); border: 1px solid rgb(var(--line) / calc(var(--line-a) * 0.7)); box-shadow: inset 0 1px 3px rgb(0 0 0 / calc(var(--shadow-a) * 0.18)); }
+/* Musashi drops the glass: flat solid black surfaces, a thin white hairline, no blur, highlight or shadow. */
+[data-theme='musashi'] :is(.glass, .glass-strong, .glass-field) {
+  background: #000; border-color: rgb(255 255 255 / 0.14); box-shadow: none;
+  -webkit-backdrop-filter: none; backdrop-filter: none;
+}
+[data-theme='musashi'] .glass-blur { -webkit-backdrop-filter: none; backdrop-filter: none; }
+[data-theme='musashi'] .glass-inset { background: #0b0b0b; border-color: rgb(255 255 255 / 0.1); box-shadow: none; }
+[data-theme='musashi'] .glass-field:focus, [data-theme='musashi'] .glass-field:focus-within { border-color: rgb(255 255 255 / 0.5); box-shadow: none; }
 /* Hairline divider that fades at both ends. */
 .hairline { height: 1px; background: linear-gradient(90deg, transparent, rgb(var(--line) / calc(var(--line-a) * 1.6)), transparent); }
 
@@ -286,14 +313,19 @@ html[data-reduce-motion] .page-in { animation: none; }
 .anim-rise { animation: rise 0.34s var(--ease-out) both; }
 .anim-fade { animation: fade 0.22s ease both; }
 .anim-pop { animation: pop 0.22s var(--ease-out) both; }
-.anim-pulse { animation: pulse-dot 1.6s ease-in-out infinite; }
+.anim-pulse { animation: pulse-dot 1.6s steps(8, end) infinite; }
 .anim-slide { animation: slide-in 0.28s var(--ease-out) both; }
 /* Stagger children: give each child style={{ '--i': index }}. Only the first 12 animate. */
 .stagger > * { animation: rise 0.34s var(--ease-out) both; animation-delay: calc(min(var(--i, 0), 12) * 32ms); }
 .stagger > *:nth-child(n+13) { animation: none; }
 /* Shimmer runs on a pseudo-element by transform (no background-position repaint). */
 .skeleton { position: relative; overflow: hidden; border-radius: 12px; background: rgb(var(--line) / 0.06); }
-.skeleton::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgb(var(--line) / 0.08), transparent); animation: shimmer 1.3s linear infinite; }
+.skeleton::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgb(var(--line) / 0.08), transparent); animation: shimmer 1.3s steps(20, end) infinite; }
+/* Endless animations cost a full redraw of the window for every step, so they rest wherever nobody is looking:
+   on pages that are loaded but not shown, and while Spectre is hidden or another window (the game) has focus. */
+[inert] .skeleton::after, [inert] .anim-pulse,
+html[data-hidden] .skeleton::after, html[data-hidden] .anim-pulse,
+html[data-idle] .skeleton::after, html[data-idle] .anim-pulse { animation-play-state: paused; }
 .lift { transition: transform 0.25s var(--ease-out), border-color 0.2s ease, box-shadow 0.3s ease; }
 .lift:hover {
   transform: translateY(-2px); border-color: rgb(var(--accent) / 0.35);

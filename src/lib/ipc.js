@@ -53,8 +53,11 @@ export function useInvoke(channel, args = [], { deps = [], poll, skip } = {}) {
     if (skip) return
     reload()
     if (!poll) return
-    const t = setInterval(() => reload(true), poll)
-    return () => clearInterval(t)
+    // No refreshing while the window is hidden (in the tray or minimized); it catches up as soon as it is shown.
+    const t = setInterval(() => { if (!document.hidden) reload(true) }, poll)
+    const onShow = () => { if (!document.hidden) reload(true) }
+    document.addEventListener('visibilitychange', onShow)
+    return () => { clearInterval(t); document.removeEventListener('visibilitychange', onShow) }
   }, [reload, skip, poll, ...deps])
 
   return { ...state, reload }

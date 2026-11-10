@@ -5,7 +5,7 @@ import { invoke, openExternal, useEvent, useInvoke } from '../../lib/ipc'
 import { useRiot } from '../../lib/riot'
 
 const START_PAGES = [
-  ['dashboard', 'Home'], ['live', 'Live Match'],
+  ['last', 'Where I left off'], ['dashboard', 'Home'], ['live', 'Live Match'],
   ['progression', 'Career: Progression'], ['history', 'Career: Matches'], ['activity', 'Career: Encounters'], ['leaderboard', 'Career: Leaderboard'],
   ['friends', 'Squad: Friends'], ['friendlog', 'Squad: Feed'], ['memo', 'Squad: Notes'], ['search', 'Squad: Lookup'],
   ['loadout', 'Arsenal: Loadout'], ['shop', 'Arsenal: Store'], ['weapons', 'Arsenal: Weapons'],
@@ -40,6 +40,7 @@ export function General({ settings, save }) {
         <Row><Toggle checked={settings.closeToTray !== false} onChange={v => save({ closeToTray: v })} label='Close to tray' hint='The close button keeps Spectre running in the hidden icons; use Quit in its tray menu to exit' /></Row>
         <Row><Toggle checked={settings.minimizeToTray} onChange={v => save({ minimizeToTray: v })} label='Minimize to tray' hint='Keep running in the background when minimized' /></Row>
         <Row><Toggle checked={settings.wishlistAlerts !== false} onChange={v => save({ wishlistAlerts: v })} label='Wishlist alerts' hint='A Windows notification when a skin on your wishlist is in your store' /></Row>
+        <Row><Toggle checked={settings.sessionAlerts !== false} onChange={v => save({ sessionAlerts: v })} label='Session summary' hint='When you close VALORANT, a notification with your games, wins, losses and RR for that session' /></Row>
         <Row><Toggle checked={settings.spectrePresence !== false} onChange={v => save({ spectrePresence: v })} label='Show that I use Spectre' hint='Adds a small marker to your Riot presence so friends using Spectre can see you use it' /></Row>
         <Row>
           <Label hint='The page Spectre opens on'>Start page</Label>

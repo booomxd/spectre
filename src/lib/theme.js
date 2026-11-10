@@ -18,6 +18,8 @@ export const THEMES = [
   { id: 'vaporwave', name: 'Vaporwave', swatch: '#ff71ce', glow: '#01cdfe' },
   { id: 'y2k', name: 'Y2K Chrome', swatch: '#78e6ff', glow: '#d68cff' },
   { id: 'lofi', name: 'Lo-fi', swatch: '#ffaa78', glow: '#c8a0ff' },
+  { id: 'jamun', name: 'Minty Jamun', swatch: '#a860ff', glow: '#6ef0be' },
+  { id: 'musashi', name: 'Musashi', swatch: '#c82424', glow: '#eceae2' },
 ]
 
 const KEY = 'spectre.theme'
@@ -61,4 +63,9 @@ export function applySavedTheme() {
   // Pause background motion while the window is hidden or minimized.
   const vis = () => { if (document.hidden) document.documentElement.dataset.hidden = ''; else delete document.documentElement.dataset.hidden }
   document.addEventListener('visibilitychange', vis); vis()
+  // Also rest while another window has focus (usually the game), so Spectre isn't redrawing behind it.
+  const idle = on => { if (on) document.documentElement.dataset.idle = ''; else delete document.documentElement.dataset.idle }
+  window.addEventListener('blur', () => idle(true))
+  window.addEventListener('focus', () => idle(false))
+  idle(!document.hasFocus())
 }

@@ -1,5 +1,21 @@
 # 📜 Changelog
 
+## 3.1.0
+
+### ✨ New
+- **New Home:** a hero with your rank, peak, level and session, plus Today's shop and a Friends panel, in the same top-dock glass look
+- **Playbook upgrades:** utility now draws to scale (smokes, mollies, slows, reveals, walls and lines), walls and lines can be aimed, the map rotates 90°, and callout labels can be turned on
+- **Playbook:** picking an agent shows its abilities right under the agent grid, ready to drag; Ctrl+D duplicates and the arrow keys nudge the selected item
+- **Share cards:** every match row has a share button that copies a 1200×630 card for Discord (saved to Pictures\Spectre if copying fails)
+- **Match MVP / Team MVP** tags in your own and looked-up match history
+- **Session summary:** a Windows notification with games, W/L and net RR when you close VALORANT (Settings → General)
+- **Two new themes:** Minty Jamun (purple grapes and mint) and Musashi (black-and-white ink with flat black surfaces)
+- **Remembers your place:** start on the page you left, and keep your match history queue and Weapons filters
+
+### ⚡ Performance
+- Background animations draw far fewer frames and pause when Spectre is hidden, minimized or in the background, cutting idle CPU and GPU use roughly in half
+- Live data stops polling while the window is hidden and refreshes as soon as you come back
+
 ## 3.0.9
 
 ### 🛠️ Fixes

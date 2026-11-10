@@ -11,6 +11,7 @@ pub fn defaults() -> Value {
         "minimizeToTray": false,
         "closeToTray": true,
         "wishlistAlerts": true,
+        "sessionAlerts": true,
         "overlay": {
             "opacity": 0.9, "scale": 1, "autoShow": false, "locked": false, "showPeak": true,
             "hotkey": "Ctrl+Shift+O", "lockHotkey": "Ctrl+Shift+L",

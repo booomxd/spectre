@@ -182,6 +182,7 @@ const H = {
   'wishlist:list': () => db.wishlist || [],
   'wishlist:toggle': w => { const l = db.wishlist || []; db.wishlist = l.some(i => i.id === w.id) ? l.filter(i => i.id !== w.id) : [...l, w]; return db.wishlist },
   'wishlist:check': ok({ hits: [] }),
+  'share:save': ok('C:/Users/demo/Pictures/Spectre/card.png'),
   'store:wallet': ok({ vp: 2350, rad: 45, kc: 8450 }),
   'store:storefront': () => storefront(),
   'store:rank': ok({ tier: F.ME.tier, rr: F.ME.rr, lastChange: 21, peak: F.ME.peak, seasonId: F.ACTS[0] }),

@@ -178,8 +178,15 @@ function Shell() {
   }, [])
 
   useEffect(() => {
-    invoke('settings:get').then(s => s?.startPage && go(s.startPage)).catch(() => { })
+    invoke('settings:get').then(s => {
+      if (!s?.startPage) return
+      // "Where I left off": the page that was open when Spectre last closed.
+      let to = s.startPage
+      if (to === 'last') { try { to = localStorage.getItem('spectre:last-page') || 'dashboard' } catch { to = 'dashboard' } }
+      go(to)
+    }).catch(() => { })
   }, [go])
+  useEffect(() => { try { localStorage.setItem('spectre:last-page', page) } catch { /* storage unavailable */ } }, [page])
 
   useEffect(() => {
     const onNav = e => go(e.detail.page, e.detail.params)

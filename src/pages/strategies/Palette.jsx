@@ -9,15 +9,18 @@ function drag(e, payload) {
   e.dataTransfer.effectAllowed = 'copy'
 }
 
-export default function Palette({ agents, side, placed, onPlace, notes, onNotes }) {
+// The agent you last picked (here or on the board) keeps its abilities one drag away under the agent grid.
+export default function Palette({ agents, side, placed, onPlace, notes, onNotes, focus, onFocus }) {
   const [tab, setTab] = useState('agents')
   const [team, setTeam] = useState('ally')
   const [q, setQ] = useState('')
-  const [abilityAgent, setAbilityAgent] = useState(null)
+  const abilityAgent = focus, setAbilityAgent = onFocus
 
   const list = useMemo(() => (agents || []).filter(a => a.displayName.toLowerCase().includes(q.toLowerCase())), [agents, q])
   const ag = (agents || []).find(a => a.uuid === abilityAgent) || agents?.[0]
+  const picked = (agents || []).find(a => a.uuid === focus)
   const abilities = (ag?.abilities || []).filter(a => a.displayIcon)
+  const abilityPayload = (a, ab) => ({ type: 'ability', agentId: a.uuid, name: `${a.displayName}: ${ab.displayName}`, icon: ab.displayIcon })
 
   return (
     <div className='glass h-full flex flex-col rounded-[28px] overflow-hidden'>
@@ -47,9 +50,9 @@ export default function Palette({ agents, side, placed, onPlace, notes, onNotes 
                   const payload = { type: 'agent', agentId: a.uuid, name: a.displayName, icon: a.displayIcon, team }
                   const n = placed[a.uuid + team] || 0
                   return (
-                    <button key={a.uuid} draggable onDragStart={e => drag(e, payload)} onClick={() => onPlace(payload)} title={`${a.displayName} - drag onto the map or click`}
+                    <button key={a.uuid} draggable onDragStart={e => { drag(e, payload); onFocus(a.uuid) }} onClick={() => { onPlace(payload); onFocus(a.uuid) }} title={`${a.displayName} - drag onto the map or click`}
                       style={{ '--i': Math.min(i, 20) }}
-                      className='glass anim-rise relative aspect-square rounded-2xl overflow-hidden transition-[transform,border-color] duration-150 hover:scale-105 hover:border-accent/60 active:scale-95'>
+                      className={`glass anim-rise relative aspect-square rounded-2xl overflow-hidden transition-[transform,border-color] duration-150 hover:scale-105 hover:border-accent/60 active:scale-95 ${focus === a.uuid ? '!border-accent' : ''}`}>
                       <img src={a.displayIcon} alt='' draggable={false} className='w-full h-full object-cover' />
                       {n > 0 && <span className='absolute bottom-0.5 right-0.5 min-w-4 h-4 px-1 rounded-full text-[9px] font-bold grid place-items-center text-bg' style={{ background: teamColor(team, side) }}>{n}</span>}
                     </button>
@@ -58,6 +61,22 @@ export default function Palette({ agents, side, placed, onPlace, notes, onNotes 
               </div>
             )}
           </div>
+          {picked && (
+            <div className='glass-inset rounded-2xl p-2.5 anim-fade' key={picked.uuid}>
+              <p className='eyebrow mb-2 truncate'>{picked.displayName} utility</p>
+              <div className='grid grid-cols-4 gap-1.5'>
+                {(picked.abilities || []).filter(x => x.displayIcon).map(ab => {
+                  const payload = abilityPayload(picked, ab)
+                  return (
+                    <button key={ab.slot} draggable onDragStart={e => drag(e, payload)} onClick={() => onPlace(payload)} title={`${ab.displayName} - drag onto the map or click`}
+                      className='aspect-square rounded-xl bg-black/60 border border-white/15 grid place-items-center transition-[transform,border-color] duration-150 hover:border-accent/60 hover:-translate-y-0.5 active:scale-95'>
+                      <img src={ab.displayIcon} alt={ab.displayName} draggable={false} className='h-6 w-6' />
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -74,7 +93,7 @@ export default function Palette({ agents, side, placed, onPlace, notes, onNotes 
           {ag && <p className='eyebrow'>{ag.displayName} abilities</p>}
           <div className='grid grid-cols-2 gap-2 stagger' key={ag?.uuid}>
             {abilities.map((ab, i) => {
-              const payload = { type: 'ability', agentId: ag.uuid, name: `${ag.displayName}: ${ab.displayName}`, icon: ab.displayIcon }
+              const payload = abilityPayload(ag, ab)
               return (
                 <button key={ab.slot} draggable onDragStart={e => drag(e, payload)} onClick={() => onPlace(payload)} style={{ '--i': i }}
                   className='glass anim-rise flex flex-col items-center gap-2 p-3.5 rounded-2xl transition-[transform,border-color] duration-150 hover:border-accent/60 hover:-translate-y-0.5 active:scale-95'>

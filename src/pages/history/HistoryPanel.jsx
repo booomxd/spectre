@@ -1,8 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { FiClock, FiChevronRight } from 'react-icons/fi'
+import { FiClock, FiChevronRight, FiLoader, FiShare2, FiStar } from 'react-icons/fi'
 import { invoke } from '../../lib/ipc'
 import { useRiot } from '../../lib/riot'
-import { Button, Card, Empty, ErrorState, Modal, Skeleton } from '../../ui'
+import { useTiers } from '../../lib/content'
+import { useStored } from '../../lib/stored'
+import { drawMatchCard, shareCard } from '../../lib/shareCard'
+import logo from '../../assets/spectre-logo.svg'
+import { Button, Card, Empty, ErrorState, Modal, Skeleton, toast } from '../../ui'
 import { AgentIcon, RESULT, TierIcon, cx, fmtDate, kd, timeAgo, useAgents, useMaps, useMemos, openPlayer } from './shared'
 import { CareerBar, FormPills, StatCell, StatStrip } from './career'
 import MatchDetail from './MatchDetail'
@@ -62,8 +66,30 @@ function Metric({ value, label, className, tone }) {
   )
 }
 
-function MatchRow({ item, s, rr, agents, maps, index, onOpen }) {
+const titleCase = t => (t || '').toLowerCase().replace(/(^|\s)\S/g, c => c.toUpperCase())
+
+function MatchRow({ item, s, rr, agents, maps, index, onOpen, name }) {
   const map = s && maps[s.mapId]
+  const tiers = useTiers()
+  const [sharing, setSharing] = useState(false)
+  // Draws this match as an image and copies it, ready to paste into Discord.
+  const share = async e => {
+    e.stopPropagation()
+    if (sharing || !s) return
+    setSharing(true)
+    try {
+      const t = rr && tiers?.[rr.tierAfter]
+      const agent = agents[s.agent]
+      const blob = await drawMatchCard({
+        result: s.result, score: s.ffa ? null : `${s.score.us} - ${s.score.them}`, map: [map?.displayName, s.mvp === 'match' ? 'Match MVP' : s.mvp === 'team' ? 'Team MVP' : null].filter(Boolean).join('  ·  '), mode: s.mode, agent: agent?.displayName,
+        kda: `${s.kills} / ${s.deaths} / ${s.assists}`, kd: kd(s.kills, s.deaths), acs: s.acs, hs: s.hs != null ? `${s.hs}%` : null, adr: s.adr,
+        rr: rr ? rr.earned : null, rankName: t ? titleCase(t.tierName) : null, name, when: fmtDate(item.start),
+      }, { splash: map?.splash, agentIcon: agent?.displayIcon, rankIcon: t?.largeIcon || t?.smallIcon, logo })
+      const how = await shareCard(blob, `spectre-${(map?.displayName || 'match').toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${String(item.matchId).slice(0, 8)}.png`)
+      toast.success(how === 'copied' ? 'Match card copied. Paste it into Discord.' : 'Match card saved to Pictures\\Spectre')
+    } catch (err) { toast.error(err.message || 'Could not make the match card') }
+    setSharing(false)
+  }
   if (s === undefined) return <Skeleton className='h-[80px] rounded-2xl' />
   if (!s) return (
     <Card style={{ '--i': index }} className='h-[80px] px-6 flex items-center text-[12px] text-muted'>Match details unavailable <span className='ml-auto'>{timeAgo(item.start)}</span></Card>
@@ -106,6 +132,17 @@ function MatchRow({ item, s, rr, agents, maps, index, onOpen }) {
           ) : <span className='text-[12px] text-muted'>-</span>}
         </div>
         <div className='ml-auto flex items-center gap-3 shrink-0'>
+          {s.mvp && (
+            <span title={s.mvp === 'match' ? 'Top combat score on the winning team' : 'Top combat score on the team'}
+              className={cx('inline-flex items-center gap-1.5 h-6 px-2.5 rounded-full border text-[10.5px] font-bold uppercase tracking-[0.08em] whitespace-nowrap',
+                s.mvp === 'match' ? 'bg-warn/12 text-warn border-warn/35' : 'bg-surface-2 text-text border-line')}>
+              <FiStar size={11} fill={s.mvp === 'match' ? 'currentColor' : 'none'} />{s.mvp === 'match' ? 'Match MVP' : 'Team MVP'}
+            </span>
+          )}
+          <button type='button' aria-label='Copy a share card for this match' title='Copy share card' onClick={share} onKeyDown={e => e.stopPropagation()}
+            className={cx('w-8 h-8 rounded-full glass-inset flex items-center justify-center text-muted hover:text-accent transition-[opacity,color] duration-200 focus-visible:opacity-100', sharing ? 'opacity-100' : 'opacity-0 group-hover:opacity-100')}>
+            {sharing ? <FiLoader className='animate-spin' size={13} /> : <FiShare2 size={13} />}
+          </button>
           <span className='text-[12px] text-muted' title={fmtDate(item.start)}>{timeAgo(item.start)}</span>
           <FiChevronRight className='text-muted transition-transform duration-300 ease-out group-hover:translate-x-0.5 group-hover:text-accent' />
         </div>
@@ -121,7 +158,12 @@ export default function HistoryPanel({ puuid, step = 20 }) {
   const agents = useAgents()
   const maps = useMaps()
   const { memos, map: memoMap, reload: reloadMemos } = useMemos()
-  const [queue, setQueue] = useState('all')
+  // Your own history remembers its mode filter; someone else's always starts on All.
+  const [savedQueue, saveQueue] = useStored('history-queue', 'all', QUEUES.map(q => q.value))
+  const own = !puuid || puuid === riot.puuid
+  const [queue, setQueueState] = useState(own ? savedQueue : 'all')
+  const setQueue = q => { setQueueState(q); if (own) saveQueue(q) }
+  const firstId = useRef(true)
   const [count, setCount] = useState(step)
   const [list, setList] = useState({ data: null, error: null, loading: true })
   const [sums, setSums] = useState({})
@@ -130,7 +172,12 @@ export default function HistoryPanel({ puuid, step = 20 }) {
   const [memoTarget, setMemoTarget] = useState(null)
   const asked = useRef(new Set())
 
-  useEffect(() => { setQueue('all'); setCount(step); setList({ data: null, error: null, loading: true }); setRr({}) }, [id])
+  useEffect(() => {
+    // Switching to another player resets the filter; the first load keeps the remembered one.
+    if (firstId.current) firstId.current = false
+    else setQueueState(own ? savedQueue : 'all')
+    setCount(step); setList({ data: null, error: null, loading: true }); setRr({})
+  }, [id])
   useEffect(() => { setCount(step); setList(l => ({ ...l, data: null, loading: true })) }, [queue])
 
   const load = () => {
@@ -179,7 +226,7 @@ export default function HistoryPanel({ puuid, step = 20 }) {
               {loaded.length > 0 ? <Summary rows={loaded} agents={agents} /> : <StatStrip loading />}
               <div className='stagger flex flex-col gap-2.5'>
                 {matches.map((m, i) => (
-                  <MatchRow key={m.matchId} item={m} s={sums[`${id}|${m.matchId}`]} rr={rr[m.matchId]} agents={agents} maps={maps} index={Math.min(i, 12)} onOpen={setOpen} />
+                  <MatchRow key={m.matchId} item={m} s={sums[`${id}|${m.matchId}`]} rr={rr[m.matchId]} agents={agents} maps={maps} index={Math.min(i, 12)} onOpen={setOpen} name={id === riot.puuid ? riot.gameName : null} />
                 ))}
               </div>
               {matches.length < list.data.total && (
