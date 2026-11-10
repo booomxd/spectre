@@ -1,5 +1,10 @@
 # 📜 Changelog
 
+## 3.5.0
+
+### ✨ New
+- Home: the Friends panel now lists offline friends under the online ones, most recently seen first, with how long ago they were last on
+
 ## 3.1.0
 
 ### ✨ New
