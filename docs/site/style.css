@@ -1,3 +1,6 @@
+/* The hidden attribute always wins over component display rules. */
+[hidden] { display: none !important; }
+
 /* Spectre website. Glass surfaces over a soft colour backdrop, matching the redesigned app.
    Accent colours come from the eighteen app themes (site/boot.js sets them before first paint).
    Motion uses transform and opacity only, and rests completely under prefers-reduced-motion. */

@@ -301,13 +301,20 @@ async function releases() {
     const cached = JSON.parse(sessionStorage.getItem('spectre-releases-2'))
     if (cached && Date.now() - cached.at < 2 * 60e3) return cached.data
   } catch {}
-  const r = await fetch(`https://api.github.com/repos/${REPO}/releases?per_page=30`, { headers: { Accept: 'application/vnd.github+json' } })
-  if (!r.ok) throw new Error(`GitHub returned ${r.status}`)
+  // GitHub allows 60 unauthenticated calls an hour per connection. When it refuses, use the last list this
+  // browser saw; with none, the page keeps its static fallbacks (the button still links to the latest release).
+  let r
+  try { r = await fetch(`https://api.github.com/repos/${REPO}/releases?per_page=30`, { headers: { Accept: 'application/vnd.github+json' } }) } catch {}
+  if (!r || !r.ok) {
+    try { const last = JSON.parse(localStorage.getItem('spectre-releases-last')); if (last?.length) return last } catch {}
+    throw new Error(`GitHub returned ${r ? r.status : 'no response'}`)
+  }
   const data = (await r.json()).map(x => ({
     tag: x.tag_name, draft: x.draft, prerelease: x.prerelease, date: x.published_at, body: x.body || '', url: x.html_url,
     assets: x.assets.map(a => ({ name: a.name, size: a.size, url: a.browser_download_url, count: a.download_count, digest: a.digest })),
   }))
   try { sessionStorage.setItem('spectre-releases-2', JSON.stringify({ at: Date.now(), data })) } catch {}
+  try { localStorage.setItem('spectre-releases-last', JSON.stringify(data)) } catch {}
   return data
 }
 
