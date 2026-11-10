@@ -298,8 +298,8 @@ document.addEventListener('click', e => {
 
 async function releases() {
   try {
-    const cached = JSON.parse(sessionStorage.getItem('spectre-releases'))
-    if (cached && Date.now() - cached.at < 10 * 60e3) return cached.data
+    const cached = JSON.parse(sessionStorage.getItem('spectre-releases-2'))
+    if (cached && Date.now() - cached.at < 2 * 60e3) return cached.data
   } catch {}
   const r = await fetch(`https://api.github.com/repos/${REPO}/releases?per_page=30`, { headers: { Accept: 'application/vnd.github+json' } })
   if (!r.ok) throw new Error(`GitHub returned ${r.status}`)
@@ -307,7 +307,7 @@ async function releases() {
     tag: x.tag_name, draft: x.draft, prerelease: x.prerelease, date: x.published_at, body: x.body || '', url: x.html_url,
     assets: x.assets.map(a => ({ name: a.name, size: a.size, url: a.browser_download_url, count: a.download_count, digest: a.digest })),
   }))
-  try { sessionStorage.setItem('spectre-releases', JSON.stringify({ at: Date.now(), data })) } catch {}
+  try { sessionStorage.setItem('spectre-releases-2', JSON.stringify({ at: Date.now(), data })) } catch {}
   return data
 }
 
