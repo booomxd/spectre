@@ -215,20 +215,8 @@ export function ShopCard({ store, cat }) {
 
 const STATE = { menus: 'In menus', queue: 'In queue', pregame: 'Agent select', ingame: 'In match', away: 'Away' }
 
-// "5m ago", "3h ago", "4d ago", "2mo ago" from a ms timestamp.
-const ago = (ts) => {
-  const t = Number(ts); if (!t) return null
-  const m = Math.max(1, Math.round((Date.now() - t) / 60000))
-  return m < 60 ? `${m}m ago` : m < 1440 ? `${Math.round(m / 60)}h ago` : m < 43200 ? `${Math.round(m / 1440)}d ago` : `${Math.round(m / 43200)}mo ago`
-}
-const OFFLINE_CAP = 60
-
 export function FriendsPanel({ friends }) {
-  const all = friends.data || []
-  const isOn = f => f.online && f.product === 'valorant'
-  const online = all.filter(isOn)
-  // Everyone else, most recently seen first. Capped so a huge list stays cheap; the arrow opens the full Friends page.
-  const offline = all.filter(f => !isOn(f)).sort((a, b) => (Number(b.lastOnline) || 0) - (Number(a.lastOnline) || 0))
+  const online = (friends.data || []).filter(f => f.online && f.product === 'valorant')
   return (
     <Card className='h-full p-6 flex flex-col lg:absolute lg:inset-0'>
       <div className='flex items-start justify-between gap-3 mb-5'>
@@ -242,12 +230,11 @@ export function FriendsPanel({ friends }) {
         </div>
       </div>
       {friends.loading && !friends.data ? <div className='space-y-2'>{[0, 1, 2, 3, 4].map(i => <Skeleton key={i} className='h-14 rounded-2xl' />)}</div>
-        : friends.error || !all.length ? <Empty icon={FiUsers} title={friends.error ? 'Friends unavailable' : 'No friends yet'} hint={friends.error ? 'Open the Friends page to retry.' : 'Friends you add in VALORANT show up here.'} className='py-8' />
+        : friends.error || !online.length ? <Empty icon={FiUsers} title={friends.error ? 'Friends unavailable' : 'Nobody online'} hint={friends.error ? 'Open the Friends page to retry.' : 'Friends who are in VALORANT show up here.'} className='py-8' />
           : (
-            <div className='flex-1 min-h-0 overflow-y-auto -mr-2 pr-2' translate='no'>
-              <div className='eyebrow !text-[10px] mb-2' translate='yes'>Online <span className='text-muted/70'>· {online.length}</span></div>
-              {!online.length && <div className='text-[12.5px] text-muted px-2 pb-2' translate='yes'>Nobody is in VALORANT right now.</div>}
-              <div className='space-y-0.5'>
+            <>
+              <div className='eyebrow !text-[10px] mb-2'>Online <span className='text-muted/70'>· {online.length}</span></div>
+              <div className='flex-1 min-h-0 overflow-y-auto -mr-2 pr-2 space-y-0.5' translate='no'>
                 {online.map(f => {
                   const s = f.status || {}
                   const playing = s.state === 'ingame' || s.state === 'pregame'
@@ -275,29 +262,7 @@ export function FriendsPanel({ friends }) {
                   )
                 })}
               </div>
-              {offline.length > 0 && (
-                <>
-                  <div className='eyebrow !text-[10px] mt-5 mb-2' translate='yes'>Offline <span className='text-muted/70'>· {offline.length}</span></div>
-                  <div className='space-y-0.5'>
-                    {offline.slice(0, OFFLINE_CAP).map(f => (
-                      <button key={f.puuid} type='button' onClick={go('friends', { puuid: f.puuid })} title={`Open ${f.gameName}`}
-                        className='w-full flex items-center gap-3 rounded-2xl px-2 py-1.5 text-left hover:bg-surface-2 transition-colors group/off'>
-                        <span className='w-8 h-8 rounded-full glass-inset grid place-items-center text-[12px] font-bold text-muted/80 shrink-0'>{(f.gameName || '?')[0].toUpperCase()}</span>
-                        <span className='min-w-0 flex-1 truncate text-[13px] font-medium text-muted group-hover/off:text-text transition-colors'>
-                          {f.gameName}{f.tagLine && <span className='text-muted/50'> #{f.tagLine}</span>}
-                        </span>
-                        {ago(f.lastOnline) && <span className='shrink-0 text-[11px] text-muted/60 tabular-nums'>{ago(f.lastOnline)}</span>}
-                      </button>
-                    ))}
-                    {offline.length > OFFLINE_CAP && (
-                      <button type='button' onClick={go('friends')} className='w-full text-[12px] font-semibold text-muted hover:text-accent py-2 transition-colors' translate='yes'>
-                        View all {offline.length} offline friends
-                      </button>
-                    )}
-                  </div>
-                </>
-              )}
-            </div>
+            </>
           )}
     </Card>
   )

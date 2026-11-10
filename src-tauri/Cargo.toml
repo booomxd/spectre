@@ -1,6 +1,6 @@
 [package]
 name = "spectre"
-version = "3.1.1"
+version = "3.1.0"
 description = "Spectre"
 authors = ["booomxd"]
 edition = "2021"

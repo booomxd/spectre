@@ -1,15 +1,5 @@
 # 📜 Changelog
 
-## 3.1.1
-
-### ✨ New
-- Playbook: select any item to **resize** it from the corner handle or **rotate** it from the handle above it (Shift snaps to 15°)
-- Home: the Friends panel now lists offline friends under the online ones, most recently seen first
-
-### 🛠️ Fixes
-- Playbook: dragging agents and abilities from the side panel onto the map now works, and one click places them
-- Playbook: the board starts in Select mode, placing something switches to Select, and agents and abilities can be moved with any tool
-
 ## 3.1.0
 
 ### ✨ New

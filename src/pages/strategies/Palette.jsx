@@ -1,49 +1,16 @@
 // Right panel: agent tokens, ability icons and strategy notes.
-import { useMemo, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
+import { useMemo, useState } from 'react'
 import { FiSearch } from 'react-icons/fi'
 import { Empty, Input, Skeleton, Tabs, Textarea } from '../../ui'
 import { teamColor } from './model'
 
-// Pointer-based drag onto the board. Native HTML drag and drop is swallowed by the app window on Windows,
-// which made drags fail and clicks unreliable. A press that doesn't move counts as a click (place at centre).
-function usePointerDrag(onDropAt, onPlace) {
-  const [ghost, setGhost] = useState(null)
-  const ref = useRef(null)
-  const start = (e, payload, after) => {
-    if (e.button !== 0) return
-    e.preventDefault()
-    const sx = e.clientX, sy = e.clientY
-    let moved = false
-    const move = (ev) => {
-      if (!moved && Math.hypot(ev.clientX - sx, ev.clientY - sy) < 5) return
-      if (!moved) { moved = true; setGhost({ icon: payload.icon, ability: payload.type === 'ability' }) }
-      if (ref.current) ref.current.style.transform = `translate(${ev.clientX}px, ${ev.clientY}px)`
-    }
-    const up = (ev) => {
-      window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', up)
-      setGhost(null)
-      if (ev.type === 'pointercancel') return
-      if (moved) onDropAt(payload, ev.clientX, ev.clientY)
-      else onPlace(payload)
-      after?.()
-    }
-    window.addEventListener('pointermove', move); window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up)
-  }
-  // Keyboard: Enter / Space places at the centre of the board.
-  const keys = (payload, after) => (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onPlace(payload); after?.() } }
-  const layer = ghost && createPortal(
-    <div ref={ref} className='fixed left-0 top-0 z-[100] pointer-events-none' style={{ transform: 'translate(-999px, -999px)' }}>
-      <div className={`-translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-full overflow-hidden border-2 border-accent shadow-xl ${ghost.ability ? 'bg-black/80 grid place-items-center' : 'bg-black'}`}>
-        <img src={ghost.icon} alt='' className={ghost.ability ? 'w-7 h-7' : 'w-full h-full object-cover'} />
-      </div>
-    </div>, document.body)
-  return { start, keys, layer }
+function drag(e, payload) {
+  e.dataTransfer.setData('text/vd', JSON.stringify(payload))
+  e.dataTransfer.effectAllowed = 'copy'
 }
 
 // The agent you last picked (here or on the board) keeps its abilities one drag away under the agent grid.
-export default function Palette({ agents, side, placed, onPlace, onDropAt, notes, onNotes, focus, onFocus }) {
-  const dnd = usePointerDrag(onDropAt, onPlace)
+export default function Palette({ agents, side, placed, onPlace, notes, onNotes, focus, onFocus }) {
   const [tab, setTab] = useState('agents')
   const [team, setTeam] = useState('ally')
   const [q, setQ] = useState('')
@@ -83,7 +50,7 @@ export default function Palette({ agents, side, placed, onPlace, onDropAt, notes
                   const payload = { type: 'agent', agentId: a.uuid, name: a.displayName, icon: a.displayIcon, team }
                   const n = placed[a.uuid + team] || 0
                   return (
-                    <button key={a.uuid} type='button' onPointerDown={e => dnd.start(e, payload, () => onFocus(a.uuid))} onKeyDown={dnd.keys(payload, () => onFocus(a.uuid))} title={`${a.displayName} - drag onto the map or click`}
+                    <button key={a.uuid} draggable onDragStart={e => { drag(e, payload); onFocus(a.uuid) }} onClick={() => { onPlace(payload); onFocus(a.uuid) }} title={`${a.displayName} - drag onto the map or click`}
                       style={{ '--i': Math.min(i, 20) }}
                       className={`glass anim-rise relative aspect-square rounded-2xl overflow-hidden transition-[transform,border-color] duration-150 hover:scale-105 hover:border-accent/60 active:scale-95 ${focus === a.uuid ? '!border-accent' : ''}`}>
                       <img src={a.displayIcon} alt='' draggable={false} className='w-full h-full object-cover' />
@@ -101,7 +68,7 @@ export default function Palette({ agents, side, placed, onPlace, onDropAt, notes
                 {(picked.abilities || []).filter(x => x.displayIcon).map(ab => {
                   const payload = abilityPayload(picked, ab)
                   return (
-                    <button key={ab.slot} type='button' onPointerDown={e => dnd.start(e, payload)} onKeyDown={dnd.keys(payload)} title={`${ab.displayName} - drag onto the map or click`}
+                    <button key={ab.slot} draggable onDragStart={e => drag(e, payload)} onClick={() => onPlace(payload)} title={`${ab.displayName} - drag onto the map or click`}
                       className='aspect-square rounded-xl bg-black/60 border border-white/15 grid place-items-center transition-[transform,border-color] duration-150 hover:border-accent/60 hover:-translate-y-0.5 active:scale-95'>
                       <img src={ab.displayIcon} alt={ab.displayName} draggable={false} className='h-6 w-6' />
                     </button>
@@ -128,7 +95,7 @@ export default function Palette({ agents, side, placed, onPlace, onDropAt, notes
             {abilities.map((ab, i) => {
               const payload = abilityPayload(ag, ab)
               return (
-                <button key={ab.slot} type='button' onPointerDown={e => dnd.start(e, payload)} onKeyDown={dnd.keys(payload)} style={{ '--i': i }}
+                <button key={ab.slot} draggable onDragStart={e => drag(e, payload)} onClick={() => onPlace(payload)} style={{ '--i': i }}
                   className='glass anim-rise flex flex-col items-center gap-2 p-3.5 rounded-2xl transition-[transform,border-color] duration-150 hover:border-accent/60 hover:-translate-y-0.5 active:scale-95'>
                   <span className='h-11 w-11 rounded-full bg-black/60 border border-white/20 grid place-items-center'><img src={ab.displayIcon} alt='' draggable={false} className='h-7 w-7' /></span>
                   <span className='text-[11px] font-medium text-muted leading-tight text-center'>{ab.displayName}</span>
@@ -145,7 +112,6 @@ export default function Palette({ agents, side, placed, onPlace, onDropAt, notes
           <Textarea value={notes} onChange={e => onNotes(e.target.value)} placeholder='Calls, timings, utility order, fallbacks...' className='flex-1 leading-relaxed rounded-xl py-2.5' />
         </div>
       )}
-      {dnd.layer}
     </div>
   )
 }

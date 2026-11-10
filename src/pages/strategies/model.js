@@ -17,18 +17,6 @@ export const newStrategy = (mapId, name = 'New strategy') => ({ id: uid(), name,
 export const newPlaybook = (name) => ({ id: uid(), name, createdAt: Date.now(), strategies: [] })
 
 export const isToken = (it) => it.type === 'agent' || it.type === 'ability'
-
-// Per-item size (sc, 1 = default) and rotation (ang, degrees) applied around the item's pivot.
-export const pivot = (it) => {
-  if (isToken(it) || it.type === 'text') return [it.x, it.y]
-  const [a, b, c, d] = bbox(it); return [(a + c) / 2, (b + d) / 2]
-}
-export const xform = (it, rotate = true) => {
-  const sc = it.sc ?? 1, ang = rotate ? it.ang ?? 0 : 0
-  if (sc === 1 && !ang) return undefined
-  const [px, py] = pivot(it)
-  return `translate(${px} ${py}) rotate(${ang}) scale(${sc}) translate(${-px} ${-py})`
-}
 export const snapVal = (v) => Math.round(v / GRID) * GRID
 export const clamp = (v, a, b) => Math.max(a, Math.min(b, v))
 export const ease = (t) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
@@ -111,12 +99,6 @@ export async function renderPng({ map, strat, step }) {
 
   for (const it of step.items) {
     g.save()
-    // Utility with a to-scale area only grows its icon; everything else turns and scales around its pivot.
-    const geo = it.type === 'ability' && utilGeom(it, ppmOf(map))
-    if (!geo && ((it.sc ?? 1) !== 1 || it.ang)) {
-      const [px, py] = pivot(it)
-      g.translate(px, py); g.rotate((it.ang || 0) * Math.PI / 180); g.scale(it.sc || 1, it.sc || 1); g.translate(-px, -py)
-    }
     g.strokeStyle = g.fillStyle = it.color || '#fff'
     g.lineWidth = it.width || 4
     if (it.type === 'pen') {
@@ -151,7 +133,7 @@ export async function renderPng({ map, strat, step }) {
         g.beginPath(); g.moveTo(u.x1, u.y1); g.lineTo(u.x2, u.y2); g.stroke(); g.globalAlpha = 1; g.lineCap = 'round'
       }
       const ring = it.type === 'agent' ? teamColor(it.team, strat.side) : col || 'rgba(255,255,255,.55)'
-      const r = (it.type === 'agent' ? TOKEN_R : u ? 12 : 24) * (u ? it.sc || 1 : 1)
+      const r = it.type === 'agent' ? TOKEN_R : u ? 12 : 24
       g.beginPath(); g.arc(it.x, it.y, r, 0, Math.PI * 2); g.fillStyle = '#111'; g.fill()
       const im = imgs[it.icon]
       if (im) {

@@ -324,8 +324,7 @@ export default function Strategies({ active }) {
       <div className='w-[260px] max-[1200px]:w-[224px] shrink-0 min-h-0'>
         <Palette agents={agents} side={strat?.side || 'attack'} placed={placed} notes={strat?.notes || ''} focus={focusAgent} onFocus={setFocusAgent}
           onNotes={notes => strat && updateStrat(s => ({ ...s, notes }))}
-          onPlace={payload => strat && !playing && boardRef.current?.addItem(payload)}
-          onDropAt={(payload, x, y) => strat && !playing && boardRef.current?.dropAt(payload, x, y)} />
+          onPlace={payload => strat && !playing && boardRef.current?.addItem(payload)} />
       </div>
 
       <PromptModal modal={modal} onClose={() => setModal(null)} />
