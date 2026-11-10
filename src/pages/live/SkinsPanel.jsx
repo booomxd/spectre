@@ -21,7 +21,7 @@ export default function SkinsPanel({ player, onClose }) {
               <div className='grid gap-3 lg:grid-cols-[1fr_auto] items-stretch'>
                 {data.card && (
                   <div className='glass anim-rise relative min-h-[96px] rounded-[22px] overflow-hidden'>
-                    <img src={data.card.art} alt='' className='absolute inset-0 w-full h-full object-cover opacity-80' style={CARD_MASK} draggable={false} />
+                    <img decoding='async' src={data.card.art} alt='' className='absolute inset-0 w-full h-full object-cover opacity-80' style={CARD_MASK} draggable={false} />
                     <div className='relative h-full flex flex-col justify-end px-5 py-4'>
                       <span className='eyebrow'>Player card</span>
                       <span className='display text-[22px] mt-1 text-text'>{data.card.name}</span>
@@ -35,7 +35,7 @@ export default function SkinsPanel({ player, onClose }) {
                     <div className='flex flex-wrap gap-2'>
                       {data.sprays.map(s => (
                         <div key={s.name} title={s.name} className='glass-inset w-14 h-14 rounded-2xl grid place-items-center'>
-                          <img src={s.icon} alt={s.name} className='w-10 h-10 object-contain' draggable={false} loading='lazy' />
+                          <img decoding='async' src={s.icon} alt={s.name} className='w-10 h-10 object-contain' draggable={false} loading='lazy' />
                         </div>
                       ))}
                     </div>
@@ -50,11 +50,11 @@ export default function SkinsPanel({ player, onClose }) {
                   <Item key={w.weapon} index={i}><div className='glass lift spot group h-full flex flex-col rounded-[22px] p-4'>
                     <div className='flex items-center justify-between'>
                       <span className='eyebrow'>{w.weapon}</span>
-                      {w.buddy && <img src={w.buddy.icon} alt={w.buddy.name} title={w.buddy.name} className='w-6 h-6 object-contain' draggable={false} loading='lazy' />}
+                      {w.buddy && <img decoding='async' src={w.buddy.icon} alt={w.buddy.name} title={w.buddy.name} className='w-6 h-6 object-contain' draggable={false} loading='lazy' />}
                     </div>
                     <div className='relative h-[88px] my-3 flex items-center justify-center'>
                       <span className='halo inset-x-6 inset-y-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300' />
-                      <img src={w.image} alt={w.skin} className='relative max-h-full max-w-full object-contain drop-shadow-[0_8px_16px_rgb(0_0_0/0.35)]' draggable={false} loading='lazy' />
+                      <img decoding='async' src={w.image} alt={w.skin} className='relative max-h-full max-w-full object-contain drop-shadow-[0_8px_16px_rgb(0_0_0/0.35)]' draggable={false} loading='lazy' />
                     </div>
                     <div className='text-[13px] font-semibold tracking-tight leading-tight text-text'>{w.skin}</div>
                     {w.buddy && <div className='mt-1 text-[11px] text-muted truncate'>{w.buddy.name}</div>}

@@ -114,7 +114,7 @@ export default function Overlay() {
         <span className='absolute -top-16 left-1/2 -translate-x-1/2 w-56 h-24 rounded-full pointer-events-none' style={{ background: `radial-gradient(closest-side, rgb(var(--accent) / ${0.22 * opacity}), transparent)` }} />
         <div className={cx('relative flex items-center gap-2 pl-3 pr-1.5 h-10 shrink-0 select-none', !locked && 'cursor-move')} data-tauri-drag-region>
           {/* Only the bar itself starts a window drag, so its labels let clicks through to it. */}
-          <img src={logo} alt='' className='w-4 h-4 shrink-0 pointer-events-none' draggable={false} />
+          <img decoding='async' src={logo} alt='' className='w-4 h-4 shrink-0 pointer-events-none' draggable={false} />
           <span className='pointer-events-none flex-1 min-w-0 truncate font-display text-[12.5px] font-bold tracking-tight text-text'>
             {inMatch ? `${d.map?.name || 'Match'} · ${queueName(d.queueId)}` : 'Spectre'}
           </span>

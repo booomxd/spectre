@@ -122,21 +122,21 @@ function LoadoutView({ active }) {
           {color && <div className='absolute inset-x-6 top-0 h-px' style={{ background: `linear-gradient(90deg, transparent, ${color}, transparent)` }} />}
           <div className='relative flex items-center justify-between h-7 mt-4 px-5'>
             <span className='eyebrow'>{w.displayName}</span>
-            {pending ? <Badge tone='warn'>Pending</Badge> : x.CharmLevelID && buddyIcon[lc(x.CharmLevelID)] && <img src={buddyIcon[lc(x.CharmLevelID)]} className='w-7 h-7 object-contain' title='Buddy' />}
+            {pending ? <Badge tone='warn'>Pending</Badge> : x.CharmLevelID && buddyIcon[lc(x.CharmLevelID)] && <img decoding='async' src={buddyIcon[lc(x.CharmLevelID)]} className='w-7 h-7 object-contain' title='Buddy' />}
           </div>
           <div className='relative flex-1 min-h-0 flex items-center justify-center px-6'>
-            <img src={selectionImage(skin, x.ChromaID) || w.displayIcon} className='max-h-[92px] max-w-full object-contain drop-shadow-[0_10px_18px_rgb(0_0_0/0.35)] transition-transform duration-500 ease-out group-hover:scale-[1.06]' loading='lazy' />
+            <img decoding='async' src={selectionImage(skin, x.ChromaID) || w.displayIcon} className='max-h-[92px] max-w-full object-contain drop-shadow-[0_10px_18px_rgb(0_0_0/0.35)] transition-transform duration-500 ease-out group-hover:scale-[1.06]' loading='lazy' />
           </div>
           <div className='relative px-5 pb-4'>
             <div className='flex items-center gap-1.5'>
-              {tier && <img src={tier.displayIcon} className='w-3.5 h-3.5' />}
+              {tier && <img decoding='async' src={tier.displayIcon} className='w-3.5 h-3.5' />}
               <span className='text-[14px] font-semibold tracking-tight truncate text-text'>{skin?.displayName || 'Standard'}</span>
             </div>
             <div className='flex items-center gap-1.5 mt-1.5 flex-wrap min-h-[20px]'>
               {skin && skin.levels.length > 1 && <Badge>Lv {li + 1}/{skin.levels.length}</Badge>}
               {ci > 0 && chroma && <Badge tone='accent'>Variant {ci + 1}</Badge>}
               {skin && isStandard(w, skin) && <Badge>Standard</Badge>}
-              {pending && x.CharmLevelID && buddyIcon[lc(x.CharmLevelID)] && <img src={buddyIcon[lc(x.CharmLevelID)]} className='w-5 h-5 object-contain' title='Buddy' />}
+              {pending && x.CharmLevelID && buddyIcon[lc(x.CharmLevelID)] && <img decoding='async' src={buddyIcon[lc(x.CharmLevelID)]} className='w-5 h-5 object-contain' title='Buddy' />}
             </div>
           </div>
         </Card>
@@ -157,7 +157,7 @@ function LoadoutView({ active }) {
         <div className='flex flex-col gap-8'>
           <div className='bento'>
             <Card className='col-span-12 xl:col-span-5 relative overflow-hidden rounded-3xl min-h-[210px]'>
-              {card?.wideArt && <img src={card.wideArt} className='absolute inset-0 w-full h-full object-cover' draggable={false} />}
+              {card?.wideArt && <img decoding='async' src={card.wideArt} className='absolute inset-0 w-full h-full object-cover' draggable={false} />}
               {card?.wideArt ? <div className='absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/5' /> : <span className='halo -top-24 -left-20 w-80 h-80' />}
               <div className='relative h-full p-6 flex flex-col justify-end'>
                 <div className={cx('eyebrow mb-2', card?.wideArt && '!text-white/70')}>Identity</div>
@@ -181,7 +181,7 @@ function LoadoutView({ active }) {
                     const sp = sprays?.find(s => lc(s.uuid) === lc(e.AssetID))
                     return (
                       <div key={i} className='glass-inset h-[58px] rounded-2xl flex items-center justify-center p-2' title={sp?.displayName || 'Expression'}>
-                        {sp ? <img src={sp.fullTransparentIcon || sp.displayIcon} className='max-h-full max-w-full object-contain' /> : <span className='text-[10px] text-muted'>Flex</span>}
+                        {sp ? <img decoding='async' src={sp.fullTransparentIcon || sp.displayIcon} className='max-h-full max-w-full object-contain' /> : <span className='text-[10px] text-muted'>Flex</span>}
                       </div>
                     )
                   })}
@@ -191,7 +191,7 @@ function LoadoutView({ active }) {
                 <div className='flex gap-2 mt-2'>
                   {loadout.ActiveExpressions.slice(4).map((e, i) => {
                     const sp = sprays?.find(s => lc(s.uuid) === lc(e.AssetID))
-                    return <div key={i} className='glass-inset flex-1 h-10 rounded-xl flex items-center justify-center p-1.5' title={sp?.displayName || 'Expression'}>{sp ? <img src={sp.fullTransparentIcon || sp.displayIcon} className='max-h-full max-w-full object-contain' /> : <span className='text-[10px] text-muted'>Flex</span>}</div>
+                    return <div key={i} className='glass-inset flex-1 h-10 rounded-xl flex items-center justify-center p-1.5' title={sp?.displayName || 'Expression'}>{sp ? <img decoding='async' src={sp.fullTransparentIcon || sp.displayIcon} className='max-h-full max-w-full object-contain' /> : <span className='text-[10px] text-muted'>Flex</span>}</div>
                   })}
                 </div>
               )}
@@ -281,5 +281,5 @@ function PresetThumbs({ preset, weaponById }) {
     return w && s && !isStandard(w, s) ? skinImage(s) : null
   }).filter(Boolean).slice(0, 5)
   if (!items.length) return null
-  return <div className='flex gap-1.5 mt-1'>{items.map((src, i) => <img key={i} src={src} className='h-4 flex-1 min-w-0 object-contain opacity-70' />)}</div>
+  return <div className='flex gap-1.5 mt-1'>{items.map((src, i) => <img decoding='async' key={i} src={src} className='h-4 flex-1 min-w-0 object-contain opacity-70' />)}</div>
 }

@@ -70,7 +70,7 @@ function Group({ title, items, chatPuuid, offset = 0, ...rest }) {
   return (
     <>
       <ListLabel count={items.length}>{title}</ListLabel>
-      <Stagger className='flex flex-col gap-0.5'>
+      <Stagger className='cv-list flex flex-col gap-0.5'>
         {items.map((f, i) => <FriendRow key={f.puuid} f={f} index={offset + i} chatOpen={chatPuuid === f.puuid} {...rest} />)}
       </Stagger>
     </>

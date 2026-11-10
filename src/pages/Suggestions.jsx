@@ -56,7 +56,7 @@ export default function Suggestions() {
             <Swap id={sent ? 'sent' : 'form'} className='relative'>
               {sent ? (
                 <div className='flex flex-col items-center text-center gap-2.5 px-8 py-16'>
-                  <span className='accent-soft w-20 h-20 rounded-3xl flex items-center justify-center mb-2'><img src={logo} alt='' className='w-12 h-12' draggable={false} /></span>
+                  <span className='accent-soft w-20 h-20 rounded-3xl flex items-center justify-center mb-2'><img decoding='async' src={logo} alt='' className='w-12 h-12' draggable={false} /></span>
                   <div className='display text-[28px] text-text'>Thanks, got it</div>
                   <p className='text-[13px] text-muted max-w-sm leading-relaxed'>Your {label.toLowerCase()} was sent. If you left a contact, you may hear back.</p>
                   <Button className='mt-3' onClick={() => setSent(false)}>Send another</Button>

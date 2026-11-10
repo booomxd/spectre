@@ -4,6 +4,11 @@ pub mod api;
 pub mod core;
 mod migrate;
 
+/// WebView2 flags for every window. Tauri's own defaults (the first --disable-features list) are repeated because
+/// setting any flags replaces them; smooth scrolling animates mouse-wheel steps and GPU rasterization paints
+/// content on the graphics card. Keep in sync with "additionalBrowserArgs" in tauri.conf.json.
+pub const BROWSER_ARGS: &str = "--disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection --enable-smooth-scrolling --enable-gpu-rasterization";
+
 use crate::core::error::msg;
 use crate::core::riot::{data_dir, Riot};
 use crate::core::{truthy, Args, Ctx, Registry};

@@ -6,7 +6,7 @@ export function Price({ amount, currencyId = CUR.vp, cat, size = 14, className =
   const icon = cat?.items.get(currencyId)?.icon
   return (
     <span className={'inline-flex items-center gap-1.5 font-display font-bold tracking-tight tabular-nums ' + className}>
-      {icon && <img src={icon} alt='' style={{ width: size, height: size }} className={(onArt ? '' : 'mono-icon ') + 'object-contain'} />}
+      {icon && <img decoding='async' src={icon} alt='' style={{ width: size, height: size }} className={(onArt ? '' : 'mono-icon ') + 'object-contain'} />}
       {fmt(amount)}
     </span>
   )
@@ -27,7 +27,7 @@ export function ItemArt({ item, className = '', imgClass = 'max-h-full max-w-ful
       style={color ? { background: `linear-gradient(180deg, transparent 35%, ${color}14)` } : undefined}>
       <span className='absolute bottom-2.5 left-1/2 -translate-x-1/2 w-3/5 h-3 rounded-[50%] bg-black/35 blur-md pointer-events-none' />
       {color && <span className='absolute inset-x-6 bottom-0 h-px pointer-events-none' style={{ background: `linear-gradient(90deg, transparent, ${color}aa, transparent)` }} />}
-      {item?.icon ? <img src={item.icon} alt={item.name} loading='lazy' className={'relative p-2.5 transition-transform duration-500 ease-out group-hover:scale-105 ' + imgClass} /> : <span className='text-[10px] text-muted'>{item?.name || '...'}</span>}
+      {item?.icon ? <img decoding='async' src={item.icon} alt={item.name} loading='lazy' className={'relative p-2.5 transition-transform duration-500 ease-out group-hover:scale-105 ' + imgClass} /> : <span className='text-[10px] text-muted'>{item?.name || '...'}</span>}
     </div>
   )
 }

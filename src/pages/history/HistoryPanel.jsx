@@ -105,7 +105,7 @@ function MatchRow({ item, s, rr, agents, maps, index, onOpen, name }) {
         {/* Map art fades into the glass row; the dark scrim keeps the white label legible on any theme. */}
         {map?.splash && (
           <div className='absolute inset-0' style={{ WebkitMaskImage: 'linear-gradient(90deg, transparent, #000 25%, #000 50%, transparent)', maskImage: 'linear-gradient(90deg, transparent, #000 25%, #000 50%, transparent)' }}>
-            <img src={map.splash} alt='' loading='lazy' className='absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105' draggable={false} />
+            <img decoding='async' src={map.splash} alt='' loading='lazy' className='absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105' draggable={false} />
             <div className='absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-black/5' />
           </div>
         )}
@@ -224,7 +224,7 @@ export default function HistoryPanel({ puuid, step = 20 }) {
           : (
             <>
               {loaded.length > 0 ? <Summary rows={loaded} agents={agents} /> : <StatStrip loading />}
-              <div className='stagger flex flex-col gap-2.5'>
+              <div className='stagger cv-list flex flex-col gap-2.5'>
                 {matches.map((m, i) => (
                   <MatchRow key={m.matchId} item={m} s={sums[`${id}|${m.matchId}`]} rr={rr[m.matchId]} agents={agents} maps={maps} index={Math.min(i, 12)} onOpen={setOpen} name={id === riot.puuid ? riot.gameName : null} />
                 ))}

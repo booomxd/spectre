@@ -23,3 +23,6 @@
 # Screenshots are replaced in place when the app changes.
 /screenshots/*
   Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+# In-app announcements: always revalidate so a pushed announcement reaches the app within its next check.
+/announcements.json
+  Cache-Control: public, max-age=0, must-revalidate

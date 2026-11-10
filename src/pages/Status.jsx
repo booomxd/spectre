@@ -45,7 +45,7 @@ export default function Status({ active }) {
 
           <Panel title='Map' hint='Shown during Agent Select and In Game' delay={0.04} className={cx('overflow-hidden relative transition-opacity duration-300', !showMap && 'opacity-50')}>
             <div className='absolute inset-y-0 right-0 w-1/2 [mask-image:linear-gradient(to_right,transparent,black_60%)] pointer-events-none'>
-              {picked?.splash && <img key={picked.uuid} src={picked.splash} alt='' className='anim-fade absolute inset-0 w-full h-full object-cover' draggable={false} />}
+              {picked?.splash && <img decoding='async' key={picked.uuid} src={picked.splash} alt='' className='anim-fade absolute inset-0 w-full h-full object-cover' draggable={false} />}
             </div>
             <div className='relative max-w-xs'>
               <Select value={mapUrl} onChange={e => setMap(e.target.value)} options={maps.map(m => ({ value: m.mapUrl, label: m.displayName }))} />

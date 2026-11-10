@@ -92,7 +92,7 @@ function SkinModal({ item, onClose }) {
                 {chromas.map((c, idx) => (
                   <button key={c.uuid} onClick={() => setChroma(c.uuid)} title={c.displayName}
                     className={cx('w-16 h-12 rounded-xl flex items-center justify-center transition-transform hover:-translate-y-0.5', c.uuid === chroma || (!chroma && idx === 0) ? 'accent-soft' : 'glass')}>
-                    {(c.swatch || c.fullRender) && <img src={c.swatch || c.fullRender} alt='' className='max-h-9 max-w-14 object-contain' />}
+                    {(c.swatch || c.fullRender) && <img decoding='async' src={c.swatch || c.fullRender} alt='' className='max-h-9 max-w-14 object-contain' />}
                   </button>
                 ))}
               </div>
@@ -113,7 +113,7 @@ function Bundle({ b, cat, onOpen }) {
   return (
     <div className='flex flex-col gap-4'>
       <Card className='relative overflow-hidden rounded-3xl h-[300px]'>
-        {art ? <img src={art} alt='' className='absolute inset-0 w-full h-full object-cover' draggable={false} /> : <span className='halo -top-24 -left-20 w-96 h-96' />}
+        {art ? <img decoding='async' src={art} alt='' className='absolute inset-0 w-full h-full object-cover' draggable={false} /> : <span className='halo -top-24 -left-20 w-96 h-96' />}
         <div className='absolute inset-0 bg-gradient-to-r from-black/85 via-black/45 to-transparent' />
         <div className='absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent' />
         <div className='relative h-full flex flex-col justify-end p-8 gap-5'>
@@ -187,7 +187,7 @@ function Wishlist({ cat }) {
               const name = item?.name || i.name
               return (
                 <Card key={i.id} className={cx('relative flex items-center gap-3 p-3 pr-10 rounded-2xl min-w-0', hit && 'accent-glow')}>
-                  <div className='w-20 h-12 shrink-0 flex items-center justify-center'>{item?.icon && <img src={item.icon} alt='' className='max-w-full max-h-full object-contain' loading='lazy' />}</div>
+                  <div className='w-20 h-12 shrink-0 flex items-center justify-center'>{item?.icon && <img decoding='async' src={item.icon} alt='' className='max-w-full max-h-full object-contain' loading='lazy' />}</div>
                   <div className='min-w-0'>
                     <div className='truncate text-[13px] font-semibold text-text'>{name}</div>
                     <div className={cx('mt-0.5 text-[11px] truncate', hit ? 'text-good font-semibold' : 'text-muted')}>{hit ? WHERE[hit.where] : 'Not in your store'}</div>

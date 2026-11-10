@@ -107,7 +107,7 @@ function Profile({ puuid }) {
   return (
     <FadeIn className='flex flex-col gap-5'>
       <Card className='relative overflow-hidden rounded-3xl min-h-[250px]'>
-        {data.cardId && card?.wideArt && <img src={card.wideArt} alt='' className='absolute inset-0 w-full h-full object-cover' draggable={false} />}
+        {data.cardId && card?.wideArt && <img decoding='async' src={card.wideArt} alt='' className='absolute inset-0 w-full h-full object-cover' draggable={false} />}
         {/* Dark scrim over the card art: the name stays white and legible on every theme. Without art the plain glass shows through. */}
         {data.cardId && card?.wideArt && <div className='absolute inset-0 bg-gradient-to-t from-black/75 via-black/35 to-black/5' />}
         {!(data.cardId && card?.wideArt) && <span className='halo -top-32 -right-24 w-96 h-96' />}

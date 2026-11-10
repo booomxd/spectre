@@ -101,7 +101,7 @@ function TopAgents({ list, agents }) {
         const wr = Math.round(a.wins / a.games * 100)
         return (
           <Item key={a.agent} index={i} className='glass flex items-center gap-3.5 rounded-2xl px-3.5 py-2.5'>
-            {ag ? <img src={ag.displayIcon} alt='' className='w-11 h-11 rounded-xl object-cover' draggable={false} /> : <div className='w-11 h-11 rounded-xl bg-surface-2' />}
+            {ag ? <img decoding='async' src={ag.displayIcon} alt='' className='w-11 h-11 rounded-xl object-cover' draggable={false} /> : <div className='w-11 h-11 rounded-xl bg-surface-2' />}
             <div className='min-w-0 flex-1 leading-tight'>
               <div className='text-[13px] font-semibold text-text'>{ag?.displayName || 'Agent'}</div>
               <div className='mt-1.5 flex items-center gap-2'>
@@ -128,10 +128,10 @@ function MatchRow({ m, agents, maps, i }) {
   const [text, tone, edge] = RESULTS[m.result] || RESULTS.loss
   return (
     <Item index={i} className='glass relative overflow-hidden flex items-center gap-3 rounded-2xl pl-5 pr-4 py-3'>
-      {map?.listViewIcon && <img src={map.listViewIcon} alt='' className='absolute inset-y-0 right-0 w-2/3 h-full object-cover opacity-[0.18] pointer-events-none' style={MAP_MASK} draggable={false} loading='lazy' />}
+      {map?.listViewIcon && <img decoding='async' src={map.listViewIcon} alt='' className='absolute inset-y-0 right-0 w-2/3 h-full object-cover opacity-[0.18] pointer-events-none' style={MAP_MASK} draggable={false} loading='lazy' />}
       <span className={cx('absolute left-0 top-3 bottom-3 w-[3px] rounded-r-full', edge)} />
       <div className='relative flex items-center gap-3 w-full min-w-0'>
-        {ag ? <img src={ag.displayIcon} alt={ag.displayName} title={ag.displayName} className='w-10 h-10 rounded-xl object-cover shrink-0' draggable={false} /> : <div className='w-10 h-10 rounded-xl bg-surface-2 shrink-0' />}
+        {ag ? <img decoding='async' src={ag.displayIcon} alt={ag.displayName} title={ag.displayName} className='w-10 h-10 rounded-xl object-cover shrink-0' draggable={false} /> : <div className='w-10 h-10 rounded-xl bg-surface-2 shrink-0' />}
         <div className='min-w-0 flex-1 leading-tight'>
           <div className='flex items-center gap-2'><Badge tone={tone}>{text}</Badge><span className='text-[13px] font-semibold text-text truncate'>{map?.displayName || 'Unknown map'}</span>{m.score && <span className='text-[11px] text-muted tabular-nums'>{m.score.us}-{m.score.them}</span>}</div>
           <div className='text-[11px] text-muted mt-1'>Competitive · {timeAgo(m.start)}</div>

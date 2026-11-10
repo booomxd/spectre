@@ -8,6 +8,7 @@ import logo from './assets/spectre-logo.svg'
 import { AnimatePresence, Button, CommandPalette, Modal, MotionProvider, PageActiveContext, PageContext, PageTransition, Pill, SegmentedTabs, ToastHost, cx, m, toast } from './ui'
 import { SETTINGS_TABS } from './pages/Settings'
 import Overlay from './pages/Overlay'
+import Announcements from './lib/announcements'
 
 // New-release prompt: a dialog once per version, then an Update button that stays in the title bar.
 // Installed copies update in place; dev builds and loose exes open the release page to download.
@@ -83,7 +84,7 @@ function Brand() {
   const riot = useRiot()
   return (
     <div className='flex items-center gap-3 min-w-0'>
-      <img src={logo} alt='' className='w-8 h-8 rounded-[10px] shadow-[0_6px_18px_-6px_rgb(var(--accent)/0.6)]' draggable={false} />
+      <img decoding='async' src={logo} alt='' className='w-8 h-8 rounded-[10px] shadow-[0_6px_18px_-6px_rgb(var(--accent)/0.6)]' draggable={false} />
       <div className='min-w-0 leading-none'>
         <div className='font-brand text-[13px] text-text'>Spectre</div>
         <div className='mt-1 flex items-center gap-1.5 text-[11px] text-muted truncate max-[1200px]:hidden'>
@@ -246,6 +247,8 @@ function Shell() {
         </div>
         <Utilities page={page} onOpen={go} onPalette={() => setPalette(true)} />
       </div>
+
+      <Announcements />
 
       <main className='flex-1 relative min-h-0 z-10'>
         {Object.values(PAGES).map(p => visited.has(p.id) && (

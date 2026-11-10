@@ -137,3 +137,35 @@ see `src-tauri/BACKEND.md` > Migration from Electron.
 cp "src-tauri/target/release/bundle/nsis/Spectre_X.Y.Z_x64-setup.exe" Spectre-X.Y.Z-setup.exe
 gh release create vX.Y.Z Spectre-X.Y.Z-setup.exe --repo booomxd/spectre --title "Spectre X.Y.Z" --notes-file notes.md --latest
 ```
+
+## Announcements
+
+Each entry in [`docs/announcements.json`](announcements.json) opens once as a popup in the middle of Spectre, the next time each user starts the app (or within three hours if it is already open). Push a change to that file to publish; no app release is needed. Only `id` and `title` are required:
+
+```json
+{
+  "items": [
+    {
+      "id": "patch-11-12",
+      "title": "Spectre 4.0 is out",
+      "body": "Faster tab switching and smoother scrolling.",
+      "level": "info",
+      "image": "https://example.com/banner.png",
+      "link": "https://github.com/booomxd/spectre/releases/latest",
+      "linkLabel": "Release notes",
+      "from": "2026-11-12",
+      "until": "2026-11-20",
+      "minVersion": "3.0.0",
+      "maxVersion": "3.9.9"
+    }
+  ]
+}
+```
+
+- `level`: `info` (default) or `warn` (yellow, for problems or required updates).
+- `from` / `until`: optional dates; `until` lasts through that whole day.
+- `minVersion` / `maxVersion`: optional, to target users on certain versions (for example, everyone below 4.0).
+- `link` / `image`: optional, must start with `https://`. The image shows across the top of the popup.
+- `body` keeps line breaks (`
+`).
+- Each announcement shows once per PC: closing it hides it for good. If Spectre is closed while it is open, it shows again on the next start. Give an edited announcement a new `id` to show it to everyone again.

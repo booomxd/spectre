@@ -69,12 +69,12 @@ export function PresencePanel({ presence, draft = {} }) {
     <FadeIn y={6} delay={0.04} className='glass rounded-2xl overflow-hidden'>
       {/* Friends-list preview: card banner, rank emblem, name */}
       <div className='h-24 relative bg-surface-2 [mask-image:linear-gradient(to_bottom,black_40%,transparent)]'>
-        {card?.wideArt && <img key={card.uuid} src={card.wideArt} alt='' className='anim-fade w-full h-full object-cover' draggable={false} />}
+        {card?.wideArt && <img decoding='async' key={card.uuid} src={card.wideArt} alt='' className='anim-fade w-full h-full object-cover' draggable={false} />}
       </div>
       <div className='px-4 -mt-9 relative'>
         <div className='flex items-end gap-3'>
           <div className='glass w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 bg-bg/60'>
-            {t?.largeIcon ? <img key={tier} src={t.largeIcon} alt='' className='anim-pop w-10 h-10 object-contain' draggable={false} /> : <Skeleton className='w-9 h-9 rounded-full' />}
+            {t?.largeIcon ? <img decoding='async' key={tier} src={t.largeIcon} alt='' className='anim-pop w-10 h-10 object-contain' draggable={false} /> : <Skeleton className='w-9 h-9 rounded-full' />}
           </div>
           <div className='min-w-0 pb-0.5'>
             <div className='text-[15px] font-bold tracking-tight leading-tight text-text truncate'>{riot.gameName || 'Player'}<span className='text-muted font-medium text-[12px]'> #{riot.tagLine}</span></div>

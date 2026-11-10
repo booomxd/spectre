@@ -42,7 +42,7 @@ export default function RankEditor({ active }) {
                   return (
                     <Choice key={t.tier} on={on} onClick={() => setPick(t.tier)} title={t.tierName} className='py-2.5 px-1 flex flex-col items-center gap-1.5'
                       style={on && color ? { boxShadow: `inset 0 0 0 1px ${color}88, 0 0 20px -6px ${color}` } : undefined}>
-                      <img src={t.largeIcon} alt='' className={cx('w-9 h-9 object-contain transition-transform duration-300 ease-out', on && 'scale-110')} loading='lazy' draggable={false} />
+                      <img decoding='async' src={t.largeIcon} alt='' className={cx('w-9 h-9 object-contain transition-transform duration-300 ease-out', on && 'scale-110')} loading='lazy' draggable={false} />
                       <span className={cx('text-[10.5px] font-semibold tracking-tight text-center leading-tight capitalize', on ? 'text-text' : 'text-muted')}>{t.tierName.toLowerCase()}</span>
                     </Choice>
                   )

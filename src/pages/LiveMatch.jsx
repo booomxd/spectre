@@ -50,7 +50,7 @@ function Banner({ m, onChangeSkins }) {
   const allies = avgRank(m.players.filter(p => !p.enemy)), enemies = avgRank(m.players.filter(p => p.enemy))
   return (
     <FadeIn className='glass relative overflow-hidden mb-8 rounded-[28px] h-[208px]'>
-      {m.map?.splash && <img src={m.map.splash} alt='' className='absolute inset-y-0 right-0 w-[78%] h-full object-cover opacity-80' style={SPLASH_MASK} draggable={false} />}
+      {m.map?.splash && <img decoding='async' src={m.map.splash} alt='' className='absolute inset-y-0 right-0 w-[78%] h-full object-cover opacity-80' style={SPLASH_MASK} draggable={false} />}
       <div className='absolute inset-0 bg-gradient-to-t from-bg/70 via-transparent to-transparent' />
       <div className='absolute inset-0 pointer-events-none' style={GRID} />
       <span className='halo -left-20 -bottom-32 w-[420px] h-[320px] opacity-80' />

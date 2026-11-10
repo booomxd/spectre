@@ -4,6 +4,7 @@ use crate::core::{Ctx, Registry};
 pub mod known;
 pub mod scout;
 
+pub mod announce;
 pub mod discord;
 pub mod feedback;
 pub mod friendlog;
@@ -26,6 +27,7 @@ pub mod updates;
 pub mod wishlist;
 
 pub fn register_all(reg: &mut Registry, ctx: &Ctx) {
+    announce::register(reg, ctx);
     discord::register(reg, ctx);
     feedback::register(reg, ctx);
     friendlog::register(reg, ctx);

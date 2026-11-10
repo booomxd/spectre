@@ -112,6 +112,9 @@ fn create(ctx: &Ctx) -> Res<()> {
     let ready = Arc::new(AtomicBool::new(false));
     let c = ctx.clone();
     let mut b = tauri::WebviewWindowBuilder::new(app, "overlay", tauri::WebviewUrl::App("index.html".into()))
+        // Must match the main window's additionalBrowserArgs in tauri.conf.json exactly: WebView2 refuses to
+        // create a second webview with different browser arguments in the same data folder.
+        .additional_browser_args(crate::BROWSER_ARGS)
         .title("Spectre")
         .inner_size(dim("width"), dim("height"))
         .visible(false)

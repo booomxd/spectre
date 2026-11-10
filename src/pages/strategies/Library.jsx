@@ -71,7 +71,7 @@ export default function Library({ playbooks, loading, maps, sel, onSelect, onNew
                         return (
                           <div key={s.id} {...pressable(() => onSelect(pb.id, s.id))}
                             className={`group flex items-center gap-2.5 h-12 px-1.5 rounded-2xl cursor-pointer transition-colors duration-150 ${on ? 'accent-soft' : 'hover:bg-surface-2'}`}>
-                            <div className='h-9 w-9 rounded-xl overflow-hidden glass-inset shrink-0'>{m?.displayIcon && <img src={m.displayIcon} alt='' className='h-full w-full object-cover' />}</div>
+                            <div className='h-9 w-9 rounded-xl overflow-hidden glass-inset shrink-0'>{m?.displayIcon && <img decoding='async' src={m.displayIcon} alt='' className='h-full w-full object-cover' />}</div>
                             <div className='flex-1 min-w-0'>
                               <p className={`truncate text-[12.5px] font-semibold leading-tight ${on ? 'text-text' : 'text-text/90'}`}>{s.name}</p>
                               <p className='truncate text-[11px] text-muted leading-tight mt-0.5'>{m?.displayName || 'Unknown map'} · {s.steps.length} step{s.steps.length === 1 ? '' : 's'}</p>

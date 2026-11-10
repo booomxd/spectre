@@ -1,5 +1,15 @@
 # 📜 Changelog
 
+## 4.0.0
+
+### ✨ New
+- **Announcements:** news and important notices now pop up once when you start Spectre, so you never miss them
+
+### ⚡ Performance
+- Switching tabs no longer reloads pages: a page you've already opened keeps its data and refreshes quietly in the background, with no loading flash
+- Home, Progression and Discord now load in the background at startup like every other page, so they're ready the first time you open them
+- Smoother scrolling: wheel scrolling is animated, page content is drawn on the GPU, images decode in the background, and long lists skip rows that are off screen
+
 ## 3.5.0
 
 ### ✨ New

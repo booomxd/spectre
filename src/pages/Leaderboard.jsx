@@ -29,7 +29,7 @@ function Entry({ p, cards, me, sticky, index }) {
       <span className={cx('font-display text-[18px] font-bold tracking-tight tabular-nums', p.rank === 1 ? 'text-warn' : p.rank <= 3 ? 'text-text' : 'text-muted')}>#{p.rank}</span>
       <div className='flex items-center gap-3 min-w-0'>
         <div className='w-10 h-10 rounded-xl glass-inset overflow-hidden shrink-0'>
-          {art && <img src={art} alt='' loading='lazy' className='w-full h-full object-cover' draggable={false} />}
+          {art && <img decoding='async' src={art} alt='' loading='lazy' className='w-full h-full object-cover' draggable={false} />}
         </div>
         <span className='truncate font-semibold'><Name p={p} /></span>
         {p.puuid === me && <Badge tone='accent'>You</Badge>}
@@ -55,7 +55,7 @@ function Podium({ top, cards, me }) {
         return (
           <Item key={p.rank} index={i}>
             <Card hover={!!link} glow={first} onClick={() => link && openPlayer(p)} className={cx('relative overflow-hidden', first ? 'h-[190px] !rounded-3xl' : 'h-[160px]')}>
-              {art && <img src={art} alt='' loading='lazy' draggable={false} className='absolute inset-0 w-full h-full object-cover opacity-45' />}
+              {art && <img decoding='async' src={art} alt='' loading='lazy' draggable={false} className='absolute inset-0 w-full h-full object-cover opacity-45' />}
               <div className='absolute inset-0 bg-gradient-to-t from-bg via-bg/70 to-bg/20' />
               {first && <span className='halo w-72 h-72 -top-36 left-1/2 -translate-x-1/2' />}
               <div className='relative h-full p-5 flex flex-col justify-between'>

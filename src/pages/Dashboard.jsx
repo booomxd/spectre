@@ -14,12 +14,12 @@ function DashboardBody({ active }) {
   const account = useInvoke('progression:account')
   const rank = useInvoke('store:rank')
   const rr = useInvoke('progression:rrHistory', [20])
-  const wallet = useInvoke('store:wallet', [], { poll: 60000, skip: !active })
+  const wallet = useInvoke('store:wallet', [], { poll: active ? 60000 : undefined })
   const store = useInvoke('store:storefront')
   const contracts = useInvoke('progression:contracts')
-  const friends = useInvoke('social:friends', [], { poll: 30000, skip: !active })
+  const friends = useInvoke('social:friends', [], { poll: active ? 30000 : undefined })
 
-  const party = useInvoke('social:party', [], { poll: 15000, skip: !active })
+  const party = useInvoke('social:party', [], { poll: active ? 15000 : undefined })
 
   const tiles = [
     ['', <HomeHero riot={riot} identity={identity.data} account={account.data} rank={rank.data} rr={rr} party={party} />],

@@ -67,7 +67,7 @@ export function ListRow({ selected, onClick, layoutId, className, children, dim,
 export function DetailHero({ art, eyebrow, title, meta, actions, children, className }) {
   return (
     <div className={cx('glass relative overflow-hidden rounded-3xl', className)}>
-      {art && <img src={art} alt='' draggable={false} className='absolute inset-0 w-full h-full object-cover' />}
+      {art && <img decoding='async' src={art} alt='' draggable={false} className='absolute inset-0 w-full h-full object-cover' />}
       {art && <div className='absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/5' />}
       {!art && <span className='halo -top-28 -right-20 w-80 h-80' />}
       <div className='relative p-6 flex flex-col gap-4'>

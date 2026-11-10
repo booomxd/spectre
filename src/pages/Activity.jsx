@@ -44,7 +44,7 @@ function MatchCard({ m, people, memoMap, agents, maps, onMemo }) {
   return (
     <Card className='relative overflow-hidden flex flex-col md:flex-row'>
       <div className='relative md:w-52 shrink-0 h-24 md:h-auto overflow-hidden'>
-        {map?.splash && <img src={map.splash} alt='' loading='lazy' className='absolute inset-0 w-full h-full object-cover' draggable={false} />}
+        {map?.splash && <img decoding='async' src={map.splash} alt='' loading='lazy' className='absolute inset-0 w-full h-full object-cover' draggable={false} />}
         <div className='absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/10' />
         <span className='absolute inset-0' style={{ background: `linear-gradient(180deg, transparent 40%, rgb(${glow} / 0.28))` }} />
         <div className='relative h-full p-5 flex flex-col justify-end'>

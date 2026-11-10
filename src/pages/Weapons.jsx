@@ -54,7 +54,7 @@ export default function Weapons() {
                 <button key={w.uuid} onClick={() => { setWid(w.uuid); setTier(''); setQ('') }}
                   className={cx('relative h-11 pl-3 pr-4 rounded-full flex items-center gap-2.5 shrink-0 transition-colors', on ? 'text-text' : 'text-muted hover:text-text')}>
                   {on && <Pill layoutId='weapons-pick' />}
-                  <img src={w.displayIcon} className='relative h-6 w-14 object-contain' />
+                  <img decoding='async' src={w.displayIcon} className='relative h-6 w-14 object-contain' />
                   <span className='relative text-[12.5px] font-semibold tracking-tight'>{w.displayName}</span>
                 </button>
               )
@@ -74,7 +74,7 @@ export default function Weapons() {
                     {weapon.shopData && <Badge tone='accent' className='!h-7 !px-3 !text-[11px]'>{weapon.shopData.cost > 0 ? `${weapon.shopData.cost} credits` : 'Free'}</Badge>}
                   </div>
                   <div className='relative flex-1 flex items-center justify-center py-4'>
-                    <img src={weapon.displayIcon} className='max-h-[120px] max-w-[85%] object-contain drop-shadow-[0_18px_30px_rgb(0_0_0/0.4)]' />
+                    <img decoding='async' src={weapon.displayIcon} className='max-h-[120px] max-w-[85%] object-contain drop-shadow-[0_18px_30px_rgb(0_0_0/0.4)]' />
                   </div>
                   {stats ? (
                     <div className='relative glass-inset rounded-2xl grid grid-cols-3 lg:grid-cols-6 divide-x divide-line'>
@@ -133,7 +133,7 @@ export default function Weapons() {
                   </div>
                 </div>
                 {skins.length === 0 ? <Empty title='No skins found' hint='Try another tier or clear the search.' /> : (
-                  <Stagger key={filter + tier + q} className='grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4'>
+                  <Stagger key={filter + tier + q} className='cv-list grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4' style={{ '--cv-h': '240px' }}>
                     {skins.map((s, i) => {
                       const t = tiers[lc(s.contentTierUuid)]
                       const color = tierColor(t)
@@ -145,12 +145,12 @@ export default function Weapons() {
                             <div className='relative h-28 flex items-center justify-center px-6 pt-4' style={color ? { background: `linear-gradient(180deg, transparent 35%, ${color}14)` } : undefined}>
                               <span className='absolute bottom-3 left-1/2 -translate-x-1/2 w-3/5 h-3 rounded-[50%] bg-black/35 blur-md pointer-events-none' />
                               {color && <span className='absolute inset-x-8 bottom-0 h-px pointer-events-none' style={{ background: `linear-gradient(90deg, transparent, ${color}aa, transparent)` }} />}
-                              <img src={skinImage(s)} className='relative max-h-full max-w-full object-contain transition-transform duration-500 ease-out group-hover:scale-[1.04]' loading='lazy' />
+                              <img decoding='async' src={skinImage(s)} className='relative max-h-full max-w-full object-contain transition-transform duration-500 ease-out group-hover:scale-[1.04]' loading='lazy' />
                               {wishId && <WishButton id={wishId} name={s.displayName} className={cx('absolute top-2.5 right-2.5 z-10', !wish.has(wishId) && 'opacity-0 group-hover:opacity-100 focus-visible:opacity-100')} />}
                             </div>
                             <div className='px-4 pb-4 pt-2'>
                               <div className='flex items-center gap-1.5'>
-                                {t && <img src={t.displayIcon} className='w-3.5 h-3.5' title={t.displayName} />}
+                                {t && <img decoding='async' src={t.displayIcon} className='w-3.5 h-3.5' title={t.displayName} />}
                                 <span className='text-[13px] font-semibold tracking-tight text-text truncate'>{s.displayName}</span>
                               </div>
                               <div className='mt-2 flex items-center gap-1.5 flex-wrap'>
@@ -195,10 +195,10 @@ function SkinModal({ skin, weapon, owned, showOwned, tiers, onClose }) {
         <div className='glass-inset rounded-2xl overflow-hidden aspect-video flex items-center justify-center'>
           {video
             ? <video key={video} src={video} className='w-full h-full' controls autoPlay loop muted playsInline poster={image || undefined} />
-            : <img key={image} src={image} className='anim-pop max-h-full max-w-full object-contain p-6' />}
+            : <img decoding='async' key={image} src={image} className='anim-pop max-h-full max-w-full object-contain p-6' />}
         </div>
         <div className='flex items-center gap-2 flex-wrap'>
-          {t && <Badge className='gap-1.5'><img src={t.displayIcon} className='w-3 h-3' />{t.displayName}</Badge>}
+          {t && <Badge className='gap-1.5'><img decoding='async' src={t.displayIcon} className='w-3 h-3' />{t.displayName}</Badge>}
           <Badge>{weapon.displayName}</Badge>
           {showOwned && (own ? <Badge tone='good'>Owned</Badge> : <Badge><FiLock /> Not owned</Badge>)}
           {!video && <span className='text-[11px] text-muted ml-auto'>No video available for this selection</span>}
@@ -225,7 +225,7 @@ function SkinModal({ skin, weapon, owned, showOwned, tiers, onClose }) {
               {skin.chromas.map((c, i) => (
                 <button key={c.uuid} onClick={() => setCi(i)} title={c.displayName}
                   className={cx('relative w-12 h-12 rounded-xl border flex items-center justify-center transition-[transform,opacity,background-color,border-color,color] duration-200 hover:-translate-y-0.5', i === ci ? 'accent-soft border-transparent' : 'glass hover:border-accent/40')}>
-                  {(c.swatch || c.fullRender) ? <img src={c.swatch || c.fullRender} className='w-7 h-7 object-contain' /> : <span className='text-[10px] text-muted'>{i + 1}</span>}
+                  {(c.swatch || c.fullRender) ? <img decoding='async' src={c.swatch || c.fullRender} className='w-7 h-7 object-contain' /> : <span className='text-[10px] text-muted'>{i + 1}</span>}
                   {showOwned && owned && !chromaOwned(skin, c, owned) && <FiLock className='absolute -top-1 -right-1 text-[10px] text-muted bg-panel border border-line rounded-full p-0.5 w-4 h-4' />}
                 </button>
               ))}

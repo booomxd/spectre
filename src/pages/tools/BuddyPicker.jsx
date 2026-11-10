@@ -47,7 +47,7 @@ export default function BuddyPicker({ owned, value, usedInstances, onChange }) {
             return (
               <button key={g.level.uuid} disabled={!free && !on} onClick={() => choose(g)} title={g.buddy.displayName}
                 className={cx('lift relative h-[72px] rounded-xl p-1.5 flex flex-col items-center justify-between', on ? 'accent-soft border border-transparent' : 'glass-inset hover:bg-surface-2', !free && !on && 'opacity-[0.35]')}>
-                <img src={g.level.displayIcon} className='h-10 object-contain' loading='lazy' />
+                <img decoding='async' src={g.level.displayIcon} className='h-10 object-contain' loading='lazy' />
                 <span className='w-full truncate text-[9px] text-muted text-center'>{g.buddy.displayName}</span>
                 {g.instances.length > 1 && <span className='absolute top-1 right-1.5 text-[9px] font-semibold tabular-nums text-muted'>x{g.instances.length}</span>}
               </button>

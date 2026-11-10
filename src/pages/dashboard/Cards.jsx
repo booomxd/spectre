@@ -91,7 +91,7 @@ export function Hero({ riot, identity, account, rr }) {
   return (
     <Card className='relative overflow-hidden h-full min-h-[280px] !rounded-3xl flex flex-col'>
       {card?.wideArt && (
-        <img src={card.wideArt} alt='' draggable={false} className='hero-art absolute right-0 top-0 h-full w-[72%] object-cover opacity-60 pointer-events-none'
+        <img decoding='async' src={card.wideArt} alt='' draggable={false} className='hero-art absolute right-0 top-0 h-full w-[72%] object-cover opacity-60 pointer-events-none'
           style={{ WebkitMaskImage: 'linear-gradient(90deg, transparent, #000 60%)', maskImage: 'linear-gradient(90deg, transparent, #000 60%)' }} />
       )}
       <div className='absolute inset-0 bg-gradient-to-t from-bg/80 via-bg/10 to-transparent pointer-events-none' />
@@ -147,7 +147,7 @@ export function RankTile({ rank }) {
       {!rank ? <Skeleton className='mt-6 h-36 rounded-2xl' /> : (
         <div className='relative flex-1 flex flex-col justify-end'>
           <div className='flex items-center gap-4 mt-3'>
-            {t ? <img src={t.largeIcon} alt='' className='w-[96px] h-[96px] object-contain drop-shadow-[0_10px_24px_rgb(0_0_0/0.35)] transition-transform duration-500 ease-out group-hover:scale-105 group-hover:-rotate-3' />
+            {t ? <img decoding='async' src={t.largeIcon} alt='' className='w-[96px] h-[96px] object-contain drop-shadow-[0_10px_24px_rgb(0_0_0/0.35)] transition-transform duration-500 ease-out group-hover:scale-105 group-hover:-rotate-3' />
               : <Skeleton className='w-[96px] h-[96px] rounded-2xl' />}
             <div className='min-w-0'>
               <div className='tier-text display text-[30px] truncate' style={color ? { '--tier': color } : undefined}>{rank.tier ? t?.tierName : 'Unranked'}</div>
@@ -162,7 +162,7 @@ export function RankTile({ rank }) {
               </div>
             </div>
           )}
-          {peak && <div className='mt-4 flex items-center gap-2 text-[12px] text-muted'><img src={peak.smallIcon} alt='' className='w-5 h-5' />Peak <span className='font-semibold text-text'>{peak.tierName}</span></div>}
+          {peak && <div className='mt-4 flex items-center gap-2 text-[12px] text-muted'><img decoding='async' src={peak.smallIcon} alt='' className='w-5 h-5' />Peak <span className='font-semibold text-text'>{peak.tierName}</span></div>}
         </div>
       )}
     </Card>
@@ -247,7 +247,7 @@ export function BundleCard({ bundles, cat }) {
   const art = meta?.displayIcon2 || meta?.displayIcon
   return (
     <Card hover onClick={go('shop')} className='group relative overflow-hidden h-full min-h-[210px]'>
-      {art && <img src={art} alt='' className='absolute inset-0 w-full h-full object-cover opacity-80 transition-transform duration-700 ease-out group-hover:scale-105' />}
+      {art && <img decoding='async' src={art} alt='' className='absolute inset-0 w-full h-full object-cover opacity-80 transition-transform duration-700 ease-out group-hover:scale-105' />}
       <div className='absolute inset-0 bg-gradient-to-t from-bg via-bg/45 to-transparent' />
       <div className='absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-bg/70 to-transparent' />
       <div className='relative p-6 h-full flex flex-col justify-between'>
@@ -306,7 +306,7 @@ export function PassCard({ pass, cat, loading }) {
         <div className='flex-1 flex flex-col justify-end'>
           <div className='flex items-end justify-between gap-3'>
             <span className='display text-[52px] text-text tabular-nums'>{pass.progressionLevel}<span className='text-[16px] font-semibold tracking-normal text-muted'> / {flat.length}</span></span>
-            {nextReward?.icon && <span className='w-12 h-12 p-2 rounded-xl glass-inset shrink-0 grid place-items-center'><img src={nextReward.icon} alt='' className={'max-w-full max-h-full object-contain' + (nextReward.kind === 'currency' ? ' mono-icon' : '')} /></span>}
+            {nextReward?.icon && <span className='w-12 h-12 p-2 rounded-xl glass-inset shrink-0 grid place-items-center'><img decoding='async' src={nextReward.icon} alt='' className={'max-w-full max-h-full object-contain' + (nextReward.kind === 'currency' ? ' mono-icon' : '')} /></span>}
           </div>
           <div className='mt-1 truncate text-[12px] text-muted'>{pass.name}</div>
           <div className='mt-3 h-2 rounded-full glass-inset overflow-hidden'>
@@ -337,7 +337,7 @@ export function FriendsCard({ friends }) {
                     <span className='w-2 h-2 rounded-full bg-good anim-pulse shadow-[0_0_8px_rgb(var(--good)/0.6)] shrink-0' />
                     <span className='truncate text-[13px] font-medium text-text flex-1'>{f.gameName}<span className='text-muted font-normal'> #{f.tagLine}</span></span>
                     <span className='text-[11px] text-muted capitalize truncate max-w-[110px]'>{[s.state, s.map].filter(Boolean).join(' - ')}</span>
-                    {rankIcon && <img src={rankIcon} alt='' className='w-5 h-5' />}
+                    {rankIcon && <img decoding='async' src={rankIcon} alt='' className='w-5 h-5' />}
                   </div>
                 )
               })}

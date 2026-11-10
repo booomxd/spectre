@@ -124,7 +124,7 @@ export default function MatchDetail({ matchId, me, memos = {}, onSearch, onMemo 
   return (
     <div className='flex flex-col gap-4'>
       <div className='glass relative overflow-hidden rounded-3xl h-32 flex items-center px-7'>
-        {map?.splash && <img src={map.splash} alt='' className='absolute inset-0 w-full h-full object-cover opacity-55' draggable={false} />}
+        {map?.splash && <img decoding='async' src={map.splash} alt='' className='absolute inset-0 w-full h-full object-cover opacity-55' draggable={false} />}
         {/* Fades the map art into the modal's own fill so text stays readable on light and dark themes. */}
         <div className='absolute inset-0 bg-gradient-to-r from-panel via-panel/75 to-panel/10' />
         <div className='relative flex items-center gap-5 w-full'>

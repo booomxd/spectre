@@ -61,7 +61,7 @@ export default function PlayerRow({ p, i, memo, onScout, onSkins }) {
   return (
     <Item index={i} className={cx('glass group relative overflow-hidden rounded-[22px] transition-[border-color,box-shadow] duration-200',
       p.self ? 'accent-glow !border-accent/40' : 'hover:border-accent/30')}>
-      {p.card && <img src={cardWide(p.card)} alt='' className='absolute inset-y-0 right-0 w-[70%] h-full object-cover opacity-[0.2] pointer-events-none' style={ART_MASK} draggable={false} loading='lazy' />}
+      {p.card && <img decoding='async' src={cardWide(p.card)} alt='' className='absolute inset-y-0 right-0 w-[70%] h-full object-cover opacity-[0.2] pointer-events-none' style={ART_MASK} draggable={false} loading='lazy' />}
       {/* Rank-colored light behind the portrait. */}
       {rank && <span className='absolute -left-10 top-1/2 -translate-y-1/2 w-44 h-44 rounded-full pointer-events-none opacity-50' style={{ background: `radial-gradient(closest-side, ${rank}40, transparent)` }} />}
       {p.self && <span className='absolute inset-0 bg-gradient-to-r from-accent/[0.10] to-transparent pointer-events-none' />}
@@ -119,7 +119,7 @@ export default function PlayerRow({ p, i, memo, onScout, onSkins }) {
           </div>
           {p.guns?.length > 0 && (
             <div className='hidden min-[1700px]:flex items-center gap-2.5'>
-              {p.guns.map(g => <img key={g.weapon} src={g.image} alt={g.skin} title={g.skin} className='h-6 w-[76px] object-contain' draggable={false} loading='lazy' />)}
+              {p.guns.map(g => <img decoding='async' key={g.weapon} src={g.image} alt={g.skin} title={g.skin} className='h-6 w-[76px] object-contain' draggable={false} loading='lazy' />)}
             </div>
           )}
         </div>

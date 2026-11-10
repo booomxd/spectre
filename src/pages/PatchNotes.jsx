@@ -11,7 +11,7 @@ function Featured({ n }) {
   return (
     <Card hover className='group overflow-hidden relative rounded-3xl' onClick={() => openExternal(n.url)}>
       <div className='aspect-[21/9] overflow-hidden glass-inset'>
-        {n.image && <img src={n.image} alt='' className='w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]' draggable={false} />}
+        {n.image && <img decoding='async' src={n.image} alt='' className='w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]' draggable={false} />}
       </div>
       <div className='absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent' />
       <div className='absolute inset-x-0 bottom-0 p-7 flex items-end justify-between gap-5'>
@@ -31,7 +31,7 @@ function NoteRow({ n, index }) {
     <Item index={index}>
       <Card hover className='group overflow-hidden flex items-stretch rounded-2xl' onClick={() => openExternal(n.url)}>
         <div className='w-44 min-h-[92px] shrink-0 overflow-hidden bg-surface-2'>
-          {n.image && <img src={n.image} alt='' loading='lazy' className='w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105' draggable={false} />}
+          {n.image && <img decoding='async' src={n.image} alt='' loading='lazy' className='w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105' draggable={false} />}
         </div>
         <div className='px-5 py-4 flex-1 min-w-0 flex flex-col justify-center gap-1'>
           <span className='text-[11.5px] font-medium text-muted tabular-nums'>{fmt(n.date)}</span>
@@ -97,7 +97,7 @@ function SpectreNotes() {
         return (
           <Item key={r.version} index={i} className='relative flex gap-5'>
             <span className={cx('relative z-[1] mt-4 w-11 h-11 rounded-2xl shrink-0 flex items-center justify-center', i === 0 ? 'accent-soft' : 'glass')}>
-              <img src={logo} alt='' className='w-6 h-6' draggable={false} />
+              <img decoding='async' src={logo} alt='' className='w-6 h-6' draggable={false} />
             </span>
             <Card className='flex-1 min-w-0 rounded-2xl'>
               <button className='w-full flex items-center gap-4 text-left px-6 py-[18px]' onClick={() => setOpen(expanded ? '' : r.version)}>

@@ -31,7 +31,7 @@ export default function SkinPicker({ weapon, owned, value, onChange, maxHeight =
       {skin && (
         <div className='glass-inset flex gap-5 rounded-2xl p-4 anim-fade'>
           <div className='w-56 h-28 shrink-0 flex items-center justify-center rounded-xl bg-[radial-gradient(closest-side,rgb(var(--accent)/0.16),transparent)]'>
-            <img key={selectionImage(skin, value.chromaId)} src={selectionImage(skin, value.chromaId)} className='anim-pop max-h-full max-w-full object-contain p-2' />
+            <img decoding='async' key={selectionImage(skin, value.chromaId)} src={selectionImage(skin, value.chromaId)} className='anim-pop max-h-full max-w-full object-contain p-2' />
           </div>
           <div className='min-w-0 flex-1 space-y-3'>
             <div className='display text-[22px] text-text truncate'>{skin.displayName}</div>
@@ -64,7 +64,7 @@ export default function SkinPicker({ weapon, owned, value, onChange, maxHeight =
                     return (
                       <button key={c.uuid} onClick={() => onChange({ ...value, chromaId: c.uuid, levelId: best(skin).uuid })} title={c.displayName}
                         className={cx('w-9 h-9 rounded-xl border flex items-center justify-center transition-[transform,opacity,background-color,border-color,color] duration-200 hover:-translate-y-0.5', on ? 'accent-soft border-transparent' : 'glass')}>
-                        {(c.swatch || c.fullRender) ? <img src={c.swatch || c.fullRender} className='w-6 h-6 object-contain' /> : <span className='text-[10px] text-muted'>{i + 1}</span>}
+                        {(c.swatch || c.fullRender) ? <img decoding='async' src={c.swatch || c.fullRender} className='w-6 h-6 object-contain' /> : <span className='text-[10px] text-muted'>{i + 1}</span>}
                       </button>
                     )
                   })}
@@ -90,10 +90,10 @@ export default function SkinPicker({ weapon, owned, value, onChange, maxHeight =
                   className={cx('lift relative rounded-xl p-2.5 text-left', i < 12 && 'anim-rise', on ? 'accent-soft border border-transparent' : 'glass-inset hover:bg-surface-2')}>
                   {on && <span className='accent-fill absolute top-2 right-2 w-4 h-4 rounded-full text-bg flex items-center justify-center text-[10px]'><FiCheck /></span>}
                   <div className='h-14 flex items-center justify-center'>
-                    <img src={skinImage(s)} className='max-h-full max-w-full object-contain' loading='lazy' />
+                    <img decoding='async' src={skinImage(s)} className='max-h-full max-w-full object-contain' loading='lazy' />
                   </div>
                   <div className='mt-1.5 flex items-center gap-1.5'>
-                    {tier && <img src={tier.displayIcon} className='w-3.5 h-3.5' title={tier.displayName} />}
+                    {tier && <img decoding='async' src={tier.displayIcon} className='w-3.5 h-3.5' title={tier.displayName} />}
                     <span className='tier-text text-[11px] font-semibold truncate' style={tierColor(tier) ? { '--tier': tierColor(tier) } : undefined}>{s.displayName}</span>
                   </div>
                   {isStandard(weapon, s) && <Badge className='mt-1'>Standard</Badge>}

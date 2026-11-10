@@ -69,7 +69,7 @@ export function AgentIcon({ id, agents, size = 36, className }) {
   const a = agents[id]
   return (
     <div className={cx('shrink-0 rounded-lg bg-surface-2 border border-line overflow-hidden flex items-center justify-center shadow-[inset_0_1px_0_rgb(255_255_255/0.06)]', className)} style={{ width: size, height: size }}>
-      {a ? <img src={a.displayIcon} alt={a.displayName} title={a.displayName} className='w-full h-full object-cover' draggable={false} /> : <FiUser className='text-muted' />}
+      {a ? <img decoding='async' src={a.displayIcon} alt={a.displayName} title={a.displayName} className='w-full h-full object-cover' draggable={false} /> : <FiUser className='text-muted' />}
     </div>
   )
 }
@@ -80,7 +80,7 @@ export function TierIcon({ tier, size = 28, showName }) {
   if (!t || !tier) return <span className='text-muted text-[12px]'>{showName ? 'Unranked' : '-'}</span>
   return (
     <span className='inline-flex items-center gap-2' title={t.tierName}>
-      <img src={t.smallIcon} alt={t.tierName} style={{ width: size, height: size }} draggable={false} />
+      <img decoding='async' src={t.smallIcon} alt={t.tierName} style={{ width: size, height: size }} draggable={false} />
       {/* .tier-text keeps the tier color readable on the light theme. */}
       {showName && <span className='tier-text text-[12px] font-semibold' style={{ '--tier': `#${t.color.slice(0, 6)}` }}>{t.tierName}</span>}
     </span>

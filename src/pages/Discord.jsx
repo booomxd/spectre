@@ -36,9 +36,9 @@ function Activity({ activity }) {
     <div className='flex gap-4'>
       <div className='relative w-[84px] h-[84px] shrink-0'>
         {a.large_image
-          ? <img src={a.large_image} alt={a.large_text} title={a.large_text} className='w-full h-full rounded-xl object-cover' draggable={false} />
+          ? <img decoding='async' src={a.large_image} alt={a.large_text} title={a.large_text} className='w-full h-full rounded-xl object-cover' draggable={false} />
           : <div className='w-full h-full rounded-xl glass-inset flex items-center justify-center'><FaDiscord className='text-2xl text-muted' /></div>}
-        {a.small_image && <img src={a.small_image} alt={a.small_text} title={a.small_text} className='absolute -bottom-1.5 -right-1.5 w-7 h-7 rounded-full bg-bg p-0.5' draggable={false} />}
+        {a.small_image && <img decoding='async' src={a.small_image} alt={a.small_text} title={a.small_text} className='absolute -bottom-1.5 -right-1.5 w-7 h-7 rounded-full bg-bg p-0.5' draggable={false} />}
       </div>
       <div className='min-w-0 flex flex-col justify-center gap-0.5'>
         <div className='text-[14px] font-bold text-text'>Spectre</div>
@@ -73,7 +73,7 @@ function Group({ title, hint, items, d, save, delay }) {
 export default function Discord({ active }) {
   const riot = useRiot()
   const { settings, error, save } = useSettings()
-  const status = useInvoke('discord:status', [], { poll: 4000, skip: active === false })
+  const status = useInvoke('discord:status', [], { poll: active === false ? undefined : 4000 })
   const [scenario, setScenario] = useState('competitive')
   const [busy, setBusy] = useState(false)
   const d = settings?.discord

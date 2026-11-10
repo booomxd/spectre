@@ -39,10 +39,16 @@ function sameJson(a, b) { try { return JSON.stringify(a) === JSON.stringify(b) }
 
 export function useInvoke(channel, args = [], { deps = [], poll, skip } = {}) {
   const [state, setState] = useState({ data: null, error: null, loading: !skip })
-  const reload = useCallback(async (quiet) => {
+  // What the shown data was loaded for. When the effect re-runs for the same request (a page becoming active
+  // changes its poll interval), it refreshes quietly instead of flashing the loading state again.
+  let key
+  try { key = JSON.stringify([channel, args, deps]) } catch { key = null }
+  const loadedFor = useRef(null)
+  const reload = useCallback(async (quiet, forKey) => {
     if (!quiet) setState(s => ({ ...s, loading: true }))
     try {
       const data = await invoke(channel, ...args)
+      if (forKey !== undefined) loadedFor.current = forKey
       // Quiet polls that return the same payload keep the old state object, so the page does not re-render.
       setState(s => (quiet && !s.error && !s.loading && s.data != null && sameJson(s.data, data)) ? s : { data, error: null, loading: false })
     }
@@ -51,7 +57,7 @@ export function useInvoke(channel, args = [], { deps = [], poll, skip } = {}) {
 
   useEffect(() => {
     if (skip) return
-    reload()
+    reload(key !== null && loadedFor.current === key, key)
     if (!poll) return
     // No refreshing while the window is hidden (in the tray or minimized); it catches up as soon as it is shown.
     const t = setInterval(() => { if (!document.hidden) reload(true) }, poll)

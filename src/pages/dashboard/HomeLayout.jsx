@@ -70,13 +70,13 @@ export function HomeHero({ riot, identity, account, rank, rr, party }) {
   return (
     <Card className='relative overflow-hidden !rounded-3xl p-6'>
       {card?.wideArt && (
-        <img src={card.wideArt} alt='' draggable={false} className='absolute right-0 top-0 h-full w-[55%] object-cover opacity-25 pointer-events-none'
+        <img decoding='async' src={card.wideArt} alt='' draggable={false} className='absolute right-0 top-0 h-full w-[55%] object-cover opacity-25 pointer-events-none'
           style={{ WebkitMaskImage: 'linear-gradient(90deg, transparent, #000 70%)', maskImage: 'linear-gradient(90deg, transparent, #000 70%)' }} />
       )}
       <span className='halo -top-28 -left-20 w-80 h-80' />
       <div className='relative flex flex-wrap lg:flex-nowrap items-stretch gap-6'>
         <div className='w-[132px] h-[176px] shrink-0 rounded-2xl overflow-hidden glass-inset'>
-          {card?.largeArt ? <img src={card.largeArt} alt='' draggable={false} className='w-full h-full object-cover object-top' /> : <Skeleton className='w-full h-full' />}
+          {card?.largeArt ? <img decoding='async' src={card.largeArt} alt='' draggable={false} className='w-full h-full object-cover object-top' /> : <Skeleton className='w-full h-full' />}
         </div>
 
         <div className='min-w-0 flex-1 basis-[420px] flex flex-col'>
@@ -91,14 +91,14 @@ export function HomeHero({ riot, identity, account, rank, rr, party }) {
           <div className='mt-auto pt-4'>
             <div className='rounded-2xl glass-inset grid grid-cols-2 xl:grid-cols-4 divide-line max-xl:[&>*:nth-child(odd)]:border-r max-xl:[&>*:nth-child(-n+2)]:border-b xl:divide-x [&>*]:border-line'>
               <Stat label='Current rank' loading={!rank}>
-                {t?.smallIcon && <img src={t.largeIcon || t.smallIcon} alt='' className='w-9 h-9 object-contain shrink-0' />}
+                {t?.smallIcon && <img decoding='async' src={t.largeIcon || t.smallIcon} alt='' className='w-9 h-9 object-contain shrink-0' />}
                 <span className='min-w-0'>
                   <span className='tier-text block truncate font-display text-[17px] font-bold tracking-tight' style={tierColor(t) ? { '--tier': tierColor(t) } : undefined}>{rank?.tier ? title(t?.tierName) : 'Unranked'}</span>
                   {rank?.tier > 0 && <span className='block text-[11px] text-muted tabular-nums'>{rank.rr} RR</span>}
                 </span>
               </Stat>
               <Stat label='Career peak' loading={!rank}>
-                {peak?.smallIcon && <img src={peak.largeIcon || peak.smallIcon} alt='' className='w-9 h-9 object-contain shrink-0' />}
+                {peak?.smallIcon && <img decoding='async' src={peak.largeIcon || peak.smallIcon} alt='' className='w-9 h-9 object-contain shrink-0' />}
                 <span className='truncate font-display text-[17px] font-bold tracking-tight text-text'>{rank?.peak ? title(peak?.tierName) : 'Unranked'}</span>
               </Stat>
               <Stat label='Account level' loading={!account}>
@@ -145,7 +145,7 @@ function BundleBanner({ b, cat }) {
   return (
     <div className='group/b relative overflow-hidden rounded-2xl glass-inset'>
       <div className='relative h-[150px]'>
-        {art && <img src={art} alt='' loading='lazy' className='absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover/b:scale-[1.03]' />}
+        {art && <img decoding='async' src={art} alt='' loading='lazy' className='absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover/b:scale-[1.03]' />}
         <div className='absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent' />
         <span className='absolute top-3 right-3 h-6 px-2.5 rounded-full bg-black/55 border border-white/15 text-[11px] font-semibold text-white inline-flex items-center'>
           <Countdown seconds={b.secondsLeft} /><span className='ml-1'>left</span>
@@ -158,7 +158,7 @@ function BundleBanner({ b, cat }) {
       <div className='flex items-center justify-between gap-3 px-4 py-3'>
         <div className='flex items-center gap-1.5 min-w-0'>
           {items.slice(0, 5).map((it, i) => (
-            <span key={i} title={it.name} className='w-11 h-8 rounded-lg glass flex items-center justify-center p-1 shrink-0'><img src={it.icon} alt='' loading='lazy' className='max-w-full max-h-full object-contain' /></span>
+            <span key={i} title={it.name} className='w-11 h-8 rounded-lg glass flex items-center justify-center p-1 shrink-0'><img decoding='async' src={it.icon} alt='' loading='lazy' className='max-w-full max-h-full object-contain' /></span>
           ))}
           {items.length > 5 && <span className='h-8 px-2 rounded-lg glass text-[11px] font-semibold text-muted inline-flex items-center'>+{items.length - 5}</span>}
         </div>
@@ -255,7 +255,7 @@ export function FriendsPanel({ friends }) {
                   return (
                     <div key={f.puuid} className='flex items-center gap-3 rounded-2xl px-2 py-2 hover:bg-surface-2 transition-colors'>
                       <span className='relative shrink-0'>
-                        {s.card ? <img src={cardIcon(s.card)} alt='' loading='lazy' className='w-10 h-10 rounded-full object-cover border border-line' />
+                        {s.card ? <img decoding='async' src={cardIcon(s.card)} alt='' loading='lazy' className='w-10 h-10 rounded-full object-cover border border-line' />
                           : <span className='w-10 h-10 rounded-full glass-inset grid place-items-center text-[13px] font-bold text-muted'>{(f.gameName || '?')[0]}</span>}
                         <span className={cx('absolute -right-0.5 -bottom-0.5 w-3 h-3 rounded-full border-2 border-panel', s.state === 'away' ? 'bg-warn' : playing ? 'bg-bad' : 'bg-good')} />
                       </span>

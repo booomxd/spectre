@@ -53,7 +53,7 @@ export default function Palette({ agents, side, placed, onPlace, notes, onNotes,
                     <button key={a.uuid} draggable onDragStart={e => { drag(e, payload); onFocus(a.uuid) }} onClick={() => { onPlace(payload); onFocus(a.uuid) }} title={`${a.displayName} - drag onto the map or click`}
                       style={{ '--i': Math.min(i, 20) }}
                       className={`glass anim-rise relative aspect-square rounded-2xl overflow-hidden transition-[transform,border-color] duration-150 hover:scale-105 hover:border-accent/60 active:scale-95 ${focus === a.uuid ? '!border-accent' : ''}`}>
-                      <img src={a.displayIcon} alt='' draggable={false} className='w-full h-full object-cover' />
+                      <img decoding='async' src={a.displayIcon} alt='' draggable={false} className='w-full h-full object-cover' />
                       {n > 0 && <span className='absolute bottom-0.5 right-0.5 min-w-4 h-4 px-1 rounded-full text-[9px] font-bold grid place-items-center text-bg' style={{ background: teamColor(team, side) }}>{n}</span>}
                     </button>
                   )
@@ -70,7 +70,7 @@ export default function Palette({ agents, side, placed, onPlace, notes, onNotes,
                   return (
                     <button key={ab.slot} draggable onDragStart={e => drag(e, payload)} onClick={() => onPlace(payload)} title={`${ab.displayName} - drag onto the map or click`}
                       className='aspect-square rounded-xl bg-black/60 border border-white/15 grid place-items-center transition-[transform,border-color] duration-150 hover:border-accent/60 hover:-translate-y-0.5 active:scale-95'>
-                      <img src={ab.displayIcon} alt={ab.displayName} draggable={false} className='h-6 w-6' />
+                      <img decoding='async' src={ab.displayIcon} alt={ab.displayName} draggable={false} className='h-6 w-6' />
                     </button>
                   )
                 })}
@@ -86,7 +86,7 @@ export default function Palette({ agents, side, placed, onPlace, notes, onNotes,
             {(agents || []).map(a => (
               <button key={a.uuid} onClick={() => setAbilityAgent(a.uuid)} title={a.displayName}
                 className={`h-8 w-8 rounded-full overflow-hidden border bg-surface-2 transition duration-200 ${ag?.uuid === a.uuid ? 'border-accent ring-2 ring-accent/30 scale-110' : 'border-line opacity-60 hover:opacity-100'}`}>
-                <img src={a.displayIcon} alt='' draggable={false} className='w-full h-full object-cover' />
+                <img decoding='async' src={a.displayIcon} alt='' draggable={false} className='w-full h-full object-cover' />
               </button>
             ))}
           </div>
@@ -97,7 +97,7 @@ export default function Palette({ agents, side, placed, onPlace, notes, onNotes,
               return (
                 <button key={ab.slot} draggable onDragStart={e => drag(e, payload)} onClick={() => onPlace(payload)} style={{ '--i': i }}
                   className='glass anim-rise flex flex-col items-center gap-2 p-3.5 rounded-2xl transition-[transform,border-color] duration-150 hover:border-accent/60 hover:-translate-y-0.5 active:scale-95'>
-                  <span className='h-11 w-11 rounded-full bg-black/60 border border-white/20 grid place-items-center'><img src={ab.displayIcon} alt='' draggable={false} className='h-7 w-7' /></span>
+                  <span className='h-11 w-11 rounded-full bg-black/60 border border-white/20 grid place-items-center'><img decoding='async' src={ab.displayIcon} alt='' draggable={false} className='h-7 w-7' /></span>
                   <span className='text-[11px] font-medium text-muted leading-tight text-center'>{ab.displayName}</span>
                 </button>
               )

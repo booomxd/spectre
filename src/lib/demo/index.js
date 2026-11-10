@@ -180,6 +180,8 @@ const H = {
   },
 
   'wishlist:list': () => db.wishlist || [],
+  // Sample announcement so demo screenshots show the banner.
+  'announce:list': () => ({ version: '4.0.0', items: [{ id: 'demo-welcome', title: 'Spectre 4.0 is here', body: 'Faster tab switching and smoother scrolling. Thanks for using Spectre!', link: 'https://github.com/booomxd/spectre/releases', linkLabel: 'Release notes' }] }),
   'wishlist:toggle': w => { const l = db.wishlist || []; db.wishlist = l.some(i => i.id === w.id) ? l.filter(i => i.id !== w.id) : [...l, w]; return db.wishlist },
   'wishlist:check': ok({ hits: [] }),
   'share:save': ok('C:/Users/demo/Pictures/Spectre/card.png'),

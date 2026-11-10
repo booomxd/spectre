@@ -88,7 +88,7 @@ export default function Customize({ active }) {
                     <div className='grid grid-cols-5 gap-2'>
                       {shownCards.map(c => (
                         <Choice key={c.uuid} on={lc(curCard) === lc(c.uuid)} onClick={() => setCardId(c.uuid)} title={c.displayName} className='p-1.5 text-left'>
-                          <img src={c.displayIcon} alt='' className='w-full rounded-lg' loading='lazy' draggable={false} />
+                          <img decoding='async' src={c.displayIcon} alt='' className='w-full rounded-lg' loading='lazy' draggable={false} />
                           <div className='text-[10.5px] font-medium text-muted truncate mt-1 px-0.5 text-center'>{c.displayName}</div>
                         </Choice>
                       ))}
@@ -101,7 +101,7 @@ export default function Customize({ active }) {
                 <div className='grid grid-cols-4 gap-2'>
                   {!borders ? Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className='h-24 rounded-xl' />) : borders.filter(b => b.levelNumberAppearance).map(b => (
                     <Choice key={b.uuid} on={lc(curBorder) === lc(b.uuid)} onClick={() => setBorderId(b.uuid)} className='p-3'>
-                      <img src={b.levelNumberAppearance} alt='' className='w-full h-11 object-contain' loading='lazy' draggable={false} />
+                      <img decoding='async' src={b.levelNumberAppearance} alt='' className='w-full h-11 object-contain' loading='lazy' draggable={false} />
                       <div className='text-[10.5px] font-medium text-muted text-center mt-1.5 tabular-nums'>From level {b.startingLevel}</div>
                     </Choice>
                   ))}

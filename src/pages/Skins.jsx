@@ -55,7 +55,7 @@ function SkinsView({ active }) {
                     const on = weapon && lc(w.uuid) === lc(weapon.uuid)
                     return (
                       <ListRow key={w.uuid} as='button' layoutId='skins-weapon' selected={on} onClick={() => setWid(w.uuid)}>
-                        <img src={selectionImage(sk, g?.ChromaID) || w.displayIcon} alt='' className='relative w-12 h-8 object-contain shrink-0' loading='lazy' draggable={false} />
+                        <img decoding='async' src={selectionImage(sk, g?.ChromaID) || w.displayIcon} alt='' className='relative w-12 h-8 object-contain shrink-0' loading='lazy' draggable={false} />
                         <span className='relative min-w-0'>
                           <span className='block text-[13px] font-semibold text-text'>{w.displayName}</span>
                           <span className='block text-[11px] text-muted truncate'>{sk?.displayName || '...'}</span>

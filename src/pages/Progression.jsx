@@ -33,7 +33,7 @@ function RewardTile({ tier, reward, cat, unlocked, free, current }) {
         {unlocked ? <FiCheck className='text-good' /> : <FiLock />}
       </div>
       <div className='h-[76px] flex items-center justify-center'>
-        {item?.icon ? <img src={item.icon} alt='' loading='lazy' className={cx('max-h-16 max-w-full object-contain transition-transform duration-300 ease-out group-hover:scale-110', item.kind === 'currency' && 'mono-icon')} />
+        {item?.icon ? <img decoding='async' src={item.icon} alt='' loading='lazy' className={cx('max-h-16 max-w-full object-contain transition-transform duration-300 ease-out group-hover:scale-110', item.kind === 'currency' && 'mono-icon')} />
           : <span className='rounded-full glass-inset px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted'>{item?.kind || reward?.type || 'reward'}</span>}
       </div>
       <div className='mt-1 truncate text-[11px] font-semibold text-text text-center' title={label}>{label}{reward?.amount > 1 ? ` x${fmt(reward.amount)}` : ''}</div>
@@ -107,7 +107,7 @@ function Contracts({ contracts, cat, empty }) {
           <Item key={c.id} index={i}>
             <Card className={cx('relative overflow-hidden p-5 flex items-center gap-4', pct >= 100 && 'accent-glow')}>
               <div className='w-14 h-14 rounded-2xl glass-inset overflow-hidden shrink-0 flex items-center justify-center'>
-                {agent?.icon && <img src={agent.icon} alt='' className='w-full h-full object-cover' />}
+                {agent?.icon && <img decoding='async' src={agent.icon} alt='' className='w-full h-full object-cover' />}
               </div>
               <div className='min-w-0 flex-1'>
                 <div className='flex items-center justify-between gap-2'>
@@ -154,7 +154,7 @@ const TABS = [{ value: 'overview', label: 'Overview' }, { value: 'pass', label: 
 function ProgressionBody({ active }) {
   const cat = useCatalog()
   const tiers = useTiers()
-  const contracts = useInvoke('progression:contracts', [], { skip: !active })
+  const contracts = useInvoke('progression:contracts', [])
   const account = useInvoke('progression:account')
   const rr = useInvoke('progression:rrHistory', [20])
   const [tab, setTab] = useState('overview')
@@ -182,7 +182,7 @@ function ProgressionBody({ active }) {
       <StatStrip loading={!rr.data && !account.data}>
         <StatCell label='Current rank' className='min-w-[200px]' sub={last ? `${last.rrAfter} RR` : 'no ranked games'}>
           <div className='flex items-center gap-2.5 mt-2'>
-            {last && tiers?.[last.tierAfter] && <img src={tiers[last.tierAfter].smallIcon} alt='' className='w-8 h-8' />}
+            {last && tiers?.[last.tierAfter] && <img decoding='async' src={tiers[last.tierAfter].smallIcon} alt='' className='w-8 h-8' />}
             <span className='font-display text-[20px] font-750 tracking-tight leading-none truncate'>{last ? tiers?.[last.tierAfter]?.tierName || '-' : '-'}</span>
           </div>
         </StatCell>
