@@ -1,5 +1,10 @@
 # 📜 Changelog
 
+## 4.0.1
+
+### 🛠️ Fixes
+- Live and other pages no longer show loading placeholders every time you open them when VALORANT is closed or Riot did not answer; they retry quietly in the background instead
+
 ## 4.0.0
 
 ### ✨ New

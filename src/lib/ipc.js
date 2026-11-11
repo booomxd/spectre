@@ -52,7 +52,11 @@ export function useInvoke(channel, args = [], { deps = [], poll, skip } = {}) {
       // Quiet polls that return the same payload keep the old state object, so the page does not re-render.
       setState(s => (quiet && !s.error && !s.loading && s.data != null && sameJson(s.data, data)) ? s : { data, error: null, loading: false })
     }
-    catch (e) { setState(s => ({ ...s, error: e.message, loading: false })) }
+    catch (e) {
+      // A failed request counts as loaded too, so revisiting the page retries quietly instead of showing skeletons.
+      if (forKey !== undefined) loadedFor.current = forKey
+      setState(s => ({ ...s, error: e.message, loading: false }))
+    }
   }, [channel, JSON.stringify(args)])
 
   useEffect(() => {
