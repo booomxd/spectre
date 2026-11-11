@@ -11,7 +11,7 @@ import logo from '../assets/spectre-logo.svg'
 const cx = (...c) => c.filter(Boolean).join(' ')
 const title = s => (s || '').toLowerCase().replace(/(^|\s)\S/g, c => c.toUpperCase())
 
-// Overlay settings, kept live: changes in the main window apply here right away.
+// Overlay settings, kept live: changes in the main window apply here right away
 function useOverlaySettings() {
   const [s, setS] = useState(null)
   useEffect(() => { invoke('settings:get').then(setS).catch(() => { }) }, [])
@@ -80,7 +80,7 @@ export default function Overlay() {
   const d = live.data
 
   useEffect(() => {
-    // color-scheme: normal too, so the dark theme's color-scheme never paints an opaque page behind the panel.
+    // color-scheme: normal too
     const root = document.documentElement.style
     const prev = [root.background, root.colorScheme, document.body.style.background]
     root.background = 'transparent'
@@ -108,12 +108,12 @@ export default function Overlay() {
 
   return (
     <div className='h-screen w-screen overflow-hidden p-1' style={{ zoom: scale }}>
-      {/* No backdrop blur and no motion beyond one fade: the overlay sits over the game and must stay cheap. */}
+      {/* no backdrop blur and no motion beyond one fade: the overlay sits over the game and must stay cheap */}
       <div className='relative h-full flex flex-col rounded-[20px] border border-line overflow-hidden anim-fade shadow-[inset_0_1px_0_rgb(255_255_255/0.08)]'
         style={{ background: `linear-gradient(180deg, rgb(var(--panel) / ${opacity}), rgb(var(--bg) / ${opacity}))` }}>
         <span className='absolute -top-16 left-1/2 -translate-x-1/2 w-56 h-24 rounded-full pointer-events-none' style={{ background: `radial-gradient(closest-side, rgb(var(--accent) / ${0.22 * opacity}), transparent)` }} />
         <div className={cx('relative flex items-center gap-2 pl-3 pr-1.5 h-10 shrink-0 select-none', !locked && 'cursor-move')} data-tauri-drag-region>
-          {/* Only the bar itself starts a window drag, so its labels let clicks through to it. */}
+          {/* only the bar itself starts a window drag */}
           <img decoding='async' src={logo} alt='' className='w-4 h-4 shrink-0 pointer-events-none' draggable={false} />
           <span className='pointer-events-none flex-1 min-w-0 truncate font-display text-[12.5px] font-bold tracking-tight text-text'>
             {inMatch ? `${d.map?.name || 'Match'} · ${queueName(d.queueId)}` : 'Spectre'}

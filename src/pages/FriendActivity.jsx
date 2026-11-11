@@ -6,14 +6,14 @@ import { useRiot } from '../lib/riot'
 import { cx, timeAgo } from './history/shared'
 import { ListLabel, ListRow, Pane, SearchField, SPLIT_BODY, SplitView } from './friends/Layout'
 
-// Feed: who joined, left or renamed on your friends list. Spectre checks every couple of minutes.
+// Feed: who joined, left or renamed on your friends list
 const KIND = {
   removed: { label: 'Removed', long: 'Friend removed', icon: FiUserMinus, tone: 'text-bad', soft: 'bg-bad/12 border-bad/30' },
   added: { label: 'Added', long: 'Friend added', icon: FiUserPlus, tone: 'text-good', soft: 'bg-good/12 border-good/30' },
   renamed: { label: 'Name changes', long: 'Name changed', icon: FiEdit2, tone: 'text-accent-2', soft: 'bg-accent-2/12 border-accent-2/30' },
 }
 
-// Day bucket for the timeline headers.
+// day bucket for the timeline headers
 function dayLabel(ms) {
   const d = new Date(ms), now = new Date()
   const days = Math.round((new Date(now.toDateString()) - new Date(d.toDateString())) / 86400000)

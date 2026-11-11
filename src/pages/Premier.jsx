@@ -20,7 +20,7 @@ export default function Premier({ active }) {
   const [form, setForm] = useState(null)
   const [busy, setBusy] = useState(false)
 
-  // Seed the form from the live presence once.
+  // seed the form from the live presence once
   const cur = presence.data?.current?.premierPresenceData
   useEffect(() => {
     if (form || !presence.data) return

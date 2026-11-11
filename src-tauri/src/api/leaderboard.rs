@@ -1,4 +1,4 @@
-// Competitive leaderboard for the player's shard and the current act.
+// competitive leaderboard for the player's shard and the current act
 use crate::api::known;
 use crate::core::error::{msg, Res};
 use crate::core::riot::now_ms;
@@ -41,7 +41,7 @@ async fn current_season(ctx: &Ctx) -> Res<Season> {
     Ok(s)
 }
 
-/// JS template-literal text of a value (`${v}`).
+/// JS template-literal text of a value (`${v}`)
 fn tpl(v: &Value) -> String {
     match v {
         Value::Null => "null".into(),
@@ -53,7 +53,7 @@ fn tpl(v: &Value) -> String {
     }
 }
 
-/// `{ k: src.k, ... }` where a missing source property stays undefined (left out of the JSON), like JS.
+/// `{ k: src.k, ... }` where a missing source property stays undefined (left out of the JSON), like JS
 fn put(o: &mut Map<String, Value>, k: &str, v: Option<&Value>) { if let Some(v) = v { o.insert(k.into(), v.clone()); } }
 
 pub fn register(reg: &mut Registry, _ctx: &Ctx) {
@@ -75,7 +75,7 @@ pub fn register(reg: &mut Registry, _ctx: &Ctx) {
             ok = k;
             if let Ok(f) = known::friend_puuids(&ctx).await { fr = f; }
         }
-        // Riot's response as-is; puuids are only passed on for you and your friends/party (click-through).
+        // Riot's response as-is
         let players: Vec<Value> = js::arr(&res["Players"]).iter().map(|p| {
             let anon = truthy(&p["IsAnonymized"]);
             let pu = p.get("puuid").and_then(Value::as_str);

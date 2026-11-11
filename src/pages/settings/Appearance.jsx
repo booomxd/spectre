@@ -4,8 +4,7 @@ import { Card, SectionTitle, Select, Toggle } from '../../ui'
 import { LANGS, useLang } from '../../lib/i18n'
 import { THEMES, getReduceMotion, getTheme, setReduceMotion, setTheme } from '../../lib/theme'
 
-// Mini glass app mock drawn with the theme's own tokens (data-theme scopes the CSS variables):
-// an opaque base with two soft color fields in the theme's colors, a floating glass dock, glass cards and an accent pill.
+// mini glass app mock drawn with the theme's own tokens (data-theme scopes the CSS variables): an opaque base with two soft color fields in the theme's colors, a floating glass dock, glass cards and an accent pill
 function Preview({ t }) {
   return (
     <div data-theme={t.id} className='relative isolate flex h-[104px] rounded-xl overflow-hidden border border-line bg-bg'>

@@ -1,5 +1,4 @@
-// Label translations: one row per English label, columns in the order of `cols`. Loaded only when a language other
-// than English is picked. To cover a new label, add a row with the exact English text as it appears on screen.
+// label translations: one row per English label, columns in the order of `cols`
 const RAW = `
 Home|首页|Главная|होम|ホーム|홈|Accueil|Inicio|Start|Início
 Live|实时|Матч|लाइव|ライブ|라이브|En direct|En vivo|Live|Ao vivo

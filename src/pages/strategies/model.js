@@ -1,8 +1,7 @@
-// Data model + geometry helpers + PNG rasterizer for the strategy board.
-// Board space is a 1000x1000 square (the map minimap); items store board coordinates.
+// data model + geometry helpers + PNG rasterizer for the strategy board
 import { invoke } from '../../lib/ipc'
 import { KIND_COLOR, ppmOf, utilGeom } from './utility'
-// PNG export text uses the app's font stack.
+// PNG export text uses the app's font stack
 const FONT = '"SF Pro Text", "SF Pro Display", "SF Pro", -apple-system, BlinkMacSystemFont, Inter, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif'
 
 export const SIZE = 1000
@@ -21,7 +20,7 @@ export const snapVal = (v) => Math.round(v / GRID) * GRID
 export const clamp = (v, a, b) => Math.max(a, Math.min(b, v))
 export const ease = (t) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
 
-// Ring colors: your team vs the enemy depend on which side you plan for.
+// ring colors: your team vs the enemy depend on which side you plan for
 export const teamColor = (team, side) => (team === 'enemy') === (side === 'attack') ? '#4cc9f0' : '#ff4655'
 
 export function arrowHead(x1, y1, x2, y2, w) {
@@ -31,7 +30,7 @@ export function arrowHead(x1, y1, x2, y2, w) {
   return [[x2, y2], [ax, ay], [bx, by]]
 }
 
-// Smooth freehand path through midpoints of the sampled points.
+// smooth freehand path through midpoints of the sampled points
 export function penPath(pts) {
   if (!pts.length) return ''
   if (pts.length === 1) return `M${pts[0][0]} ${pts[0][1]}l0.01 0`
@@ -63,7 +62,7 @@ export function bbox(it) {
   return [it.x - TOKEN_R, it.y - TOKEN_R, it.x + TOKEN_R, it.y + TOKEN_R]
 }
 
-// Interpolates between two steps for the play animation. Tokens present in both slide; everything else fades.
+// interpolates between two steps for the play animation
 export function blend(from, to, t) {
   const fm = new Map(from.map(i => [i.id, i]))
   const tm = new Set(to.map(i => i.id))
@@ -81,7 +80,7 @@ function loadImg(src) {
   return new Promise(res => { const i = new Image(); i.onload = () => res(i); i.onerror = () => res(null); i.src = src })
 }
 
-// Rasterizes one step to a PNG data URL (mirrors the SVG rendering in Board.jsx).
+// rasterizes one step to a PNG data URL
 export async function renderPng({ map, strat, step }) {
   const S = 1600, k = S / SIZE
   const urls = [map?.displayIcon, ...step.items.map(i => i.icon)].filter(Boolean)

@@ -9,7 +9,7 @@ import { invoke, openExternal, useInvoke } from '../lib/ipc'
 import { cx } from './history/shared'
 import { MemoModal } from './history/MemoEditor'
 
-// Notes: a notebook of sections, each with free notes, crosshair codes, links and chat snippets. Saved on this PC.
+// notes: a notebook of sections, each with free notes, crosshair codes, links and chat snippets
 const NOTES_MAX = 3000
 const ICONS = { note: FiFileText, target: FiCrosshair, map: FiMap, star: FiStar, flag: FiFlag, book: FiBookOpen, zap: FiZap, users: FiUsers }
 const COLORS = {
@@ -29,7 +29,7 @@ const TABS = [
   { value: 'links', label: 'Links', icon: FiLink },
   { value: 'snippets', label: 'Chat snippets', icon: FiMessageSquare },
 ]
-// One-line summary under a section name.
+// One-line summary under a section name
 const summary = x => {
   const n = (k, word) => x[k].length && `${x[k].length} ${word}${x[k].length > 1 ? 's' : ''}`
   const parts = [n('crosshairs', 'crosshair'), n('links', 'link'), n('snippets', 'snippet')].filter(Boolean)
@@ -43,7 +43,7 @@ function SectionIcon({ s, size = 'w-9 h-9' }) {
   return <span className={cx('shrink-0 rounded-xl flex items-center justify-center', size, (COLORS[s.color] || COLORS.accent).chip)}><Icon /></span>
 }
 
-// Color and icon picker for the current section.
+// color and icon picker for the current section
 function Appearance({ s, onChange }) {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
@@ -78,7 +78,7 @@ function Appearance({ s, onChange }) {
   )
 }
 
-// A list tab (crosshairs, links, snippets): add form on top, rows below.
+// A list tab (crosshairs, links, snippets): add form on top, rows below
 function ItemList({ items, empty, icon, fields, onAdd, onRemove, row }) {
   const [form, setForm] = useState({})
   const ready = fields.every(f => f.optional || (form[f.key] || '').trim())
@@ -122,9 +122,9 @@ export default function Memo({ params }) {
   const [renaming, setRenaming] = useState(false)
   const timer = useRef(null)
 
-  // Player notes still open here from Live Match, Friends and scoreboards.
+  // player notes still open here from Live Match, Friends and scoreboards
   const [target, setTarget] = useState(null)
-  // Keyed on the params object (a new one per navigate), so opening the same player again after closing works too.
+  // keyed on the params object
   useEffect(() => { if (params?.puuid) setTarget({ puuid: params.puuid, name: params.name || '' }) }, [params])
   const memos = useInvoke('memo:list', [], { skip: !target, deps: [target] })
   const memoMap = useMemo(() => Object.fromEntries((memos.data || []).map(m => [m.puuid, m])), [memos.data])
@@ -134,7 +134,7 @@ export default function Memo({ params }) {
     if (nb.data && !doc) { setDoc(nb.data); setCur(nb.data.sections[0]?.id) }
   }, [nb.data, doc])
 
-  // Every edit updates the page right away and saves after a short pause.
+  // every edit updates the page right away and saves after a short pause
   const pending = useRef(null)
   const commit = next => {
     setDoc(next)
@@ -147,7 +147,7 @@ export default function Memo({ params }) {
       setSaving(false)
     }, 500)
   }
-  // An edit still waiting for its debounce is saved on unmount instead of being dropped.
+  // an edit still waiting for its debounce is saved on unmount instead of being dropped
   useEffect(() => () => {
     clearTimeout(timer.current)
     if (pending.current) invoke('notebook:save', pending.current).catch(e => toast.error(e.message))

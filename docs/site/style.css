@@ -1,9 +1,7 @@
-/* The hidden attribute always wins over component display rules. */
+/* the hidden attribute always wins over component display rules */
 [hidden] { display: none !important; }
 
-/* Spectre website. Glass surfaces over a soft colour backdrop, matching the redesigned app.
-   Accent colours come from the eighteen app themes (site/boot.js sets them before first paint).
-   Motion uses transform and opacity only, and rests completely under prefers-reduced-motion. */
+/* Spectre website */
 
 @font-face {
   font-family: "Inter";
@@ -49,9 +47,7 @@
   --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 
-  /* Motion tokens. Every transition picks its speed from this scale, sized to what is moving:
-     a press answers at once, colours change fast, small controls move quicker than large surfaces,
-     and entrances take the longest. --ease arrives, --ease-in-out travels, --ease-spring overshoots a little. */
+  /* motion tokens */
   --dur-press: 0.1s;
   --dur-fast: 0.2s;
   --dur-ui: 0.3s;
@@ -70,8 +66,7 @@
   color-scheme: dark;
 }
 
-/* Theme changes. With view transitions the new colours open in a circle from the swatch (app.js drives the clip),
-   so the page is painted once per theme instead of on every frame. Other browsers ease the colours instead. */
+/* theme changes */
 @supports not (view-transition-name: none) {
   :root { transition: --accent 0.7s var(--ease), --accent-2 0.7s var(--ease), --accent-text 0.7s var(--ease), --btn-bg 0.7s var(--ease); }
 }
@@ -221,7 +216,7 @@ kbd { display: inline-block; min-width: 1.8em; padding: 0.05em 0.45em; border-ra
 .layer-b { left: -6%; bottom: 4%; width: 30%; transform: translate3d(calc(var(--mx) * 22px), calc(var(--p) * -150px + var(--my) * 16px), 90px); }
 .stage::before { content: ""; position: absolute; left: 50%; top: 10%; width: 80%; height: 70%; transform: translateX(-50%); background: radial-gradient(closest-side, color-mix(in oklab, var(--accent) 38%, transparent), transparent); filter: blur(40px); opacity: 0.8; pointer-events: none; }
 
-/* Page-load sequence: the copy settles, then the window rises. One orchestrated moment. */
+/* Page-load sequence: the copy settles, then the window rises */
 .js .hero-copy > *, .js .stage-inner { animation: rise var(--dur-reveal) var(--ease) both; }
 .js .hero-copy > :nth-child(2) { animation-delay: 0.06s; }
 .js .hero-copy > :nth-child(3) { animation-delay: 0.14s; }
@@ -255,7 +250,7 @@ kbd { display: inline-block; min-width: 1.8em; padding: 0.05em 0.45em; border-ra
 .shot-float img { border-radius: calc(var(--r-md) - 6px); }
 .shot-glow { box-shadow: var(--shadow), var(--glow); }
 
-/* A screenshot that hasn't been added yet shows a quiet window skeleton instead of a broken image. */
+/* A screenshot that hasn't been added yet shows a quiet window skeleton instead of a broken image */
 .shot.is-missing { cursor: default; }
 .shot.is-missing img { opacity: 0; }
 .shot.is-missing::before {
@@ -325,7 +320,7 @@ kbd { display: inline-block; min-width: 1.8em; padding: 0.05em 0.45em; border-ra
   box-shadow: 0 8px 20px -10px var(--sw), inset 0 -4px 8px rgb(0 0 0 / 0.25);
   transition: transform var(--dur-ui) var(--ease), box-shadow var(--dur-ui) ease;
 }
-/* The swatches pop in one after another when the section is revealed, then sit still so hover and press respond. */
+/* the swatches pop in one after another when the section is revealed, then sit still so hover and press respond */
 .js .seen .swatches button { animation: pop var(--dur-surface) var(--ease) backwards; animation-delay: calc(var(--i) * 30ms + 120ms); }
 @keyframes pop { from { opacity: 0; transform: translateY(6px) scale(0.9); } }
 .swatches button::after { content: ""; position: absolute; inset: -6px; border-radius: 50%; border: 2px solid var(--sw); opacity: 0; transform: scale(0.8); transition: opacity var(--dur-fast) ease, transform var(--dur-ui) var(--ease-spring); }
@@ -492,7 +487,7 @@ kbd { display: inline-block; min-width: 1.8em; padding: 0.05em 0.45em; border-ra
   .lb-nav { display: none; }
 }
 
-/* ---------- Touch: hover movement is for a mouse; a tap only gets the press feedback ---------- */
+/* ---------- Touch: hover movement is for a mouse */
 @media (hover: none), (pointer: coarse) {
   .btn:hover:not(:active), .pill:hover, .card:hover, .shot:hover:not(:active), .shot-card:hover:not(:active) { transform: none; }
   .shot:hover img, .brand:hover img, .card:hover .card-icon, .pill:hover .i { transform: none; }

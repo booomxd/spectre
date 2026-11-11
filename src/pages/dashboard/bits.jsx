@@ -1,7 +1,7 @@
 import { FiClock } from 'react-icons/fi'
 import { CUR, fmt, fmtDuration, useCountdown } from './catalog'
 
-// Currency amount with its icon.
+// currency amount with its icon
 export function Price({ amount, currencyId = CUR.vp, cat, size = 14, className = '', onArt = false }) {
   const icon = cat?.items.get(currencyId)?.icon
   return (
@@ -18,8 +18,7 @@ export function Countdown({ seconds, className = '' }) {
   return <span className={'inline-flex items-center gap-1.5 font-medium tabular-nums ' + className}><FiClock className='text-[0.9em]' />{fmtDuration(left)}</span>
 }
 
-// Item art box: a faint wash of the content tier color from the bottom, a soft floor shadow under the item and a thin
-// tier-colored edge. No blob glow.
+// item art box: a faint wash of the content tier color from the bottom, a soft floor shadow under the item and a thin tier-colored edge
 export function ItemArt({ item, className = '', imgClass = 'max-h-full max-w-full object-contain' }) {
   const color = item?.tier?.highlightColor ? '#' + item.tier.highlightColor.slice(0, 6) : null
   return (

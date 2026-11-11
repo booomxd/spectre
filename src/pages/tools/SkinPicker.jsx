@@ -3,14 +3,13 @@ import { FiCheck, FiSearch } from 'react-icons/fi'
 import { Badge, Empty, Input, Label, cx } from '../../ui'
 import { chromaOwned, isStandard, levelItemLabel, levelOwned, skinImage, skinOwned, tierColor, useContentTiers, lc } from './gear'
 
-// Image for the current selection: a chroma's render when a variant is picked, else the skin icon.
+// image for the current selection: a chroma's render when a variant is picked, else the skin icon
 export function selectionImage(skin, chromaId) {
   const c = skin?.chromas.find(x => lc(x.uuid) === lc(chromaId))
   return (c && c !== skin.chromas[0] && c.fullRender) || skinImage(skin)
 }
 
-// Owned-only skin picker for one weapon: skins grid + level and variant pickers.
-// value = { skinId, levelId, chromaId }; onChange gets the same shape.
+// Owned-only skin picker for one weapon: skins grid + level and variant pickers. value = { skinId, levelId, chromaId }
 export default function SkinPicker({ weapon, owned, value, onChange, maxHeight = 260 }) {
   const [q, setQ] = useState('')
   const tiers = useContentTiers()
@@ -21,8 +20,7 @@ export default function SkinPicker({ weapon, owned, value, onChange, maxHeight =
   const shown = skins.filter(s => s.displayName.toLowerCase().includes(q.toLowerCase()))
   const skin = weapon.skins.find(s => lc(s.uuid) === lc(value.skinId))
 
-  // The highest level you own. Picking a skin or a variant equips it at this level, so effects, finisher and
-  // variants work without choosing the level by hand first.
+  // the highest level you own
   const best = s => [...s.levels].reverse().find(l => levelOwned(s, l, owned)) || s.levels[0]
   const pick = s => onChange({ skinId: s.uuid, levelId: best(s).uuid, chromaId: s.chromas[0].uuid })
 

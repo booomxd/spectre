@@ -18,7 +18,7 @@ export function RatingIcon({ rating, className }) {
   return null
 }
 
-// Small badge shown next to a player who has a memo.
+// small badge shown next to a player who has a memo
 export function MemoBadge({ memo, onClick }) {
   if (!memo) return null
   return (
@@ -39,8 +39,7 @@ export function TagChip({ label, active, onClick }) {
   )
 }
 
-// Edit form shared by the Memo modal and the inline editor on the profile page.
-// target = { puuid?, name? }. Without a puuid the user enters a Riot ID which is looked up on save.
+// edit form shared by the Memo modal and the inline editor on the profile page. target = { puuid?, name? }
 export function MemoForm({ target, memo, onSaved, onDeleted, onCancel, allTags = [] }) {
   const [riotId, setRiotId] = useState('')
   const [tags, setTags] = useState(memo?.tags || [])
@@ -126,7 +125,7 @@ export function MemoForm({ target, memo, onSaved, onDeleted, onCancel, allTags =
   )
 }
 
-// Modal wrapper. `memos` is the { puuid: memo } map used to prefill.
+// modal wrapper
 export function MemoModal({ open, onClose, target, memos = {}, allTags, onChanged }) {
   const memo = target?.puuid ? memos[target.puuid] : null
   return (

@@ -1,4 +1,4 @@
-// Store wishlist, shared by every page: one cached list, updated by whichever page changes it.
+// Store wishlist, shared by every page: one cached list, updated by whichever page changes it
 import React, { useEffect, useState } from 'react'
 import { FiHeart } from 'react-icons/fi'
 import { invoke } from './ipc'
@@ -30,7 +30,7 @@ export function useWishlist() {
   }
 }
 
-// Heart in the corner of a skin tile. `id` is the skin's first level uuid, which is what the store lists.
+// heart in the corner of a skin tile
 export function WishButton({ id, name, className }) {
   const { has, toggle } = useWishlist()
   if (!id) return null

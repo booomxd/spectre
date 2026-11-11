@@ -25,7 +25,7 @@ function SkinsView({ active }) {
   const gun = loadout?.Guns.find(g => weapon && lc(g.ID) === lc(weapon.uuid))
   const current = gun && { skinId: gun.SkinID, levelId: gun.SkinLevelID, chromaId: gun.ChromaID }
 
-  // Start from what is equipped whenever the weapon changes.
+  // start from what is equipped whenever the weapon changes
   useEffect(() => { setSel(null) }, [weapon?.uuid])
   const value = sel || current
   const dirty = value && current && (lc(value.skinId) !== lc(current.skinId) || lc(value.levelId) !== lc(current.levelId) || lc(value.chromaId) !== lc(current.chromaId))

@@ -1,5 +1,4 @@
-// Discord Rich Presence over Discord's local IPC pipe (no dependencies).
-// Frame = int32 LE opcode + int32 LE length + JSON. Opcodes: 0 handshake, 1 frame, 2 close, 3 ping, 4 pong.
+// Discord Rich Presence over Discord's local IPC pipe
 use crate::api::scout;
 use crate::api::settings::{load, merge};
 use crate::core::error::{msg, Res};
@@ -25,7 +24,7 @@ fn queue_name(q: &str) -> Option<&'static str> {
     })
 }
 fn pipe(n: u32) -> String { format!(r"\\?\pipe\discord-ipc-{n}") }
-// Spectre's own Discord application; its name is what friends see after "Playing". Public, not a secret.
+// Spectre's own Discord application
 const APP_ID: &str = "1566720776202231818";
 fn cap(s: &str) -> String {
     let mut c = s.chars();
@@ -34,7 +33,7 @@ fn cap(s: &str) -> String {
 
 // ---- JS string conversions for the activity text ----
 
-/// `${v}` in a template literal (None = undefined).
+/// `${v}` in a template literal (None = undefined)
 fn tpl(v: Option<&Value>) -> String {
     match v {
         None => "undefined".into(),
@@ -46,7 +45,7 @@ fn tpl(v: Option<&Value>) -> String {
         Some(Value::Object(_)) => "[object Object]".into(),
     }
 }
-/// How Array.prototype.join stringifies an element (null / undefined become "").
+/// how Array.prototype.join stringifies an element
 fn join_str(v: Option<&Value>) -> String { match v { None | Some(Value::Null) => String::new(), _ => tpl(v) } }
 fn num_str(f: f64) -> String { if f.fract() == 0.0 && f.abs() < 1e21 { format!("{}", f as i64) } else { format!("{f}") } }
 
@@ -83,7 +82,7 @@ fn frame(op: i32, data: &Value) -> Vec<u8> {
     out
 }
 
-/// Fire-and-forget write (Node's socket.write: errors only surface on the ignored 'error' event).
+/// Fire-and-forget write
 async fn write(w: &Writer, bytes: Vec<u8>) {
     let mut w = w.lock().await;
     let _ = w.write_all(&bytes).await;
@@ -95,7 +94,7 @@ fn drop_conn(st: &mut St) {
     for (_, p) in st.pending.drain() { let _ = p.send(Err("Disconnected".into())); }
 }
 
-/// s.destroy(): closes the pipe; its 'close' handler drops the state if it is still the current socket.
+/// s.destroy(): closes the pipe
 fn destroy(id: u64) {
     let mut st = ST.lock().unwrap();
     if st.sock.as_ref().map(|s| s.id) == Some(id) {
@@ -141,7 +140,7 @@ async fn reader(id: u64, mut r: ReadHalf<NamedPipeClient>, w: Writer) {
     destroy(id);
 }
 
-/// Registers a waiter for `key` before the request is written.
+/// registers a waiter for `key` before the request is written
 fn wait_for(key: &str) -> oneshot::Receiver<Result<Value, String>> {
     let (tx, rx) = oneshot::channel();
     ST.lock().unwrap().pending.insert(key.to_string(), tx);
@@ -205,7 +204,7 @@ async fn send(activity: Value) -> Res<Value> {
     await_reply(&nonce, res).await
 }
 
-/// Clears the activity, then closes the pipe.
+/// clears the activity, then closes the pipe
 async fn close() {
     let cur = ST.lock().unwrap().sock.as_ref().map(|s| (s.id, s.w.clone()));
     if let Some((id, w)) = cur {
@@ -222,14 +221,14 @@ async fn close() {
 
 // ---- presence -> activity ----
 
-/// Own presence -> parsed object, or null when VALORANT is not running.
+/// own presence -> parsed object, or null when VALORANT is not running
 async fn my_presence(ctx: &Ctx) -> Res<Value> {
     let r = ctx.riot.local("get", "chat/v4/presences", None).await?;
     let Some(list) = r["presences"].as_array() else { return Err(msg("Cannot read properties of undefined (reading 'filter')")) };
     let puuid = ctx.riot.state().puuid;
     let mine: Vec<&Value> = list.iter().filter(|p| puuid.as_deref().is_some_and(|id| p["puuid"] == id) && truthy(&p["private"])).collect();
     let Some(me) = mine.iter().find(|p| p["product"] == "valorant").or(mine.first()) else { return Ok(Value::Null) };
-    // Buffer.from(x, 'base64') is lenient: skips whitespace and accepts missing padding.
+    // Buffer.from(x, 'base64') is lenient: skips whitespace and accepts missing padding
     let b64: String = js::s(&me["private"]).chars().filter(|c| !c.is_whitespace()).collect();
     let lenient = base64::engine::GeneralPurpose::new(&base64::alphabet::STANDARD,
         base64::engine::GeneralPurposeConfig::new().with_decode_padding_mode(base64::engine::DecodePaddingMode::Indifferent).with_decode_allow_trailing_bits(true));
@@ -244,7 +243,7 @@ fn title_case(s: &str) -> String {
     s.to_lowercase().chars().map(|c| { let up = word(c) && !prev; prev = word(c); if up { c.to_ascii_uppercase() } else { c } }).collect()
 }
 
-/// Rank names and icons from the current tier table.
+/// rank names and icons from the current tier table
 async fn tier_info(ctx: &Ctx, tier: &Value) -> Value {
     if !truthy(tier) { return Value::Null; }
     let Ok(eps) = ctx.riot.val_api("competitivetiers").await else { return Value::Null };
@@ -264,7 +263,7 @@ async fn rank_obj(ctx: &Ctx, tier: Value, rr: Value) -> Value {
     Value::Object(o)
 }
 
-// Own rank (current act + RR, peak), cached for five minutes.
+// own rank (current act + RR, peak), cached for five minutes
 static RANK_CACHE: Lazy<Mutex<(i64, Value)>> = Lazy::new(|| Mutex::new((0, Value::Null)));
 async fn my_rank(ctx: &Ctx) -> Value {
     { let c = RANK_CACHE.lock().unwrap(); if now_ms() - c.0 < 300000 { return c.1.clone(); } }
@@ -276,7 +275,7 @@ async fn my_rank(ctx: &Ctx) -> Value {
     value
 }
 
-// The agent you're playing, from the live match (presence doesn't carry it).
+// the agent you're playing, from the live match
 static AGENT_CACHE: Lazy<Mutex<(Value, Value)>> = Lazy::new(|| Mutex::new((Value::Null, Value::Null)));
 async fn my_agent(ctx: &Ctx) -> Value {
     let puuid = ctx.riot.puuid();
@@ -297,7 +296,7 @@ async fn my_agent(ctx: &Ctx) -> Value {
 }
 
 fn put(o: &mut Map<String, Value>, k: &str, v: Option<&Value>) -> bool {
-    // An undefined value still counts as a key for Object.keys, but JSON drops it.
+    // an undefined value still counts as a key for Object.keys, but JSON drops it
     if let Some(v) = v { o.insert(k.into(), v.clone()); }
     true
 }
@@ -342,7 +341,7 @@ fn format(s: &Value, cfg: &Value) -> Value {
     put(&mut activity, "details", details.as_ref());
     if !parts.is_empty() { activity.insert("state".into(), json!(parts.join(" · "))); }
     if truthy(&cfg["showElapsed"]) && truthy(&s["start"]) { activity.insert("timestamps".into(), json!({ "start": s["start"] })); }
-    // Large image: agent (if chosen), else the map; the rank icon fills it when free, else sits in the small slot.
+    // large image: agent (if chosen), else the map
     let large: Option<(Option<&Value>, Option<&Value>)> = if truthy(&cfg["showAgent"]) && truthy(&cfg["agentImage"]) && truthy(&s["agent"]) && ingame {
         Some((s["agent"].get("icon"), s["agent"].get("name")))
     } else if truthy(&cfg["showMap"]) && truthy(&s["map"]["image"]) && ingame {
@@ -361,7 +360,7 @@ fn format(s: &Value, cfg: &Value) -> Value {
     Value::Object(activity)
 }
 
-/// Snapshot of your current session from your own VALORANT presence (null when VALORANT is closed).
+/// snapshot of your current session from your own VALORANT presence
 async fn snapshot(ctx: &Ctx, cfg: &Value) -> Value {
     let pv = my_presence(ctx).await.unwrap_or(Value::Null);
     if !truthy(&pv) { return Value::Null; }
@@ -411,7 +410,7 @@ async fn snapshot(ctx: &Ctx, cfg: &Value) -> Value {
 
 async fn build(ctx: &Ctx, cfg: &Value) -> Value { format(&snapshot(ctx, cfg).await, cfg) }
 
-/// Sample sessions for the preview tabs, using your real rank when available.
+/// sample sessions for the preview tabs, using your real rank when available
 async fn scenario(ctx: &Ctx, name: &Value) -> Value {
     let (maps, agents, r) = tokio::join!(ctx.riot.val_api("maps"), ctx.riot.val_api("agents?isPlayableCharacter=true"), my_rank(ctx));
     let (maps, agents) = (js::arr(&maps.unwrap_or(Value::Null)), js::arr(&agents.unwrap_or(Value::Null)));
@@ -460,7 +459,7 @@ fn stop_loop() { if let Some(t) = ST.lock().unwrap().timer.take() { t.abort(); }
 fn start_loop(ctx: &Ctx) {
     stop_loop();
     let ctx = ctx.clone();
-    // tick() now, then every 15 s, without waiting for the previous one (setInterval).
+    // tick() now, then every 15 s, without waiting for the previous one
     let h = tokio::spawn(async move {
         loop {
             tokio::spawn(tick(ctx.clone()));
@@ -489,7 +488,7 @@ fn set_enabled(ctx: &Ctx, on: bool) -> Res<()> {
     let discord = merge(&cur["discord"], &json!({ "enabled": on }));
     let next = merge(&cur, &json!({ "discord": discord }));
     ctx.riot.write_store("settings", &next)?;
-    // The Discord page's switch reads the settings, so tell the UI the saved value changed.
+    // the Discord page's switch reads the settings
     ctx.emit("settings:changed", next);
     Ok(())
 }
@@ -497,7 +496,7 @@ fn set_enabled(ctx: &Ctx, on: bool) -> Res<()> {
 pub fn register(reg: &mut Registry, ctx: &Ctx) {
     reg.add("discord:status", |ctx, _| async move { Ok(status(&ctx)) });
 
-    // The activity for a sample scenario ('competitive', 'deathmatch', ...), or as it would be sent right now ('live').
+    // the activity for a sample scenario ('competitive', 'deathmatch', ...), or as it would be sent right now
     reg.add("discord:preview", |ctx, a: Args| async move {
         let name = a.0.first().cloned().unwrap_or(json!("live")); // default parameter: only when the argument is missing
         let cfg = load(&ctx)["discord"].clone();
@@ -505,7 +504,7 @@ pub fn register(reg: &mut Registry, ctx: &Ctx) {
         Ok(json!({ "activity": activity }))
     });
 
-    // Enables presence and connects now.
+    // enables presence and connects now
     reg.add("discord:connect", |ctx, _| async move {
         set_enabled(&ctx, true)?;
         ST.lock().unwrap().last_error = None;
@@ -526,7 +525,7 @@ pub fn register(reg: &mut Registry, ctx: &Ctx) {
         Ok(status(&ctx))
     });
 
-    // Resume on app start when it was enabled.
+    // resume on app start when it was enabled
     if truthy(&load(ctx)["discord"]["enabled"]) {
         let ctx = ctx.clone();
         crate::core::spawn(async move {

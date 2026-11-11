@@ -8,17 +8,17 @@ import { partyLabel } from './util'
 const cx = (...c) => c.filter(Boolean).join(' ')
 const title = s => (s || '').toLowerCase().replace(/(^|\s)\S/g, c => c.toUpperCase())
 
-// A rank at or above Platinum 1 on an account under this level is worth a second look.
+// A rank at or above Platinum 1 on an account under this level is worth a second look
 const LOW_LEVEL = 40
 const HIGH_RANK = 15
 
 const ranked = ps => ps.filter(p => p.ranked && p.rank > 0)
-// Average rank as a decimal tier (RR counts as the fraction), so two teams can be compared closer than a whole division.
+// average rank as a decimal tier
 const mean = ps => {
   const r = ranked(ps)
   return r.length ? r.reduce((a, p) => a + p.rank + Math.min(99, Math.max(0, p.rr || 0)) / 100, 0) / r.length : 0
 }
-// Premade sizes on one side, biggest first: [3, 2] for a trio and a duo.
+// premade sizes on one side, biggest first: [3, 2] for a trio and a duo
 const stacks = ps => {
   const by = new Map()
   ps.forEach(p => { if (p.partySize >= 2 && p.party != null) by.set(p.party, Math.max(by.get(p.party) || 0, p.partySize)) })
@@ -26,7 +26,7 @@ const stacks = ps => {
 }
 const top = ps => ranked(ps).reduce((best, p) => (!best || p.rank > best.rank || (p.rank === best.rank && p.rr > best.rr) ? p : best), null)
 const lowLevel = ps => ps.filter(p => p.level != null && p.level > 0 && p.level < LOW_LEVEL && p.rank >= HIGH_RANK)
-// Streamer-mode players are only ever called by their agent.
+// Streamer-mode players are only ever called by their agent
 const who = p => (p.hidden || !p.gameName ? p.agent?.name || 'Player' : p.gameName)
 
 function Cell({ icon: Icon, label, children, tone }) {
@@ -47,8 +47,7 @@ function Side({ tone, children }) {
   )
 }
 
-// A quick read of the lobby from what Live Match already shows: which side is ranked higher, who queued together,
-// the highest rank on each side, and high ranks on low-level accounts. Facts only; it never calls anyone a smurf.
+// A quick read of the lobby from what Live Match already shows: which side is ranked higher, who queued together, the highest rank on each side, and high ranks on low-level accounts
 export default function LobbyRead({ players, pregame }) {
   const tiers = useTiers()
   const name = t => title(tiers?.[t]?.tierName) || 'Unranked'

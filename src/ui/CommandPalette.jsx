@@ -1,5 +1,4 @@
-// Ctrl+K command palette. Generic: the shell passes the items, so this file has no dependency on the page list.
-// item: { id, label, group, icon?, hint?, keywords?, run() }
+// Ctrl+K command palette
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { FiCornerDownLeft, FiSearch } from 'react-icons/fi'
@@ -13,7 +12,7 @@ function score(item, q) {
   const label = item.label.toLowerCase()
   if (label.startsWith(q)) return 3
   if (label.includes(q)) return 2
-  // Every query word appears somewhere.
+  // every query word appears somewhere
   return q.split(/\s+/).every(w => hay.includes(w)) ? 1 : 0
 }
 
@@ -24,7 +23,7 @@ function Panel({ items, onClose }) {
   const query = q.trim().toLowerCase()
   const shown = useMemo(() => items.map(i => [i, score(i, query)]).filter(([, s]) => s > 0)
     .sort((a, b) => b[1] - a[1]).map(([i]) => i).slice(0, 40), [items, query])
-  // Group in first-appearance order, keeping one flat index for keyboard selection.
+  // group in first-appearance order, keeping one flat index for keyboard selection
   const groups = useMemo(() => {
     const g = new Map()
     shown.forEach(i => { const k = query ? 'Results' : i.group || 'Go to'; if (!g.has(k)) g.set(k, []); g.get(k).push(i) })
@@ -39,7 +38,7 @@ function Panel({ items, onClose }) {
     if (e.key === 'ArrowDown') { e.preventDefault(); setSel(s => Math.min(flat.length - 1, s + 1)) }
     else if (e.key === 'ArrowUp') { e.preventDefault(); setSel(s => Math.max(0, s - 1)) }
     else if (e.key === 'Enter') { e.preventDefault(); flat[sel] && run(flat[sel]) }
-    // stopPropagation: Escape closes only the palette, not a modal underneath it.
+    // stopPropagation: Escape closes only the palette, not a modal underneath it
     else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); onClose() }
   }
   let n = -1

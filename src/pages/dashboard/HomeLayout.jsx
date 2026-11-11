@@ -1,5 +1,4 @@
-// Home, top to bottom: a hero with your overview and what you're doing right now, then today's shop beside the
-// friends who are online. The smaller tiles (trend, session, form, pass, wallet) follow in Dashboard.jsx.
+// Home, top to bottom: a hero with your overview and what you're doing right now, then today's shop beside the friends who are online
 import { FiArrowUpRight, FiClock, FiMessageSquare, FiUsers, FiWifi } from 'react-icons/fi'
 import { Card, Badge, Skeleton, Empty, cx } from '../../ui'
 import { contentPath, useContent, useTiers } from '../../lib/content'
@@ -18,7 +17,7 @@ function greeting() {
   const h = new Date().getHours()
   return h < 5 ? 'Late night' : h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening'
 }
-// Long names (and wide CJK names) step down so they never push the hero wider.
+// long names (and wide CJK names) step down so they never push the hero wider
 function nameSize(name = '') {
   const w = [...name].reduce((n, ch) => n + (/[⺀-￯]/.test(ch) ? 1.8 : 1), 0)
   return w <= 10 ? 50 : w <= 14 ? 42 : w <= 20 ? 34 : 28
@@ -30,7 +29,7 @@ const Arrow = () => (
   </span>
 )
 
-// Days until the current act ends, from the season list.
+// days until the current act ends, from the season list
 function useActDaysLeft() {
   const seasons = useContent('seasons')
   const now = Date.now()
@@ -47,7 +46,7 @@ function Stat({ label, children, loading }) {
   )
 }
 
-// What the party is doing, in the game's own words.
+// what the party is doing, in the game's own words
 function sessionOfParty(riot, party) {
   if (!riot.connected) return { label: 'Riot Client closed', tone: 'bg-muted' }
   const p = party.data
@@ -215,7 +214,7 @@ export function ShopCard({ store, cat }) {
 
 const STATE = { menus: 'In menus', queue: 'In queue', pregame: 'Agent select', ingame: 'In match', away: 'Away' }
 
-// "5m ago", "3h ago", "4d ago", "2mo ago" from a ms timestamp.
+// "5m ago", "3h ago", "4d ago", "2mo ago" from a ms timestamp
 const ago = (ts) => {
   const t = Number(ts); if (!t) return null
   const m = Math.max(1, Math.round((Date.now() - t) / 60000))
@@ -227,7 +226,7 @@ export function FriendsPanel({ friends }) {
   const all = friends.data || []
   const isOn = f => f.online && f.product === 'valorant'
   const online = all.filter(isOn)
-  // Everyone else, most recently seen first. Capped so a huge list stays cheap; the arrow opens the full Friends page.
+  // everyone else, most recently seen first
   const offline = all.filter(f => !isOn(f)).sort((a, b) => (Number(b.lastOnline) || 0) - (Number(a.lastOnline) || 0))
   return (
     <Card className='h-full p-6 flex flex-col lg:absolute lg:inset-0'>

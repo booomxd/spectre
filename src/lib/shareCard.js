@@ -1,20 +1,18 @@
-// Share card: draws one match as a 1200x630 image (the size Discord shows inline) and puts it on the clipboard, so it
-// can be pasted straight into a chat. If the clipboard refuses, the image is saved to Pictures\Spectre instead.
+// share card: draws one match as a 1200x630 image (the size Discord shows inline) and puts it on the clipboard
 import { invoke } from './ipc'
 
 const W = 1200, H = 630
 const FONT = '"Inter Variable", "Inter", "Segoe UI", system-ui, sans-serif'
 const TONE = { win: ['#3ddc84', 'VICTORY'], loss: ['#ff5c6c', 'DEFEAT'], draw: ['#f5b942', 'DRAW'] }
 
-// Remote art needs CORS to be drawn and exported; a missing picture just leaves its spot empty.
+// remote art needs CORS to be drawn and exported
 const load = src => new Promise(done => {
   if (!src) return done(null)
   const img = new Image()
   img.crossOrigin = 'anonymous'
   img.onload = () => done(img)
   img.onerror = () => done(null)
-  // The app has usually shown this picture already, and that cached copy was fetched without CORS, so asking for
-  // the same address again is refused. A query string makes it a separate request that does carry the CORS header.
+  // the app has usually shown this picture already, and that cached copy was fetched without CORS
   img.src = /^https?:/.test(src) ? src + (src.includes('?') ? '&' : '?') + 'share=1' : src
 })
 
@@ -39,7 +37,7 @@ export async function drawMatchCard(info, art) {
   const x = c.getContext('2d')
   const [tone, word] = TONE[info.result] || TONE.draw
 
-  // Backdrop: the map, darkened towards the left so the text stays readable.
+  // backdrop: the map, darkened towards the left so the text stays readable
   x.fillStyle = '#0b0b12'
   x.fillRect(0, 0, W, H)
   if (splash) { x.globalAlpha = 0.85; cover(x, splash, 0, 0, W, H); x.globalAlpha = 1 }
@@ -49,27 +47,27 @@ export async function drawMatchCard(info, art) {
   g = x.createLinearGradient(0, H * 0.45, 0, H)
   g.addColorStop(0, 'rgba(8,8,14,0)'); g.addColorStop(1, 'rgba(8,8,14,0.9)')
   x.fillStyle = g; x.fillRect(0, 0, W, H)
-  // Result colour: a soft wash and a bar on the left edge.
+  // result colour: a soft wash and a bar on the left edge
   g = x.createRadialGradient(0, H / 2, 0, 0, H / 2, 620)
   g.addColorStop(0, tone + '40'); g.addColorStop(1, tone + '00')
   x.fillStyle = g; x.fillRect(0, 0, W, H)
   x.fillStyle = tone; rounded(x, 0, 70, 8, H - 140, 4); x.fill()
 
   x.textBaseline = 'alphabetic'
-  // Header: wordmark on the left, mode and date on the right.
+  // header: wordmark on the left, mode and date on the right
   if (logo) x.drawImage(logo, 64, 52, 40, 40)
   x.fillStyle = '#ffffff'; x.font = `700 26px ${FONT}`; x.fillText('SPECTRE', logo ? 116 : 64, 82)
   x.textAlign = 'right'; x.fillStyle = 'rgba(255,255,255,0.7)'; x.font = `500 22px ${FONT}`
   x.fillText([info.mode, info.when].filter(Boolean).join('  ·  '), W - 64, 82)
   x.textAlign = 'left'
 
-  // Result, score and map.
+  // result, score and map
   x.fillStyle = tone; x.font = `800 104px ${FONT}`; x.fillText(word, 60, 250)
   const wordW = x.measureText(word).width
   if (info.score) { x.fillStyle = '#ffffff'; x.font = `700 64px ${FONT}`; x.fillText(info.score, 60 + wordW + 36, 246) }
   x.fillStyle = 'rgba(255,255,255,0.85)'; x.font = `600 34px ${FONT}`; x.fillText(info.map || '', 64, 304)
 
-  // Agent portrait and player.
+  // agent portrait and player
   const ay = 356
   x.save(); rounded(x, 64, ay, 112, 112, 26); x.clip()
   x.fillStyle = 'rgba(255,255,255,0.08)'; x.fillRect(64, ay, 112, 112)
@@ -80,7 +78,7 @@ export async function drawMatchCard(info, art) {
   x.fillStyle = 'rgba(255,255,255,0.65)'; x.font = `500 24px ${FONT}`
   x.fillText(info.name ? info.agent || '' : '', 200, ay + 88)
 
-  // Rank and RR change on the right of the player line.
+  // rank and RR change on the right of the player line
   if (info.rr != null || rank) {
     let rx = W - 64
     x.textAlign = 'right'
@@ -95,7 +93,7 @@ export async function drawMatchCard(info, art) {
     x.textAlign = 'left'
   }
 
-  // Stat strip.
+  // stat strip
   const stats = [['K / D / A', info.kda], ['K/D', info.kd], ['ACS', info.acs], ['HS', info.hs], ['ADR', info.adr]].filter(s => s[1] != null && s[1] !== '')
   const sy = 508, sw = (W - 128) / Math.max(stats.length, 1)
   x.fillStyle = 'rgba(255,255,255,0.07)'; rounded(x, 64, sy, W - 128, 86, 22); x.fill()
@@ -116,7 +114,7 @@ const toBase64 = blob => new Promise((done, fail) => {
   r.readAsDataURL(blob)
 })
 
-// Copies the card to the clipboard. Returns 'copied', or 'saved' when it had to fall back to a file.
+// copies the card to the clipboard
 export async function shareCard(blob, fileName) {
   try {
     await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])

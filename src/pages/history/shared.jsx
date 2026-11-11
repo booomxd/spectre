@@ -4,14 +4,14 @@ import { useContent, useTiers } from '../../lib/content'
 import { useInvoke } from '../../lib/ipc'
 import { navigate } from '../../nav'
 
-// Opens a player's profile in Player Search. Hidden players never carry a puuid, so they can't be opened.
+// opens a player's profile in Player Search
 export function openPlayer(p) {
   if (p?.puuid) navigate('search', { puuid: p.puuid })
 }
 
 export const cx = (...c) => c.filter(Boolean).join(' ')
 
-// valorant-api content lookups, keyed for fast access.
+// valorant-api content lookups, keyed for fast access
 export function useAgents() {
   const list = useContent('agents?isPlayableCharacter=true')
   return useMemo(() => Object.fromEntries((list || []).map(a => [a.uuid, a])), [list])
@@ -35,7 +35,7 @@ export function seasonName(seasons, id) {
   return parent ? `${shortEpisode(parent.displayName)} ${shortAct(s.displayName)}` : s.displayName
 }
 
-// "ACT II" -> "A2", "EPISODE 9" -> "E9", "V26" stays "V26".
+// "ACT II" -> "A2", "EPISODE 9" -> "E9", "V26" stays "V26"
 const ROMAN = { I: 1, V: 5, X: 10 }
 const fromRoman = r => [...r].reduce((n, c, i, a) => n + (ROMAN[c] < (ROMAN[a[i + 1]] || 0) ? -ROMAN[c] : ROMAN[c]), 0)
 const shortAct = name => { const m = /^ACT\s+([IVX]+)$/i.exec(name.trim()); return m ? `A${fromRoman(m[1].toUpperCase())}` : name }
@@ -60,7 +60,7 @@ export const RESULT = {
 
 export const riotId = n => (n ? `${n.gameName}#${n.tagLine}` : '')
 
-// Display label for a player: Riot ID, or the agent name when the name is hidden.
+// display label for a player: Riot ID, or the agent name when the name is hidden
 export function playerLabel(p, agents) {
   return p.name ? riotId(p.name) : agents[p.agent]?.displayName || 'Hidden player'
 }
@@ -81,7 +81,7 @@ export function TierIcon({ tier, size = 28, showName }) {
   return (
     <span className='inline-flex items-center gap-2' title={t.tierName}>
       <img decoding='async' src={t.smallIcon} alt={t.tierName} style={{ width: size, height: size }} draggable={false} />
-      {/* .tier-text keeps the tier color readable on the light theme. */}
+      {/* .tier-text keeps the tier color readable on the light theme */}
       {showName && <span className='tier-text text-[12px] font-semibold' style={{ '--tier': `#${t.color.slice(0, 6)}` }}>{t.tierName}</span>}
     </span>
   )
@@ -89,7 +89,7 @@ export function TierIcon({ tier, size = 28, showName }) {
 
 export const kd = (k, d) => (d ? k / d : k).toFixed(2)
 
-// All saved memos as a { puuid: memo } map.
+// all saved memos as a { puuid: memo } map
 export function useMemos(skip) {
   const { data, reload } = useInvoke('memo:list', [], { skip })
   const map = useMemo(() => Object.fromEntries((data || []).map(m => [m.puuid, m])), [data])

@@ -36,7 +36,7 @@ function Chip({ p, people, memo, agents, onMemo }) {
   )
 }
 
-// One recent match: map banner on the left, the people in it on the right.
+// one recent match: map banner on the left, the people in it on the right
 function MatchCard({ m, people, memoMap, agents, maps, onMemo }) {
   const R = RESULT[m.result]
   const map = maps[m.mapId]

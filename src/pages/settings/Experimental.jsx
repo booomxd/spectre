@@ -1,5 +1,4 @@
-// Settings > Experimental: the profile tools (Rank Editor, Profile, Premier, Status) behind a warning and an opt-in switch.
-// The switch is stored as `experimental` in the settings store (top-level keys merge in settings:set). Off by default.
+// Settings > Experimental: the profile tools (Rank Editor, Profile, Premier, Status) behind a warning and an opt-in switch
 import { FiAlertTriangle } from 'react-icons/fi'
 import { Card, PageContext, SegmentedTabs, Swap, Toggle } from '../../ui'
 import { EXPERIMENTAL } from './tools'

@@ -1,6 +1,4 @@
-// In-app announcements. The list comes from the website (see src-tauri/src/api/announce.rs), checked at startup and
-// every three hours. Each announcement opens once as a popup in the middle of the app; once closed it never shows
-// again on that PC. Closing Spectre while it is open means it shows again on the next start.
+// In-app announcements
 //
 // docs/announcements.json entry:
 //   { "id": "unique-id", "title": "Short title", "body": "Plain text, line breaks kept",
@@ -27,7 +25,7 @@ const time = (v, end) => {
   if (v == null || v === '') return null
   const t = typeof v === 'number' ? v : Date.parse(v)
   if (Number.isNaN(t)) return null
-  // A bare date ("2026-11-20") as "until" lasts through that whole day.
+  // A bare date ("2026-11-20") as "until" lasts through that whole day
   return end && typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) ? t + 864e5 - 1 : t
 }
 const https = u => (typeof u === 'string' && /^https:\/\//i.test(u) ? u : null)
@@ -59,7 +57,7 @@ export default function Announcements() {
   }
   const open = () => { const l = https(a?.link); if (l) openExternal(l); close() }
 
-  // Escape closes; focus moves into the popup so keyboard users land on it.
+  // Escape closes; focus moves into the popup so keyboard users land on it
   useEffect(() => {
     if (!a) return
     const onKey = e => { if (e.key === 'Escape') close() }

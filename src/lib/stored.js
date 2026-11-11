@@ -1,5 +1,4 @@
-// useState that remembers its value between launches (localStorage). For small view choices such as a filter or the
-// selected tab; `allowed` (optional) rejects a saved value that no longer exists.
+// useState that remembers its value between launches
 import { useCallback, useState } from 'react'
 
 const read = (key, fallback, allowed) => {

@@ -6,7 +6,7 @@ import logo from '../assets/spectre-logo.svg'
 
 const fmt = d => d ? new Date(d).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : ''
 
-// Latest VALORANT patch: full-bleed art with the title over it.
+// latest VALORANT patch: full-bleed art with the title over it
 function Featured({ n }) {
   return (
     <Card hover className='group overflow-hidden relative rounded-3xl' onClick={() => openExternal(n.url)}>
@@ -44,7 +44,7 @@ function NoteRow({ n, index }) {
   )
 }
 
-// Minimal Markdown for GitHub release notes: headings, bullet lists, paragraphs, **bold**, _italic_, `code`, [links](url).
+// minimal Markdown for GitHub release notes: headings, bullet lists, paragraphs, **bold**, _italic_, `code`, [links]
 function inline(text) {
   const out = []
   const re = /(\*\*[^*]+\*\*|_[^_]+_|\*[^*]+\*|`[^`]+`|\[[^\]]+\]\([^)]+\))/g
@@ -80,7 +80,7 @@ function Markdown({ text }) {
   return <div className='flex flex-col gap-2.5 text-[13px] text-muted leading-relaxed'>{blocks}</div>
 }
 
-// Spectre's own releases from GitHub, newest first, on a timeline; the newest is expanded.
+// Spectre's own releases from GitHub, newest first, on a timeline
 function SpectreNotes() {
   const { data, error, loading, reload } = useInvoke('spectre:releases')
   const status = useInvoke('update:status')

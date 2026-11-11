@@ -1,4 +1,4 @@
-// Patch notes list from playvalorant.com's public news page data (title, date, image, short blurb only).
+// patch notes list from playvalorant.com's public news page data
 use crate::core::error::{msg, Res};
 use crate::core::{js, truthy, Args, Ctx, Registry};
 use futures::future::{BoxFuture, FutureExt, Shared};
@@ -42,7 +42,7 @@ async fn fetch_notes(ctx: Ctx) -> Res<Value> {
         Value::Object(n)
     }).filter(|n| truthy(&n["title"]) && n["url"] != BASE).collect();
     if out.is_empty() { return Err(msg("No patch notes found")); }
-    // new Date(x): null -> 0, unparseable -> NaN (compares as equal).
+    // new Date(x): null -> 0, unparseable -> NaN
     let time = |v: &Value| -> f64 { if v.is_null() { 0.0 } else { js::parse_date(v).map(|t| t as f64).unwrap_or(f64::NAN) } };
     out.sort_by(|a, b| (time(&b["date"]) - time(&a["date"])).partial_cmp(&0.0).unwrap_or(std::cmp::Ordering::Equal));
     Ok(Value::Array(out))

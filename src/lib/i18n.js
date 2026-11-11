@@ -1,7 +1,4 @@
-// Languages. Spectre's screens are written in English. For another language a small translator swaps the labels it
-// knows as they appear on the page (text, and title / placeholder / aria-label), so no screen needs its own wiring and
-// new screens are covered as soon as their labels are in the table (src/locales/table.js).
-// Text it doesn't know stays in English. Anything inside translate="no" (chat messages, names) is never touched.
+// languages
 import { useEffect, useState } from 'react'
 
 export const LANGS = [
@@ -18,7 +15,7 @@ const texts = new WeakMap() // text node -> { src, out }
 const attrs = new WeakMap() // element -> { [attr]: { src, out } }
 const subs = new Set()
 
-// Translates the label inside `s`, keeping the spaces around it. null when the label isn't in the table.
+// translates the label inside `s`, keeping the spaces around it. null when the label isn't in the table
 function tr(s) {
   const k = s.trim()
   if (!k || !dict) return null
@@ -26,8 +23,7 @@ function tr(s) {
   return t ? s.replace(k, t) : null
 }
 
-// One value (a text node's text or an attribute). `st` remembers the English source and what was written, so the
-// language can be switched live and anything React rewrites is picked up as a new source.
+// one value (a text node's text or an attribute)
 function next(cur, st) {
   const src = st && cur === st.out ? st.src : cur
   const t = tr(src)
@@ -95,7 +91,7 @@ export async function setLang(code, save = true) {
   subs.forEach(f => f(code))
 }
 
-// Called once at startup, before the first render.
+// called once at startup, before the first render
 export function initLang() {
   let saved = null
   try { saved = localStorage.getItem(KEY) } catch { /* private mode */ }

@@ -1,10 +1,9 @@
-// Runs before first paint: marks JS as available (so scroll reveals can start hidden) and applies the saved theme,
-// so the accent never flashes. Kept tiny and external so the Content-Security-Policy needs no inline script.
+// runs before first paint: marks JS as available (so scroll reveals can start hidden) and applies the saved theme
 (function () {
   var root = document.documentElement
   root.classList.add('js')
 
-  // The same eighteen themes as the app: [name, accent, second glow].
+  // the same eighteen themes as the app: [name, accent, second glow]
   var THEMES = {
     midnight: ['Midnight', '#ff4655', '#ff8c78'],
     onyx: ['Onyx', '#ebebf0', '#a0a0aa'],
@@ -35,7 +34,7 @@
   var ratio = function (a, b) { var x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05) }
   var BG = hex('#0b0b12')
 
-  // Picks AA-safe colours for each accent: the button fill and its label, and an accent shade for small text.
+  // picks AA-safe colours for each accent: the button fill and its label, and an accent shade for small text
   function tokens(accent) {
     var a = hex(accent)
     var white = [255, 255, 255]

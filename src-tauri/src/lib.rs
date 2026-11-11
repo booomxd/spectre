@@ -1,12 +1,9 @@
-// Spectre's Tauri backend. The React app calls every backend channel through one `ipc` command, with the same
-// channel names and arguments the Electron app used (2.4.x), and listens for events with the same names.
+// Spectre's Tauri backend
 pub mod api;
 pub mod core;
 mod migrate;
 
-/// WebView2 flags for every window. Tauri's own defaults (the first --disable-features list) are repeated because
-/// setting any flags replaces them; smooth scrolling animates mouse-wheel steps and GPU rasterization paints
-/// content on the graphics card. Keep in sync with "additionalBrowserArgs" in tauri.conf.json.
+/// WebView2 flags for every window
 pub const BROWSER_ARGS: &str = "--disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection --enable-smooth-scrolling --enable-gpu-rasterization";
 
 use crate::core::error::msg;
@@ -34,7 +31,7 @@ fn main_window(ctx: &Ctx) -> core::error::Res<tauri::WebviewWindow> {
     ctx.app()?.get_webview_window("main").ok_or_else(|| msg("The main window is gone"))
 }
 
-/// Brings the main window back from the tray or the taskbar.
+/// brings the main window back from the tray or the taskbar
 fn show_main(app: &tauri::AppHandle) {
     if let Some(w) = app.get_webview_window("main") {
         let _ = w.show();
@@ -43,7 +40,7 @@ fn show_main(app: &tauri::AppHandle) {
     }
 }
 
-/// App-level channels: the Riot connection, opening links, and the frameless window's buttons.
+/// App-level channels: the Riot connection, opening links, and the frameless window's buttons
 pub fn register_core(reg: &mut Registry) {
     reg.add("riot:status", |ctx, _| async move { Ok(ctx.riot.status()) });
     reg.add("riot:connect", |ctx, _| async move { ctx.riot.connect().await });
@@ -52,8 +49,7 @@ pub fn register_core(reg: &mut Registry) {
         ctx.app()?.opener().open_url(a.str(0), None::<&str>).map_err(|e| msg(e.to_string()))?;
         Ok(Value::Null)
     });
-    // Saves a share card (a PNG as base64) to Pictures\Spectre and shows it in Explorer. The UI uses this when the
-    // clipboard won't take the image.
+    // saves a share card (a PNG as base64) to Pictures\Spectre and shows it in Explorer
     reg.add("share:save", |ctx, a: Args| async move {
         use base64::Engine;
         use tauri_plugin_opener::OpenerExt;
@@ -68,7 +64,7 @@ pub fn register_core(reg: &mut Registry) {
         let _ = ctx.app()?.opener().reveal_item_in_dir(&file);
         Ok(json!(file.to_string_lossy()))
     });
-    // With "Minimize to tray" on, minimizing hides Spectre to the tray instead of the taskbar.
+    // with "Minimize to tray" on, minimizing hides Spectre to the tray instead of the taskbar
     reg.add("win:minimize", |ctx, _| async move {
         let w = main_window(&ctx)?;
         if truthy(&api::settings::load(&ctx)["minimizeToTray"]) { w.hide()?; } else { w.minimize()?; }
@@ -79,14 +75,14 @@ pub fn register_core(reg: &mut Registry) {
         if w.is_maximized()? { w.unmaximize()?; } else { w.maximize()?; }
         Ok(Value::Null)
     });
-    // With "Close to tray" on (the default), the close button hides Spectre to the tray; Quit in the tray menu exits.
+    // with "Close to tray" on (the default), the close button hides Spectre to the tray
     reg.add("win:close", |ctx, _| async move {
         if truthy(&api::settings::load(&ctx)["closeToTray"]) { main_window(&ctx)?.hide()?; } else { ctx.app()?.exit(0); }
         Ok(Value::Null)
     });
 }
 
-/// Keep trying to connect until the Riot Client is up, and tell the renderer when it changes.
+/// keep trying to connect until the Riot Client is up, and tell the renderer when it changes
 fn connect_loop(ctx: Ctx) {
     core::spawn(async move {
         loop {
@@ -117,8 +113,7 @@ pub fn run() {
             app.manage(Arc::new(Backend { ctx: ctx.clone(), reg }));
             migrate::run(&ctx);
 
-            // One time per install: put window behaviour back on the shipped defaults (minimize stays on the taskbar,
-            // close goes to the tray), overriding older saved choices. Later changes in Settings are kept.
+            // one time per install: put window behaviour back on the shipped defaults (minimize stays on the taskbar, close goes to the tray), overriding older saved choices
             {
                 let mut flags = ctx.riot.read_store("flags", json!({}));
                 if !flags.is_object() { flags = json!({}); }
@@ -129,19 +124,18 @@ pub fn run() {
                 }
             }
 
-            // Launch at login is on by default. Keep the Windows startup entry in sync with the setting (this also
-            // refreshes older entries so they pass --minimized). Dev builds never touch it.
+            // launch at login is on by default
             if !ctx.is_dev {
                 use tauri_plugin_autostart::ManagerExt;
                 let al = app.autolaunch();
                 let _ = if truthy(&api::settings::load(&ctx)["launchAtLogin"]) { al.enable() } else { al.disable() };
             }
-            // Started by Windows at login: stay in the tray. Otherwise show the window (it starts hidden).
+            // started by Windows at login: stay in the tray
             if !std::env::args().any(|a| a == "--minimized") {
                 if let Some(w) = app.get_webview_window("main") { let _ = w.show(); let _ = w.set_focus(); }
             }
 
-            // Tray: click (or "Show Spectre") brings the window back; used by "Minimize to tray".
+            // tray: click (or "Show Spectre") brings the window back
             let show = MenuItem::with_id(app, "show", "Show Spectre", true, None::<&str>)?;
             let quit = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
             TrayIconBuilder::with_id("main")
@@ -162,7 +156,7 @@ pub fn run() {
             connect_loop(ctx);
             Ok(())
         })
-        // Alt+F4 / taskbar close follow "Close to tray"; if the main window is really destroyed, Spectre quits.
+        // Alt+F4 / taskbar close follow "Close to tray"
         .on_window_event(|w, e| {
             if w.label() != "main" { return; }
             match e {
@@ -180,7 +174,7 @@ pub fn run() {
         .expect("error while running Spectre");
 }
 
-/// Builds the backend without a window, for the spectre-try CLI.
+/// builds the backend without a window, for the spectre-try CLI
 pub fn headless() -> (Ctx, Registry) {
     let riot = Arc::new(Riot::new());
     riot.set_store_dir(std::env::temp_dir().join("spectre-try").join("store"));
@@ -191,7 +185,7 @@ pub fn headless() -> (Ctx, Registry) {
     (ctx, reg)
 }
 
-/// `{ ok, data }` / `{ ok: false, error }` like the Electron handlers, for the CLI's output.
+/// `{ ok, data }` / `{ ok: false, error }` like the Electron handlers, for the CLI's output
 pub fn envelope(r: Result<Value, String>) -> Value {
     match r { Ok(data) => json!({ "ok": true, "data": data }), Err(error) => json!({ "ok": false, "error": error }) }
 }

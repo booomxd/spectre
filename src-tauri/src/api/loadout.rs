@@ -1,4 +1,4 @@
-// Loadout, ownership and presets. Everything that changes the loadout only touches items the player owns.
+// loadout, ownership and presets
 use crate::core::error::{msg, Res};
 use crate::core::riot::now_ms;
 use crate::core::{js, truthy, Args, Ctx, Registry};
@@ -22,7 +22,7 @@ const MELEE: &str = "2f59173c-4bed-b6c3-2191-dea9b58be9c7";
 /// (at, puuid, data)
 static OWNED_CACHE: Lazy<Mutex<(i64, Option<String>, Option<Value>)>> = Lazy::new(|| Mutex::new((0, None, None)));
 
-/// JS template-literal / String() text of a value (undefined/null print as such).
+/// JS template-literal / String() text of a value
 fn text(v: &Value) -> String {
     match v {
         Value::Null => "undefined".into(),
@@ -33,12 +33,12 @@ fn text(v: &Value) -> String {
 
 fn lc(v: &Value) -> String { js::lower(v) }
 
-/// Copies `v` into `out[name]` only when present (JS leaves undefined fields out of the JSON).
+/// copies `v` into `out[name]` only when present
 fn put(out: &mut Map<String, Value>, name: &str, v: Option<&Value>) {
     if let Some(v) = v { out.insert(name.to_string(), v.clone()); }
 }
 
-/// Entitlements per item type, cached for 30s. Returns arrays of ids (buddies keep their instance ids).
+/// entitlements per item type, cached for 30s
 pub async fn get_owned(ctx: &Ctx, force: bool) -> Res<Value> {
     let puuid = ctx.riot.puuid();
     {
@@ -75,7 +75,7 @@ pub async fn get_owned(ctx: &Ctx, force: bool) -> Res<Value> {
 fn lpath(ctx: &Ctx) -> String { format!("personalization/v3/players/{}/playerloadout", ctx.riot.puuid()) }
 async fn get_loadout(ctx: &Ctx) -> Res<Value> { ctx.riot.pd("get", &lpath(ctx), None).await }
 
-/// Lookup tables + ownership sets (lowercased) for validating changes.
+/// lookup tables + ownership sets (lowercased) for validating changes
 struct Checker {
     by_id: HashMap<String, Value>,
     levels: HashSet<String>,
@@ -102,7 +102,7 @@ impl Checker {
         lc(&skin["uuid"]) == lc(&w["defaultSkinUuid"]) || js::arr(&skin["levels"]).iter().any(|l| self.levels.contains(&lc(&l["uuid"])))
     }
 
-    /// Returns an error string when this gun's skin / level / chroma is not owned.
+    /// returns an error string when this gun's skin / level / chroma is not owned
     fn gun_problem(&self, g: &Value) -> Option<String> {
         let Some(w) = self.by_id.get(&lc(&g["ID"])) else { return Some("Unknown weapon".into()) };
         let skins = js::arr(&w["skins"]);
@@ -131,14 +131,14 @@ const SKIN_KEYS: [&str; 3] = ["SkinID", "SkinLevelID", "ChromaID"];
 const CHARM_KEYS: [&str; 3] = ["CharmID", "CharmLevelID", "CharmInstanceID"];
 fn same_keys(a: &Value, b: &Value, keys: &[&str]) -> bool { keys.iter().all(|k| lc(&a[*k]) == lc(&b[*k])) }
 
-/// Order-preserving dedupe (`[...new Set(list)]`).
+/// Order-preserving dedupe (`[...new Set(list)]`)
 fn uniq(list: Vec<String>) -> Vec<String> {
     let mut out: Vec<String> = Vec::new();
     for s in list { if !out.contains(&s) { out.push(s); } }
     out
 }
 
-/// Validates only what changed against the live loadout, then PUTs it.
+/// validates only what changed against the live loadout, then PUTs it
 async fn save_loadout(ctx: &Ctx, next: &Value) -> Res<Value> {
     let cur = get_loadout(ctx).await?;
     let c = Checker::new(ctx).await?;
@@ -180,7 +180,7 @@ async fn save_loadout(ctx: &Ctx, next: &Value) -> Res<Value> {
     ctx.riot.pd("put", &lpath(ctx), Some(merged)).await
 }
 
-/// JS `String.prototype.trim` (strips U+FEFF but not U+0085, unlike Rust's `trim`).
+/// JS `String.prototype.trim`
 fn js_trim(s: &str) -> String { s.trim_matches(|c: char| (c.is_whitespace() && c != '\u{85}') || c == '\u{feff}').to_string() }
 
 fn presets(ctx: &Ctx) -> Vec<Value> { js::arr(&ctx.riot.read_store("loadout-presets", json!([]))) }
@@ -194,7 +194,7 @@ pub fn register(reg: &mut Registry, _ctx: &Ctx) {
     reg.add("loadout:owned", |ctx, a: Args| async move { get_owned(&ctx, a.truthy(0)).await });
     reg.add("loadout:save", |ctx, a: Args| async move { save_loadout(&ctx, &a.val(0)).await });
 
-    // Quick equip: skin (+ optional level / chroma) onto one weapon. Defaults to the skin's first level / chroma.
+    // quick equip: skin (+ optional level / chroma) onto one weapon
     reg.add("loadout:equip", |ctx, a: Args| async move {
         let (weapon_id, skin_id, level_id, chroma_id) = (a.val(0), a.val(1), a.val(2), a.val(3));
         let mut cur = get_loadout(&ctx).await?;
@@ -224,7 +224,7 @@ pub fn register(reg: &mut Registry, _ctx: &Ctx) {
     reg.add("loadout:presetSave", |ctx, a: Args| async move {
         let cur = get_loadout(&ctx).await?;
         let mut list = presets(&ctx);
-        // `(name || '').trim()` throws for truthy non-strings.
+        // `(name || '').trim()` throws for truthy non-strings
         let raw = a.val(0);
         if truthy(&raw) && !raw.is_string() { return Err(msg("(name || \"\").trim is not a function")); }
         let name = js_trim(&a.str(0));
@@ -247,7 +247,7 @@ pub fn register(reg: &mut Registry, _ctx: &Ctx) {
         let (id, raw) = (a.val(0), a.val(1));
         let mut list = presets(&ctx);
         if let Some(p) = list.iter_mut().find(|x| x["id"] == id) {
-            // `name?.trim()` throws for non-nullish non-strings.
+            // `name?.trim()` throws for non-nullish non-strings
             if !raw.is_null() && !raw.is_string() { return Err(msg("name?.trim is not a function")); }
             let name = js_trim(&js::s(&raw));
             if !name.is_empty() { p["name"] = json!(name); }
@@ -262,7 +262,7 @@ pub fn register(reg: &mut Registry, _ctx: &Ctx) {
         ctx.riot.write_store("loadout-presets", &list)?;
         Ok(list)
     });
-    // Applies only what the player still owns; reports what was skipped.
+    // applies only what the player still owns
     reg.add("loadout:presetApply", |ctx, a: Args| async move {
         let id = a.val(0);
         let Some(p) = presets(&ctx).into_iter().find(|x| x["id"] == id) else { return Err(msg("Preset not found")) };

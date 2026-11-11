@@ -1,6 +1,4 @@
-// Shared UI kit. Every page builds from these so spacing, color and motion stay consistent.
-// Colors come from theme tokens (see tailwind.config.js): bg, panel, surface, surface-2, line, text, muted, accent, accent-2, good, bad, warn.
-// Surfaces and type helpers are CSS classes in src/index.css (.glass, .glass-strong, .glass-inset, .accent-soft, .display, .eyebrow...).
+// shared UI kit
 import React, { createContext, useContext, useEffect, useId, useState, useSyncExternalStore } from 'react'
 import { createPortal } from 'react-dom'
 import { FiAlertTriangle, FiInbox, FiLoader, FiX } from 'react-icons/fi'
@@ -16,17 +14,15 @@ export const cx = (...c) => c.filter(Boolean).join(' ')
 // `embedded` renders a page inside another page (Settings > Experimental) without its own scroller or outer padding.
 export const PageContext = createContext({ section: null, embedded: false })
 
-// True while the page a component lives in is the one on screen (the shell keeps visited pages mounted but hidden).
-// Outside the shell (overlay window, embedded tools) it stays true and the parent page decides.
+// true while the page a component lives in is the one on screen
 export const PageActiveContext = createContext(true)
 export const usePageActive = () => useContext(PageActiveContext)
 
 const onVisibility = cb => { document.addEventListener('visibilitychange', cb); return () => document.removeEventListener('visibilitychange', cb) }
-// False while the window is minimized, hidden to the tray or otherwise not visible.
+// false while the window is minimized, hidden to the tray or otherwise not visible
 export const useDocumentVisible = () => useSyncExternalStore(onVisibility, () => document.visibilityState !== 'hidden', () => true)
 
-// Current time (ms) that ticks every `interval` ms, aligned to the interval so second readouts change together.
-// Pauses while the page is not on screen or the window is hidden, and catches up immediately when it is shown again.
+// current time (ms) that ticks every `interval` ms, aligned to the interval so second readouts change together
 export function useNow(interval = 1000) {
   const active = usePageActive()
   const visible = useDocumentVisible()
@@ -42,8 +38,7 @@ export function useNow(interval = 1000) {
   return now
 }
 
-// Page frame: eyebrow + display title + subtitle + actions, then a scrolling body.
-// Props are unchanged from v2 (title, subtitle, actions, children, className, bodyClassName); `eyebrow` overrides the section label.
+// page frame: eyebrow + display title + subtitle + actions, then a scrolling body
 export function Page({ title, subtitle, actions, eyebrow, children, className, bodyClassName }) {
   const { section, embedded } = useContext(PageContext)
   const kicker = eyebrow ?? section
@@ -80,8 +75,7 @@ export function Page({ title, subtitle, actions, eyebrow, children, className, b
   )
 }
 
-// Keyboard access for a clickable element that is not a <button>: focusable, announced as a button, Enter / Space click.
-// Spread onto the element: <div {...pressable(onClick)}>. Keys pressed inside nested controls are left alone.
+// keyboard access for a clickable element that is not a <button>: focusable, announced as a button, Enter / Space click
 export function pressable(onClick) {
   if (!onClick) return {}
   return {
@@ -94,9 +88,7 @@ export function pressable(onClick) {
   }
 }
 
-// Card: glass surface, 24px radius by default (pages may still pass rounded-*).
-// hover = lift + pointer spotlight; glow = accent ring glow (selected / featured); blur = opt-in backdrop blur.
-// A clickable Card (onClick) is keyboard reachable too.
+// card: glass surface, 24px radius by default (pages may still pass rounded-*). hover = lift + pointer spotlight
 export function Card({ className, hover, glow, blur, children, as: Tag = 'div', onClick, ...rest }) {
   const press = typeof Tag === 'string' && Tag !== 'button' && Tag !== 'a' ? pressable(onClick) : { onClick }
   return (
@@ -113,7 +105,7 @@ export function SectionTitle({ children, right, className }) {
   )
 }
 
-// Section heading for bento tiles / larger groups: bold title + optional hint and right slot.
+// section heading for bento tiles / larger groups: bold title + optional hint and right slot
 export function Heading({ children, hint, right, className }) {
   return (
     <div className={cx('flex items-end justify-between gap-3 mb-4', className)}>
@@ -165,7 +157,7 @@ export function Label({ children, hint }) {
   )
 }
 
-// Switch. The knob moves by transform.
+// switch
 export function Toggle({ checked, onChange, label, hint, disabled }) {
   return (
     <label className={cx('flex items-center justify-between gap-4 cursor-pointer', disabled && 'opacity-50 pointer-events-none')}>
@@ -178,8 +170,7 @@ export function Toggle({ checked, onChange, label, hint, disabled }) {
   )
 }
 
-// Segmented control with a spring pill that slides under the active option (shared layoutId).
-// tabs: strings or { value, label, icon?, count? }. size: 'sm' | 'md' | 'lg'. variant: 'glass' (own container) | 'bare'.
+// segmented control with a spring pill that slides under the active option (shared layoutId). tabs: strings or { value, label, icon?, count? }. size: 'sm' | 'md' | 'lg'. variant: 'glass' (own container) | 'bare'
 export function SegmentedTabs({ tabs, value, onChange, size = 'md', variant = 'glass', className, layoutId }) {
   const auto = useId()
   const id = layoutId || 'seg' + auto
@@ -203,7 +194,7 @@ export function SegmentedTabs({ tabs, value, onChange, size = 'md', variant = 'g
     </div>
   )
 }
-// v2 name, same API ({ tabs, value, onChange, className }).
+// v2 name, same API
 export function Tabs(props) { return <SegmentedTabs {...props} /> }
 
 const TONES = {
@@ -250,14 +241,14 @@ export function ErrorState({ error, onRetry, className }) {
     action={onRetry && <Button size='sm' onClick={() => onRetry()}>Try again</Button>} />
 }
 
-// Renders children only when connected to the Riot Client; otherwise a friendly placeholder.
+// renders children only when connected to the Riot Client
 export function RequireRiot({ children, hint }) {
   const riot = useRiot()
   if (riot.connected) return children
   return <Empty icon={FiLoader} title='Waiting for the Riot Client' hint={hint || 'Open the Riot Client (and VALORANT for live features). Spectre connects automatically.'} />
 }
 
-// Dim layer under modals / the palette. No blur here: the panel above it blurs, so blur never stacks.
+// dim layer under modals / the palette
 export const Scrim = ({ onMouseDown, children, className }) => (
   <m.div className={cx('fixed inset-0 z-50 flex bg-[rgb(var(--scrim)/var(--scrim-a))]', className)} onMouseDown={onMouseDown}
     initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}>
@@ -273,7 +264,7 @@ export function Modal({ open, onClose, title, children, footer, width = 480 }) {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [open, onClose])
-  // Keyboard focus moves into the dialog (unless a field inside already took it with autoFocus) and returns on close.
+  // keyboard focus moves into the dialog (unless a field inside already took it with autoFocus) and returns on close
   useEffect(() => {
     if (!open) return
     const prev = document.activeElement
@@ -299,7 +290,7 @@ export function Modal({ open, onClose, title, children, footer, width = 480 }) {
     </AnimatePresence>, document.body)
 }
 
-// Toasts: toast.success('Saved'), toast.error('Failed: ...'), toast('Info').
+// toasts: toast.success('Saved'), toast.error('Failed: ...'), toast
 const listeners = new Set()
 let nextId = 1
 export function toast(message, tone = 'neutral') { listeners.forEach(l => l({ id: nextId++, message, tone })) }
@@ -331,7 +322,7 @@ export function ToastHost() {
     </div>, document.body)
 }
 
-// Runs an async action with a toast for its outcome. Returns the result (or undefined on error).
+// runs an async action with a toast for its outcome
 export async function withToast(promise, success) {
   try { const r = await promise; if (success) toast.success(success); return r }
   catch (e) { toast.error(e.message); }

@@ -43,7 +43,7 @@ function Entry({ p, cards, me, sticky, index }) {
   )
 }
 
-// Top three as tall cards; first place in the middle with the accent glow.
+// top three as tall cards
 function Podium({ top, cards, me }) {
   const order = [top[1], top[0], top[2]].filter(Boolean)
   return (

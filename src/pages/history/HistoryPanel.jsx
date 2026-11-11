@@ -17,7 +17,7 @@ const QUEUES = [
   { value: 'swiftplay', label: 'Swiftplay' }, { value: 'deathmatch', label: 'Deathmatch' }, { value: 'premier', label: 'Premier' },
 ]
 
-// Survives page switches so revisiting history is instant.
+// survives page switches so revisiting history is instant
 const sumCache = new Map()
 
 function Summary({ rows, agents }) {
@@ -72,7 +72,7 @@ function MatchRow({ item, s, rr, agents, maps, index, onOpen, name }) {
   const map = s && maps[s.mapId]
   const tiers = useTiers()
   const [sharing, setSharing] = useState(false)
-  // Draws this match as an image and copies it, ready to paste into Discord.
+  // draws this match as an image and copies it, ready to paste into Discord
   const share = async e => {
     e.stopPropagation()
     if (sharing || !s) return
@@ -98,11 +98,11 @@ function MatchRow({ item, s, rr, agents, maps, index, onOpen, name }) {
   const glow = s.result === 'win' ? 'var(--good)' : s.result === 'loss' ? 'var(--bad)' : 'var(--warn)'
   return (
     <Card hover onClick={() => onOpen(item.matchId)} style={{ '--i': index }} className='group relative overflow-hidden h-[80px] flex items-stretch'>
-      {/* Result tint washes in from the left edge. */}
+      {/* result tint washes in from the left edge */}
       <span className='absolute inset-y-0 left-0 w-1/2 pointer-events-none' style={{ background: `linear-gradient(90deg, rgb(${glow} / 0.13), transparent)` }} />
       <span className={cx('absolute left-0 top-4 bottom-4 w-[3px] rounded-r-full', R.bar)} style={{ boxShadow: `0 0 12px rgb(${glow} / 0.7)` }} />
       <div className='relative w-44 shrink-0'>
-        {/* Map art fades into the glass row; the dark scrim keeps the white label legible on any theme. */}
+        {/* map art fades into the glass row */}
         {map?.splash && (
           <div className='absolute inset-0' style={{ WebkitMaskImage: 'linear-gradient(90deg, transparent, #000 25%, #000 50%, transparent)', maskImage: 'linear-gradient(90deg, transparent, #000 25%, #000 50%, transparent)' }}>
             <img decoding='async' src={map.splash} alt='' loading='lazy' className='absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105' draggable={false} />
@@ -151,14 +151,14 @@ function MatchRow({ item, s, rr, agents, maps, index, onOpen, name }) {
   )
 }
 
-// Match list + summary header + scoreboard modal for one player (defaults to you).
+// match list + summary header + scoreboard modal for one player
 export default function HistoryPanel({ puuid, step = 20 }) {
   const riot = useRiot()
   const id = puuid || riot.puuid
   const agents = useAgents()
   const maps = useMaps()
   const { memos, map: memoMap, reload: reloadMemos } = useMemos()
-  // Your own history remembers its mode filter; someone else's always starts on All.
+  // your own history remembers its mode filter
   const [savedQueue, saveQueue] = useStored('history-queue', 'all', QUEUES.map(q => q.value))
   const own = !puuid || puuid === riot.puuid
   const [queue, setQueueState] = useState(own ? savedQueue : 'all')
@@ -173,7 +173,7 @@ export default function HistoryPanel({ puuid, step = 20 }) {
   const asked = useRef(new Set())
 
   useEffect(() => {
-    // Switching to another player resets the filter; the first load keeps the remembered one.
+    // switching to another player resets the filter
     if (firstId.current) firstId.current = false
     else setQueueState(own ? savedQueue : 'all')
     setCount(step); setList({ data: null, error: null, loading: true }); setRr({})

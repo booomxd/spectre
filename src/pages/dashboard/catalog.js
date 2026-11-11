@@ -3,7 +3,7 @@ import { getContent } from '../../lib/content'
 import { useNow } from '../../ui'
 import { skinImage } from '../tools/gear'
 
-// Item type ids used by the store.
+// item type ids used by the store
 export const TYPE = {
   skin: 'e7c63390-eda7-46e0-bb7a-a6abdacd2433',
   buddy: 'dd3bf334-87f3-40bd-b043-682a57a8dc3a',
@@ -14,7 +14,7 @@ export const TYPE = {
 export const CUR = { vp: '85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741', rad: 'e59aa87c-4cbf-517a-5983-6e81511be9b7', kc: '85ca954a-41f2-ce94-9b45-8ca3dd39a00d' }
 
 let promise
-// Loads everything needed to resolve item ids into { name, icon, kind, tier, skin } once.
+// loads everything needed to resolve item ids into { name, icon, kind, tier, skin } once
 function load() {
   if (!promise) {
     const get = p => getContent(p).catch(() => [])
@@ -48,10 +48,10 @@ export function useCatalog() {
   return cat
 }
 
-// Picks the active season battle pass from the contracts list.
+// picks the active season battle pass from the contracts list
 export const pickPass = contracts => (contracts || []).filter(c => c.type === 'Season').sort((a, b) => b.progressionLevel - a.progressionLevel)[0] || null
 
-// Maps battle pass reward types to catalog ids.
+// maps battle pass reward types to catalog ids
 export const rewardItem = (cat, r) => (r && cat?.items.get(r.uuid)) || null
 
 export const fmt = n => (n ?? 0).toLocaleString()
@@ -64,8 +64,7 @@ export function fmtDuration(s) {
   return `${m}m ${String(sec).padStart(2, '0')}s`
 }
 
-// Live countdown from a "seconds left" snapshot. The snapshot time resets whenever a new value arrives (a store
-// refresh), so the countdown never drifts by the time since the component first mounted. Ticks only while visible.
+// Live countdown from a "seconds left" snapshot
 export function useCountdown(secondsLeft) {
   const now = useNow()
   const [snap, setSnap] = useState(() => ({ s: secondsLeft, t: Date.now() }))

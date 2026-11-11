@@ -52,7 +52,7 @@ function ActHistory({ scout, seasons }) {
   const start = id => Date.parse(seasons[id]?.startTime) || 0
   const acts = [...(scout.data?.acts || [])].sort((a, b) => start(b.seasonId) - start(a.seasonId))
   if (!acts.length) return <Empty icon={FiClock} title='No competitive acts' hint='No ranked act data is available for this player.' className='py-8' />
-  // All-time peak act: highest peak, earliest act to reach it.
+  // All-time peak act: highest peak, earliest act to reach it
   const best = Math.max(...acts.map(a => a.peak))
   const peakAct = [...acts].reverse().find(a => a.peak === best)?.seasonId
   return (
@@ -78,7 +78,7 @@ function ActHistory({ scout, seasons }) {
                 <div className='text-[11px] font-medium text-accent'>Act peak</div>
               </div>
             </div>
-            {/* The highlighted row already marks the peak act; the badge only shows when there is room for it. */}
+            {/* the highlighted row already marks the peak act */}
             {isPeak && a.peak > 0 && <Badge tone='accent' className='max-[1200px]:hidden'>All-time peak</Badge>}
             <div className='ml-auto shrink-0 whitespace-nowrap text-right leading-tight'>
               <div className='text-[13px] font-semibold tabular-nums'>{wr}% <span className='text-muted font-normal text-[11px]'>win rate</span></div>
@@ -108,7 +108,7 @@ function Profile({ puuid }) {
     <FadeIn className='flex flex-col gap-5'>
       <Card className='relative overflow-hidden rounded-3xl min-h-[250px]'>
         {data.cardId && card?.wideArt && <img decoding='async' src={card.wideArt} alt='' className='absolute inset-0 w-full h-full object-cover' draggable={false} />}
-        {/* Dark scrim over the card art: the name stays white and legible on every theme. Without art the plain glass shows through. */}
+        {/* dark scrim over the card art: the name stays white and legible on every theme */}
         {data.cardId && card?.wideArt && <div className='absolute inset-0 bg-gradient-to-t from-black/75 via-black/35 to-black/5' />}
         {!(data.cardId && card?.wideArt) && <span className='halo -top-32 -right-24 w-96 h-96' />}
         <div className='relative h-full min-h-[250px] flex flex-col justify-end p-7 gap-4'>
@@ -162,7 +162,7 @@ export default function PlayerSearch({ params }) {
   const [searchError, setSearchError] = useState(null)
   const { data: recent, reload: reloadRecent } = useInvoke('search:recent')
 
-  // Keyed on the params object (a new one per navigate), so the same player opens again after looking up someone else.
+  // keyed on the params object
   useEffect(() => { if (params?.puuid) { setPuuid(params.puuid); setSearchError(null) } }, [params])
 
   const find = async (value) => {

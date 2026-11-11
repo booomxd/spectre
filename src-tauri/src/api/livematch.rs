@@ -18,8 +18,7 @@ const MMR_TTL: i64 = 5 * 60 * 1000;
 static MMR_CACHE: Lazy<Mutex<HashMap<String, (i64, Value)>>> = Lazy::new(|| Mutex::new(HashMap::new()));
 static NAME_CACHE: Lazy<Mutex<HashMap<String, Value>>> = Lazy::new(|| Mutex::new(HashMap::new()));
 
-// Players of the current match by random token. `hidden` marks streamer-mode players, `identity` keeps card and
-// title of named players for the loadout panel, `scouted` keeps scout summaries until the match changes.
+// players of the current match by random token
 #[derive(Default)]
 struct Refs {
     match_id: Option<String>,
@@ -31,7 +30,7 @@ struct Refs {
 }
 static REFS: Lazy<Mutex<Refs>> = Lazy::new(|| Mutex::new(Refs::default()));
 
-/// `a.b.c` where a missing property is undefined (None) and a real null is Some(Null). Numeric keys index arrays.
+/// `a.b.c` where a missing property is undefined (None) and a real null is Some
 fn g(v: &Value, path: &[&str]) -> Option<Value> {
     let mut cur = v;
     for k in path {
@@ -44,20 +43,20 @@ fn g(v: &Value, path: &[&str]) -> Option<Value> {
     Some(cur.clone())
 }
 
-/// JS `a || b || c` over possibly-undefined values (None = undefined).
+/// JS `a || b || c` over possibly-undefined values
 fn or(vals: &[Option<Value>]) -> Option<Value> {
     for v in vals { if v.as_ref().is_some_and(truthy) { return v.clone(); } }
     vals.last().cloned().flatten()
 }
 
-/// An object literal whose undefined (None) properties are left out, like JSON.stringify does.
+/// an object literal whose undefined (None) properties are left out, like JSON.stringify does
 fn obj(pairs: Vec<(&str, Option<Value>)>) -> Value {
     let mut o = Map::new();
     for (k, v) in pairs { if let Some(v) = v { o.insert(k.to_string(), v); } }
     Value::Object(o)
 }
 
-// Current-act rank + RR and peak rank, cached per player.
+// Current-act rank + RR and peak rank, cached per player
 async fn mmr(ctx: &Ctx, puuid: &str) -> Value {
     if let Some((at, v)) = MMR_CACHE.lock().unwrap().get(puuid) {
         if now_ms() - at < MMR_TTL { return v.clone(); }
@@ -66,14 +65,14 @@ async fn mmr(ctx: &Ctx, puuid: &str) -> Value {
         Ok(r) => (obj(vec![("tier", g(&r, &["current", "tier"])), ("rr", g(&r, &["current", "rr"])), ("peak", g(&r, &["peak", "tier"]))]), true),
         Err(_) => (json!({ "tier": 0, "rr": 0, "peak": 0, "failed": true }), false),
     };
-    // A failed lookup (e.g. rate limited) is retried after 30s instead of showing Unranked for the full TTL.
+    // A failed lookup (e.g. rate limited) is retried after 30s instead of showing Unranked for the full TTL
     let at = if ok { now_ms() } else { now_ms() - MMR_TTL + 30000 };
     MMR_CACHE.lock().unwrap().insert(puuid.to_string(), (at, value.clone()));
     value
 }
 
 // ---- in-match loadouts ----
-// Socket ids inside a core-game loadout item.
+// socket ids inside a core-game loadout item
 const S_SKIN: &str = "bcef87d6-209b-46c6-8b19-fbe40bd95abc";
 const S_LEVEL: &str = "e7c63390-eda7-46e0-bb7a-a6abdacd2433";
 const S_CHROMA: &str = "3ad1b2b2-acdb-4524-852f-954a76ddae0a";
@@ -84,7 +83,7 @@ const WEAPON_ORDER: [&str; 19] = ["Vandal", "Phantom", "Melee", "Operator", "She
 /// `(x || '').toLowerCase()`
 fn lc(x: &Value) -> String { if truthy(x) { js::s(x).to_lowercase() } else { String::new() } }
 
-// Weapon, skin, chroma, buddy and spray lookups by uuid, built once from valorant-api content.
+// weapon, skin, chroma, buddy and spray lookups by uuid, built once from valorant-api content
 #[derive(Default)]
 struct Index {
     weapon: HashMap<String, Value>,
@@ -123,7 +122,7 @@ async fn content(ctx: &Ctx) -> Res<Arc<Index>> {
     Ok(ix)
 }
 
-// One player's loadout: every weapon's skin (chroma render) and buddy, plus equipped sprays.
+// one player's loadout: every weapon's skin (chroma render) and buddy, plus equipped sprays
 fn parse_loadout(l: &Value, ix: &Index) -> Value {
     let sock = |item: &Value, id: &str| lc(&item["Sockets"][id]["Item"]["ID"]);
     let mut weapons: Vec<(Option<Value>, Value)> = js::entries(&l["Items"]).into_iter().filter_map(|(wid, item)| {
@@ -133,7 +132,7 @@ fn parse_loadout(l: &Value, ix: &Index) -> Value {
         let buddy = ix.buddy.get(&sock(&item, S_BUDDY)).or_else(|| ix.buddy.get(&sock(&item, S_BUDDY_LEVEL)));
         let name = g(w, &["displayName"]);
         let skin_name = or(&[skin.and_then(|s| g(s, &["displayName"])), name.clone()]);
-        // Variant renders first: valorant-api's icons for most standard skins are an "X" placeholder.
+        // variant renders first: valorant-api's icons for most standard skins are an "X" placeholder
         let image = or(&[
             ch.and_then(|c| g(&c.0, &["fullRender"])), ch.and_then(|c| g(&c.0, &["displayIcon"])),
             skin.and_then(|s| g(s, &["chromas", "0", "fullRender"])), skin.and_then(|s| g(s, &["displayIcon"])), g(w, &["displayIcon"]),
@@ -157,7 +156,7 @@ fn parse_loadout(l: &Value, ix: &Index) -> Value {
     json!({ "weapons": weapons.into_iter().map(|w| w.1).collect::<Vec<_>>(), "sprays": sprays })
 }
 
-// Loadouts of everyone in the current in-game match, fetched once per match (they can't change mid-match).
+// loadouts of everyone in the current in-game match, fetched once per match
 struct Loadouts { match_id: Option<String>, by_puuid: Option<Arc<HashMap<String, Value>>>, failed_at: i64 }
 static LOADOUTS: Lazy<Mutex<Loadouts>> = Lazy::new(|| Mutex::new(Loadouts { match_id: None, by_puuid: None, failed_at: 0 }));
 
@@ -189,8 +188,7 @@ async fn match_loadouts(ctx: &Ctx, id: &str) -> Arc<HashMap<String, Value>> {
     }
 }
 
-/// Lenient decode like Node's `Buffer.from(s, 'base64')`: accepts the url-safe alphabet, skips other characters,
-/// stops at the first '=' and ignores missing padding.
+/// lenient decode like Node's `Buffer.from(s, 'base64')`: accepts the url-safe alphabet, skips other characters, stops at the first '=' and ignores missing padding
 fn node_base64(s: &str) -> Result<Vec<u8>, base64::DecodeError> {
     let mut clean: String = s.chars().take_while(|c| *c != '=')
         .filter_map(|c| match c { '-' => Some('+'), '_' => Some('/'), c if c.is_ascii_alphanumeric() || c == '+' || c == '/' => Some(c), _ => None })
@@ -202,7 +200,7 @@ fn node_base64(s: &str) -> Result<Vec<u8>, base64::DecodeError> {
     base64::engine::GeneralPurpose::new(&base64::alphabet::STANDARD, cfg).decode(clean)
 }
 
-// puuids whose visible VALORANT presence carries the Spectre marker (friends and party only).
+// puuids whose visible VALORANT presence carries the Spectre marker
 async fn spectre_set(ctx: &Ctx) -> HashSet<String> {
     let mut out = HashSet::new();
     if let Ok(res) = ctx.riot.local("get", "chat/v4/presences", None).await {
@@ -218,9 +216,7 @@ async fn spectre_set(ctx: &Ctx) -> HashSet<String> {
     out
 }
 
-// Party id per player from the VALORANT presences the local client can see. During agent select and in-game that
-// includes everyone in the match (streamer-mode players too), which is how premade groups are detected. Only the
-// grouping is used; no names come from here.
+// party id per player from the VALORANT presences the local client can see
 async fn party_of(ctx: &Ctx) -> HashMap<String, String> {
     let mut out = HashMap::new();
     if let Ok(res) = ctx.riot.local("get", "chat/v4/presences", None).await {
@@ -278,9 +274,7 @@ async fn resolve(ctx: &Ctx, kind: &str, id: &str) -> Res<Value> {
     let (known_set, party_set, spectres, parties) = tokio::join!(known::known_puuids(ctx), known::party_puuids(ctx), spectre_set(ctx), party_of(ctx));
     let (known_set, party_set) = (known_set?, party_set?);
     let sub = |p: &Value| js::s(&p["Subject"]);
-    // Names as the client shows them to you: everyone except streamer-mode (incognito) players, but always yourself
-    // and the friends in your own party (party_set leaves out incognito members who aren't friends).
-    // Agent select only contains your own team, so enemies are never named before the match starts.
+    // names as the client shows them to you: everyone except streamer-mode (incognito) players, but always yourself and the friends in your own party
     let nameable = |p: &Value| { let s = sub(p); s == me || party_set.contains(&s) || !truthy(&p["PlayerIdentity"]["Incognito"]) };
     let need: Vec<String> = {
         let nc = NAME_CACHE.lock().unwrap();
@@ -292,14 +286,13 @@ async fn resolve(ctx: &Ctx, kind: &str, id: &str) -> Res<Value> {
             for (k, v) in n { nc.insert(k, v); }
         }
     }
-    // Rank/RR/peak for everyone listed: agent select only lists your own team, so enemies wait for the match.
+    // Rank/RR/peak for everyone listed: agent select only lists your own team
     let subjects: Vec<String> = raw.iter().map(sub).collect();
     let stats: HashMap<String, Value> = futures::stream::iter(subjects)
         .map(|s| async move { let v = mmr(ctx, &s).await; (s, v) })
         .buffer_unordered(4).collect().await;
 
-    // Premade groups in this match. Your own party is group 0 (from the party API, falling back to presences); every
-    // other party with 2+ members here gets 1, 2, ... in roster order. Solo players get none.
+    // premade groups in this match
     let mates = raw.iter().filter(|p| party_set.contains(&sub(p))).count();
     let my_pid = parties.get(&me).cloned();
     let mut size: HashMap<String, usize> = HashMap::new();
@@ -344,7 +337,7 @@ async fn resolve(ctx: &Ctx, kind: &str, id: &str) -> Res<Value> {
         let guns = loadout_map.get(&s).map(|l| Value::Array(js::arr(&l["weapons"]).into_iter().filter(|w| w["weapon"] == "Vandal" || w["weapon"] == "Phantom").collect()));
         obj(vec![
             ("ref", Some(json!(token))),
-            // Named players can be opened in Player Search (same as typing their Riot ID); hidden ones never.
+            // named players can be opened in Player Search
             ("puuid", Some(if k || n.is_some() { p["Subject"].clone() } else { Value::Null })),
             ("self", Some(json!(is_me))),
             ("hidden", Some(json!(hidden))),
@@ -354,13 +347,13 @@ async fn resolve(ctx: &Ctx, kind: &str, id: &str) -> Res<Value> {
             ("locked", Some(json!(if pregame { p["CharacterSelectionState"] == "locked" } else { true }))),
             ("team", if pregame { Some(Value::Null) } else { g(p, &["TeamID"]) }), // side is never exposed during agent select
             ("enemy", Some(json!(kind == "ingame" && p["TeamID"] != my_team))),
-            // Level and card as the client shows them: never for streamer-mode players or hidden levels.
+            // level and card as the client shows them: never for streamer-mode players or hidden levels
             ("level", Some(level)),
             ("card", Some(if !hidden { js::or(&idn["PlayerCardID"], Value::Null) } else { Value::Null })),
             ("rank", Some(js::or(&st["tier"], json!(0)))), ("rr", Some(js::or(&st["rr"], json!(0)))), ("peak", Some(js::or(&st["peak"], json!(0)))),
             ("known", Some(json!(k))),
             ("ranked", Some(json!(true))),
-            // Scouting opens once agent select is over and the match is live.
+            // scouting opens once agent select is over and the match is live
             ("canScout", Some(json!(kind == "ingame"))),
             ("scouted", refs.scouted.get(&s).cloned()),
             ("guns", guns),
@@ -381,7 +374,7 @@ async fn resolve(ctx: &Ctx, kind: &str, id: &str) -> Res<Value> {
 
 struct Found { puuid: String, hidden: bool, match_id: String }
 
-// Resolves a player token, checking the user is still in that match and it has started (not agent select).
+// resolves a player token, checking the user is still in that match and it has started
 async fn lookup(ctx: &Ctx, r: &Value) -> Res<Found> {
     let puuid = r.as_str().and_then(|t| REFS.lock().unwrap().by_token.get(t).cloned());
     let mut now: Option<(String, &str)> = None;
@@ -415,8 +408,7 @@ pub fn register(reg: &mut Registry, _ctx: &Ctx) {
         Ok(json!({ "state": "menus" }))
     });
 
-    // Scout a player in the user's current match, only on request: rank, act history, recent competitive form and
-    // matches. The result never carries a name, puuid, match id or teammates.
+    // Scout a player in the user's current match, only on request: rank, act history, recent competitive form and matches
     reg.add("live:scout", |ctx, a: Args| async move {
         let f = lookup(&ctx, &a.val(0)).await?;
         let s = scout::scout(&ctx, &f.puuid).await?;
@@ -429,7 +421,7 @@ pub fn register(reg: &mut Registry, _ctx: &Ctx) {
         Ok(s)
     });
 
-    // A player's in-match loadout: weapon skins, buddies and sprays, plus card and title for named players only.
+    // A player's in-match loadout: weapon skins, buddies and sprays, plus card and title for named players only
     reg.add("live:loadout", |ctx, a: Args| async move {
         let f = lookup(&ctx, &a.val(0)).await?;
         let Some(l) = match_loadouts(&ctx, &f.match_id).await.get(&f.puuid).cloned() else {
@@ -449,5 +441,5 @@ pub fn register(reg: &mut Registry, _ctx: &Ctx) {
         Ok(Value::Object(out))
     });
 
-    // Pick / lock an agent is deliberately not exposed: this page is read-only.
+    // pick / lock an agent is deliberately not exposed: this page is read-only
 }

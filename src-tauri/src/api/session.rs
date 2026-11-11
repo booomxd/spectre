@@ -1,6 +1,4 @@
-// Session summary: when VALORANT closes, one Windows notification with the games played while it was open and, for
-// ranked games, wins, losses and the RR gained or lost. Nothing is stored; the session is "since Spectre saw the game
-// start", so Spectre has to be running (it sits in the tray by default) for the whole session to count.
+// session summary: when VALORANT closes, one Windows notification with the games played while it was open and, for ranked games, wins, losses and the RR gained or lost
 use crate::core::error::Res;
 use crate::core::riot::now_ms;
 use crate::core::{js, truthy, Ctx, Registry};
@@ -10,10 +8,10 @@ use std::sync::Mutex;
 use std::time::Duration;
 
 const TICK: Duration = Duration::from_secs(30);
-/// Games that began up to this long before Spectre noticed the game still count (Spectre checks every 30 seconds).
+/// games that began up to this long before Spectre noticed the game still count
 const MARGIN_MS: i64 = 2 * 60 * 1000;
 
-/// When the game was first seen running (ms), or None while it is closed.
+/// when the game was first seen running (ms), or None while it is closed
 static SINCE: Lazy<Mutex<Option<i64>>> = Lazy::new(|| Mutex::new(None));
 
 async fn game_running(ctx: &Ctx) -> Option<bool> {
@@ -23,7 +21,7 @@ async fn game_running(ctx: &Ctx) -> Option<bool> {
 
 fn plural(n: i64, one: &str, many: &str) -> String { format!("{n} {}", if n == 1 { one } else { many }) }
 
-/// The numbers for games that started at or after `since`.
+/// the numbers for games that started at or after `since`
 async fn summary(ctx: &Ctx, since: i64) -> Res<Value> {
     let p = ctx.riot.puuid();
     let from = since - MARGIN_MS;
@@ -64,7 +62,7 @@ pub fn register(_reg: &mut Registry, ctx: &Ctx) {
             let st = c.riot.state();
             if !st.connected || st.puuid.as_deref().unwrap_or("").is_empty() { return; }
             let Some(running) = game_running(&c).await else { return };
-            // Decide under the lock, then do the network work after releasing it.
+            // decide under the lock, then do the network work after releasing it
             let ended = {
                 let mut since = SINCE.lock().unwrap();
                 match (running, *since) {
@@ -74,7 +72,7 @@ pub fn register(_reg: &mut Registry, ctx: &Ctx) {
                 }
             };
             if let Some(t) = ended {
-                // Give Riot a moment to file the last match before reading the history.
+                // give Riot a moment to file the last match before reading the history
                 tokio::time::sleep(Duration::from_secs(8)).await;
                 announce(&c, t).await;
             }

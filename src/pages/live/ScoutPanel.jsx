@@ -146,8 +146,7 @@ function MatchRow({ m, agents, maps, i }) {
   )
 }
 
-// Scout of a live-match player: rank, act history, recent form and matches. The data never includes a name, so for
-// streamer-mode players everything here stays anonymous; named players get a link to their full profile.
+// Scout of a live-match player: rank, act history, recent form and matches
 export default function ScoutPanel({ player, onLoaded, onClose }) {
   const [state, setState] = useState({ data: null, error: null })
   const [tab, setTab] = useState('history')

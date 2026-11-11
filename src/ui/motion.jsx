@@ -1,8 +1,5 @@
-// Motion helpers. Everything animates transform / opacity only, and everything respects reduced motion
-// (the OS setting and Settings > Appearance > Reduce motion).
-//
-// The app is wrapped once in <MotionProvider>. Use the `m.*` components (never `motion.*`: LazyMotion is strict).
-// Shared-layout (layoutId) indicators need the domMax feature set, so the provider loads domMax instead of domAnimation.
+// motion helpers
+// the app is wrapped once in <MotionProvider>
 import { createContext, useContext, useEffect, useState, useSyncExternalStore } from 'react'
 import { AnimatePresence, LazyMotion, LayoutGroup, MotionConfig, MotionGlobalConfig, PresenceContext, domMax, m } from 'motion/react'
 import { getReduceMotion, onReduceMotion, prefersReducedMotion } from '../lib/theme'
@@ -14,15 +11,13 @@ export const SPRING = { type: 'spring', stiffness: 520, damping: 40, mass: 0.9 }
 export const SPRING_SOFT = { type: 'spring', stiffness: 320, damping: 32 }
 const ReduceCtx = createContext(false)
 
-// Reduced motion is truly instant: motion's own reducedMotion option only drops transform animations and still plays
-// opacity fades, so the global skip flag is used as well (every motion value, layout pill, enter and exit jumps to its
-// end state). Set at load so the very first render is covered too.
+// reduced motion is truly instant: motion's own reducedMotion option only drops transform animations and still plays opacity fades
 MotionGlobalConfig.skipAnimations = prefersReducedMotion()
 
-// True when motion should be minimal (setting or OS).
+// true when motion should be minimal (setting or OS)
 export function useReducedMotion() { return useContext(ReduceCtx) }
 
-// Pointer spotlight for `.spot` cards: one delegated, rAF-throttled listener sets --mx / --my on the hovered card.
+// pointer spotlight for `.spot` cards: one delegated, rAF-throttled listener sets --mx / --my on the hovered card
 function useSpotlight(off) {
   useEffect(() => {
     if (off) return
@@ -41,7 +36,7 @@ function useSpotlight(off) {
   }, [off])
 }
 
-// OS prefers-reduced-motion, live (motion's own hook reads it once and never updates).
+// OS prefers-reduced-motion, live
 const QUERY = '(prefers-reduced-motion: reduce)'
 const onOsChange = cb => {
   const mq = window.matchMedia?.(QUERY)
@@ -55,12 +50,12 @@ export function MotionProvider({ children }) {
   useEffect(() => onReduceMotion(setSetting), [])
   const os = useOsReducedMotion()
   const reduce = setting || os
-  // Assigned during render (idempotent) so it is in place before any child starts an animation in its effects.
+  // assigned during render (idempotent) so it is in place before any child starts an animation in its effects
   MotionGlobalConfig.skipAnimations = reduce
   useSpotlight(reduce)
   return (
     <LazyMotion features={domMax} strict>
-      {/* reducedMotion stays 'never': the skip flag above already makes every animation instant when reducing. */}
+      {/* reducedMotion stays 'never': the skip flag above already makes every animation instant when reducing */}
       <MotionConfig reducedMotion='never' transition={{ duration: 0.22, ease: EASE }}>
         <ReduceCtx.Provider value={reduce}>{children}</ReduceCtx.Provider>
       </MotionConfig>
@@ -68,10 +63,7 @@ export function MotionProvider({ children }) {
   )
 }
 
-// Sliding selection pill (shared layoutId) under the active tab / row. Put it first inside a `relative` element.
-// It is cut off from any surrounding AnimatePresence: a layoutId element inside an exiting subtree waits for another
-// member of its layout stack to take over, which never happens once the pill has moved, so the exit (header sub-tabs,
-// a tab strip inside <Swap>, a modal) would hang forever and leave the old content on screen.
+// sliding selection pill (shared layoutId) under the active tab / row
 export function Pill({ layoutId, className = 'accent-soft absolute inset-0 rounded-full', transition }) {
   const reduce = useReducedMotion()
   return (
@@ -81,13 +73,10 @@ export function Pill({ layoutId, className = 'accent-soft absolute inset-0 round
   )
 }
 
-// Page enter: fade + 8px rise when `active` turns true. Kept-alive pages stay mounted, so this animates on every visit
-// without remounting the page (state survives). Inactive pages are display:none.
+// page enter: fade + 8px rise when `active` turns true
 const cx = (...c) => c.filter(Boolean).join(' ')
 export function PageTransition({ active = true, className, children }) {
-  // Every page stays drawn. Inactive ones use content-visibility: hidden, which skips their paint but keeps their
-  // layout and rendering state, so switching back is instant instead of re-laying-out the whole page from
-  // display: none. `inert` keeps hidden pages out of focus and clicks. The fade is CSS opacity only.
+  // every page stays drawn
   return (
     <div className={cx(className, active && 'page-in')} inert={active ? undefined : ''} aria-hidden={active ? undefined : true}
       style={{ contentVisibility: active ? 'visible' : 'hidden', pointerEvents: active ? undefined : 'none', zIndex: active ? 1 : 0, contain: 'layout paint style' }}>
@@ -114,7 +103,7 @@ export function Item({ as = 'div', index = 0, className, children, ...rest }) {
   return <Tag className={className} variants={ITEM} {...rest}>{children}</Tag>
 }
 
-// One-off entrance for a single block. delay is in seconds.
+// One-off entrance for a single block. delay is in seconds
 export function FadeIn({ as = 'div', delay = 0, y = 8, className, children, ...rest }) {
   const Tag = m[as]
   return (

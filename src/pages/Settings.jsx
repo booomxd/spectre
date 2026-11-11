@@ -15,7 +15,7 @@ export const SETTINGS_TABS = [
   { value: 'experimental', label: 'Experimental', icon: FiCpu },
 ]
 
-// params: { tab?: one of SETTINGS_TABS, tool?: 'rank' | 'customize' | 'premier' | 'status' } (navigate('settings', {...})).
+// params: { tab?: one of SETTINGS_TABS, tool?: 'rank' | 'customize' | 'premier' | 'status' } (navigate('settings', {...}))
 export default function Settings({ active, params }) {
   const { settings, error, save } = useSettings()
   const [tab, setTab] = useState('general')

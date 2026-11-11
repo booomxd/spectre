@@ -10,7 +10,7 @@ const go = id => () => navigate(id)
 const tierColor = t => (t?.color ? '#' + t.color.slice(0, 6) : null)
 const signed = n => (n > 0 ? '+' : '') + n
 
-// Small "open" affordance in a tile corner (the tile needs the `group` class).
+// small "open" affordance in a tile corner
 const Arrow = () => (
   <span className='w-8 h-8 rounded-full glass-inset flex items-center justify-center text-muted transition-[transform,color] duration-300 ease-out group-hover:text-accent group-hover:-translate-y-0.5 group-hover:translate-x-0.5'>
     <FiArrowUpRight />
@@ -22,7 +22,7 @@ function greeting() {
   return h < 5 ? 'Late night' : h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening'
 }
 
-// Derived numbers from the ranked history rows (oldest first).
+// derived numbers from the ranked history rows
 export function formOf(rows) {
   const list = rows || []
   const wins = list.filter(r => r.change > 0).length
@@ -37,7 +37,7 @@ export function formOf(rows) {
   return { games: list.length, wins, net, streak, rate: list.length ? Math.round(wins / list.length * 100) : null }
 }
 
-// The latest run of ranked games: newest within 12 hours, with no gap over 3 hours between games.
+// the latest run of ranked games: newest within 12 hours, with no gap over 3 hours between games
 export function sessionOf(rows) {
   const list = (rows || []).filter(r => r.time)
   const out = []
@@ -49,7 +49,7 @@ export function sessionOf(rows) {
   return out
 }
 
-// Ranked results of the current session: net RR, wins and losses, and the streak.
+// ranked results of the current session: net RR, wins and losses, and the streak
 export function SessionTile({ rr }) {
   const rows = sessionOf(rr.data)
   const f = formOf(rows)
@@ -72,8 +72,7 @@ export function SessionTile({ rr }) {
   )
 }
 
-// Hero: name over the player card art, quick stats in a recessed strip.
-// Long names (or wide CJK names) step down so the hero never crowds the card art.
+// hero: name over the player card art, quick stats in a recessed strip
 function nameSize(name = '') {
   const w = [...name].reduce((n, ch) => n + (/[⺀-￯]/.test(ch) ? 1.8 : 1), 0)
   return w <= 10 ? 64 : w <= 14 ? 52 : w <= 20 ? 42 : 34
@@ -120,7 +119,7 @@ export function Hero({ riot, identity, account, rr }) {
   )
 }
 
-// Local time pill (ticks every second).
+// local time pill (ticks every second)
 function LiveClock({ className }) {
   const now = new Date(useNow())
   return (
@@ -131,7 +130,7 @@ function LiveClock({ className }) {
   )
 }
 
-// Current rank with a tier-tinted glow, RR bar and peak.
+// current rank with a tier-tinted glow, RR bar and peak
 export function RankTile({ rank }) {
   const tiers = useTiers()
   const t = rank && tiers?.[rank.tier]
@@ -169,7 +168,7 @@ export function RankTile({ rank }) {
   )
 }
 
-// Ranked trend chart tile.
+// ranked trend chart tile
 export function TrendTile({ rr }) {
   const f = formOf(rr.data)
   return (
@@ -188,7 +187,7 @@ export function TrendTile({ rr }) {
   )
 }
 
-// Last ranked games as signed RR bars around a baseline, plus the latest three.
+// last ranked games as signed RR bars around a baseline, plus the latest three
 export function FormTile({ rr }) {
   const maps = useContent('maps')
   const rows = (rr.data || []).slice(-10)

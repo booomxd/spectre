@@ -16,7 +16,7 @@ export function timeLabel(ms, short) {
   return d.toLocaleDateString([], { month: 'short', day: 'numeric' })
 }
 
-// Recent DM conversations, newest first. `friends` maps puuid -> friend for names/cards/status.
+// recent DM conversations, newest first
 export function Conversations({ convs, friends, selected, onOpen }) {
   if (!convs?.length) return null
   return (
@@ -52,7 +52,7 @@ export function Conversations({ convs, friends, selected, onOpen }) {
   )
 }
 
-// Message thread with one friend. Polls while open; sends with Enter. `actions` renders in the header.
+// message thread with one friend
 export function ChatPanel({ cid, friend, statusLine, active, onClose, onSent, actions }) {
   const msgs = useInvoke('chat:messages', [cid], { poll: active ? 2500 : undefined, deps: [cid] })
   const [pending, setPending] = useState([])
@@ -63,7 +63,7 @@ export function ChatPanel({ cid, friend, statusLine, active, onClose, onSent, ac
 
   useEffect(() => { setPending([]); setText(''); input.current?.focus() }, [cid])
 
-  // Drop optimistic messages once the real ones arrive.
+  // drop optimistic messages once the real ones arrive
   const list = [...(msgs.data || []), ...pending.filter(p => !(msgs.data || []).some(m => m.fromMe && m.body === p.body && m.time >= p.time - 5000))]
 
   useLayoutEffect(() => {
@@ -85,7 +85,7 @@ export function ChatPanel({ cid, friend, statusLine, active, onClose, onSent, ac
   }
 
   const name = friend?.gameName || list.find(m => !m.fromMe)?.gameName || 'Chat'
-  // Only the newest bubbles animate in; older history renders in place.
+  // only the newest bubbles animate in
   const animFrom = Math.max(0, list.length - 6)
   return (
     <Card className='anim-fade flex flex-col overflow-hidden h-full min-h-[420px] rounded-3xl'>

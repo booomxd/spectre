@@ -3,7 +3,7 @@ import { invoke, useEvent } from './ipc'
 
 const RiotContext = createContext({ connected: false })
 
-// Provides the Riot connection status ({ connected, puuid, gameName, tagLine, shard, region }).
+// provides the Riot connection status
 export function RiotProvider({ children }) {
   const [status, setStatus] = useState({ connected: false })
   useEffect(() => { invoke('riot:status').then(setStatus).catch(() => { }) }, [])

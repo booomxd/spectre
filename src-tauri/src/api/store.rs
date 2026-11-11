@@ -1,21 +1,21 @@
-// Storefront, wallet and rank snapshot for the dashboard and shop.
+// storefront, wallet and rank snapshot for the dashboard and shop
 use crate::core::error::Res;
 use crate::core::{js, truthy, Ctx, Registry};
 use serde_json::{json, Map, Value};
 
 const VP: &str = "85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741";
 
-/// `o.k` keeping JS undefined (missing key) apart from null.
+/// `o.k` keeping JS undefined (missing key) apart from null
 fn g(v: &Value, k: &str) -> Option<Value> { v.get(k).cloned() }
 
-/// A JS object literal: `None` values are undefined, which JSON.stringify leaves out.
+/// A JS object literal: `None` values are undefined
 fn def<const N: usize>(pairs: [(&str, Option<Value>); N]) -> Value {
     let mut m = Map::new();
     for (k, v) in pairs { if let Some(v) = v { m.insert(k.to_string(), v); } }
     Value::Object(m)
 }
 
-/// Object keys in JS order: integer-like keys ascending first, then the rest in insertion order.
+/// object keys in JS order: integer-like keys ascending first, then the rest in insertion order
 fn js_keys(v: &Value) -> Vec<String> {
     let Some(o) = v.as_object() else { return Vec::new() };
     let idx = |k: &str| k.parse::<u32>().ok().filter(|n| *n != u32::MAX && n.to_string() == k);
@@ -26,15 +26,15 @@ fn js_keys(v: &Value) -> Vec<String> {
     out
 }
 
-/// `Object.values(v || {})[0]` (None = undefined).
+/// `Object.values(v || {})[0]` (None = undefined)
 fn first_value(v: &Value) -> Option<Value> { js_keys(v).first().map(|k| v[k.as_str()].clone()) }
-/// `Object.keys(v || {})[0]`.
+/// `Object.keys(v || {})[0]`
 fn first_key(v: &Value) -> Option<Value> { js_keys(v).first().map(|k| Value::String(k.clone())) }
 
-/// `o.Rewards?.[0]?.<k>`.
+/// `o.Rewards?.[0]?.<k>`
 fn reward(o: &Value, k: &str) -> Option<Value> { o.get("Rewards").and_then(|r| r.get(0)).and_then(|r| r.get(k)).cloned() }
 
-/// `Math.max` over numbers (NaN if any is NaN).
+/// `Math.max` over numbers (NaN if any is NaN)
 fn max(a: f64, b: f64) -> f64 { if a.is_nan() || b.is_nan() { f64::NAN } else { a.max(b) } }
 
 pub(crate) async fn storefront(ctx: &Ctx) -> Res<Value> {
@@ -107,7 +107,7 @@ pub fn register(reg: &mut Registry, _ctx: &Ctx) {
         }))
     });
 
-    // Current + peak rank.
+    // current + peak rank
     reg.add("store:rank", |ctx, _| async move {
         let m = ctx.riot.pd("get", &format!("mmr/v1/players/{}", ctx.riot.puuid()), None).await?;
         let seasons = &m["QueueSkills"]["competitive"]["SeasonalInfoBySeasonID"];
@@ -124,7 +124,7 @@ pub fn register(reg: &mut Registry, _ctx: &Ctx) {
         }))
     });
 
-    // Equipped player card / title and account level for the dashboard hero.
+    // equipped player card / title and account level for the dashboard hero
     reg.add("store:identity", |ctx, _| async move {
         let p = ctx.riot.puuid();
         let mut l = ctx.riot.pd("get", &format!("personalization/v2/players/{p}/playerloadout"), None).await;

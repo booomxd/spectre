@@ -1,4 +1,4 @@
-// Right panel: agent tokens, ability icons and strategy notes.
+// right panel: agent tokens, ability icons and strategy notes
 import { useMemo, useState } from 'react'
 import { FiSearch } from 'react-icons/fi'
 import { Empty, Input, Skeleton, Tabs, Textarea } from '../../ui'
@@ -9,7 +9,7 @@ function drag(e, payload) {
   e.dataTransfer.effectAllowed = 'copy'
 }
 
-// The agent you last picked (here or on the board) keeps its abilities one drag away under the agent grid.
+// the agent you last picked (here or on the board) keeps its abilities one drag away under the agent grid
 export default function Palette({ agents, side, placed, onPlace, notes, onNotes, focus, onFocus }) {
   const [tab, setTab] = useState('agents')
   const [team, setTeam] = useState('ally')

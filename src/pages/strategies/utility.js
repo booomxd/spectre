@@ -1,6 +1,4 @@
-// Utility drawn to scale. Sizes are in metres and approximate; the board converts them with the map's
-// own game-units-to-minimap multiplier, so a smoke covers the same share of every map as it does in game.
-// circle: { r }   beam: { len, w, center? } (aimed with the rotate handle; center = grows both ways from the token)
+// utility drawn to scale
 const K = {
   smoke: '#cfd6e4', fire: '#ff7a3d', slow: '#7cc8ff', reveal: '#ffd24d', heal: '#6ef0a0', wall: '#7be0ff',
   blind: '#f4f4f4', stun: '#c08bff', zone: '#ff4655', toxin: '#61e07a',
@@ -38,17 +36,17 @@ const TABLE = {
 
 export const KIND_COLOR = K
 
-// Looks an ability token up by its name ("Viper: Toxic Screen").
+// looks an ability token up by its name
 export function utilOf(it) {
   if (it?.type !== 'ability') return null
   const n = (it.name || '').split(': ').pop().toLowerCase()
   return TABLE[n] || null
 }
 
-// Board units per metre. valorant-api multipliers map game units (cm) to 0..1 minimap space.
+// board units per metre. valorant-api multipliers map game units (cm) to 0..1 minimap space
 export const ppmOf = (map) => (map?.xMultiplier ? Math.abs(map.xMultiplier) * 1e5 : 7)
 
-// Geometry in board units: { circle: r } or { beam: x1,y1,x2,y2,w }.
+// geometry in board units: { circle: r } or { beam: x1,y1,x2,y2,w }
 export function utilGeom(it, ppm) {
   const u = utilOf(it); if (!u) return null
   if (u.shape === 'circle') return { ...u, r: u.r * ppm }

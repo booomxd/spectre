@@ -1,12 +1,8 @@
-// First-run cleanup after updating from Electron Spectre (2.x) to this Tauri build.
-// Electron's app.setLoginItemSettings wrote HKCU\...\Run "electron.app.Spectre" = <old exe> (unquoted path); the Tauri
-// autostart plugin writes its own value named after the app ("Spectre" = "<exe> "). After the update the old value points at
-// an exe that is gone (or at the old Electron folder), so remove it, and if "Launch at login" is on, register this exe again.
-// Idempotent and silent: runs on every start of the windowed app (never in the CLI or dev builds), errors are only logged.
+// First-run cleanup after updating from Electron Spectre (2.x) to this Tauri build
 use crate::core::Ctx;
 
 pub fn run(ctx: &Ctx) {
-    // Dev builds run from target\ and must not touch the real install's autostart entries.
+    // dev builds run from target\ and must not touch the real install's autostart entries
     if ctx.is_dev { return; }
     #[cfg(windows)]
     if let Some(app) = ctx.app.clone() {
@@ -23,7 +19,7 @@ mod windows {
     const RUN: &str = r"Software\Microsoft\Windows\CurrentVersion\Run";
     const APPROVED: &str = r"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run";
 
-    /// The exe a Run command starts: `"C:\a b\x.exe" --args` or `C:\a b\x.exe --args` (unquoted, may contain spaces).
+    /// the exe a Run command starts: `"C:\a b\x.exe" --args` or `C:\a b\x.exe --args`
     fn exe_of(cmd: &str) -> Option<PathBuf> {
         let cmd = cmd.trim();
         if let Some(rest) = cmd.strip_prefix('"') {
@@ -38,8 +34,7 @@ mod windows {
         n(a) == n(b)
     }
 
-    /// Electron Spectre's per-user install folder (electron-builder oneClick, perMachine false):
-    /// %LOCALAPPDATA%\Programs\spectre, with "Uninstall Spectre.exe" next to Spectre.exe.
+    /// electron Spectre's per-user install folder (electron-builder oneClick, perMachine false): %LOCALAPPDATA%\Programs\spectre, with "Uninstall Spectre.exe" next to Spectre.exe
     fn electron_install(exe: &Path) -> bool {
         let dir = exe.parent().unwrap_or(Path::new(""));
         if dir.join("Uninstall Spectre.exe").exists() { return true; }
@@ -52,7 +47,7 @@ mod windows {
         let own_name = app.package_info().name.clone();
         let run = CURRENT_USER.options().read().write().open(RUN)?;
 
-        // Spectre's Run values (Electron "electron.app.Spectre" or our own "Spectre") that start a missing exe or the old Electron one.
+        // Spectre's Run values (Electron "electron.app.Spectre" or our own "Spectre") that start a missing exe or the old Electron one
         let mut stale = Vec::new();
         for (name, _) in run.values()? {
             if !name.to_lowercase().contains("spectre") { continue; }
@@ -71,7 +66,7 @@ mod windows {
             if let Some(k) = &approved { let _ = k.remove_value(name); }
         }
 
-        // "Launch at login" on but our own entry missing (it was the Electron one, or just removed): register this exe.
+        // "Launch at login" on but our own entry missing (it was the Electron one, or just removed): register this exe
         if truthy(&crate::api::settings::load(ctx)["launchAtLogin"]) && run.get_string(&own_name).is_err() {
             use tauri_plugin_autostart::ManagerExt;
             match app.autolaunch().enable() {

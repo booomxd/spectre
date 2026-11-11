@@ -6,7 +6,7 @@ import { useRiot } from '../../lib/riot'
 import { useContent, useTiers } from '../../lib/content'
 import { NO_TITLE, QUEUES, divisionLabel, lc } from './gear'
 
-// Presence state + live refresh (polls while the page is visible, refreshes after every apply).
+// presence state + live refresh
 export function usePresence(active) {
   const riot = useRiot()
   const st = useInvoke('tools:state', [], { skip: !riot.connected, poll: active ? 5000 : undefined })
@@ -14,7 +14,7 @@ export function usePresence(active) {
   return st
 }
 
-// Runs a tools:* write with a toast. Returns true on success.
+// runs a tools:* write with a toast
 export async function runTool(channel, arg, msg = 'Updated. Friends see it within a few seconds') {
   const r = await withToast(invoke(channel, arg), msg)
   return !!r
@@ -28,7 +28,7 @@ function statusText(s, maps) {
   return s.state === 'INGAME' ? `${base} (${s.ally ?? 0} - ${s.enemy ?? 0})` : base
 }
 
-// Live "how friends see you" card. `draft` overlays unsaved values: { tier, leaderboard, level, cardId, titleId, premier, status }.
+// Live "how friends see you" card
 export function PresencePanel({ presence, draft = {} }) {
   const riot = useRiot()
   const tiers = useTiers()

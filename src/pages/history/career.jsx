@@ -1,8 +1,7 @@
-// Shared building blocks for the Career pages (Progression, Matches, Encounters, Leaderboard) so they read as one family:
-// a toolbar row with SegmentedTabs + right-side meta, and a stat strip of big numbers under it.
+// shared building blocks for the Career pages (Progression, Matches, Encounters, Leaderboard) so they read as one family: a toolbar row with SegmentedTabs + right-side meta, and a stat strip of big numbers under it
 import { SegmentedTabs, Skeleton, cx } from '../../ui'
 
-// Toolbar under the page header: segmented filter on the left, meta / actions on the right.
+// toolbar under the page header: segmented filter on the left, meta / actions on the right
 export function CareerBar({ tabs, value, onChange, layoutId, right, className }) {
   return (
     <div className={cx('flex flex-wrap items-center justify-between gap-3 mb-5', className)}>
@@ -12,7 +11,7 @@ export function CareerBar({ tabs, value, onChange, layoutId, right, className })
   )
 }
 
-// One big number. tone: 'good' | 'bad' | 'accent' | undefined.
+// one big number. tone: 'good' | 'bad' | 'accent' | undefined
 export function StatCell({ label, value, sub, tone, className, children }) {
   const color = tone === 'good' ? 'text-good' : tone === 'bad' ? 'text-bad' : tone === 'accent' ? 'text-accent' : 'text-text'
   return (
@@ -24,7 +23,7 @@ export function StatCell({ label, value, sub, tone, className, children }) {
   )
 }
 
-// Row of StatCells inside one glass panel, split by hairlines. Pass `loading` for a skeleton of the same height.
+// row of StatCells inside one glass panel, split by hairlines
 export function StatStrip({ children, loading, className }) {
   if (loading) return <Skeleton className={cx('h-[98px] rounded-2xl mb-5', className)} />
   return (
@@ -34,7 +33,7 @@ export function StatStrip({ children, loading, className }) {
   )
 }
 
-// Last results as small pills, oldest -> newest. results: ['win' | 'loss' | 'draw'].
+// last results as small pills, oldest -> newest. results: ['win' | 'loss' | 'draw']
 export function FormPills({ results, className }) {
   return (
     <div className={cx('flex items-center gap-1', className)}>

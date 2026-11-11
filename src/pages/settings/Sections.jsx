@@ -14,7 +14,7 @@ const START_PAGES = [
 
 const Row = ({ children }) => <div className='py-4 first:pt-0 last:pb-0 border-b border-line last:border-0'>{children}</div>
 
-// Slider that only saves when released, so dragging does not spam the store.
+// slider that only saves when released
 function Slider({ label, value, min, max, step, onCommit, format }) {
   const [v, setV] = useState(null)
   const shown = v ?? value
@@ -51,7 +51,7 @@ export function General({ settings, save }) {
   )
 }
 
-// KeyboardEvent.code -> global-shortcut accelerator key.
+// KeyboardEvent.code -> global-shortcut accelerator key
 const CODE_KEYS = {
   Space: 'Space', Enter: 'Return', Tab: 'Tab', ArrowUp: 'Up', ArrowDown: 'Down', ArrowLeft: 'Left', ArrowRight: 'Right',
   Home: 'Home', End: 'End', PageUp: 'PageUp', PageDown: 'PageDown', Insert: 'Insert', Delete: 'Delete', Backquote: '`',
@@ -65,8 +65,7 @@ function acceleratorKey(code) {
   return CODE_KEYS[code] || null
 }
 
-// Click, then press a combo. Needs Ctrl, Alt or Shift (F-keys work alone) so normal typing never triggers it.
-// Esc cancels, Backspace clears. Global hotkeys are paused while recording so the current combo can be re-used.
+// click, then press a combo
 function Keybind({ value, onChange, ok }) {
   const [rec, setRec] = useState(false)
   const change = useRef(onChange)
@@ -204,7 +203,7 @@ const LINKS = [
   ['VALORANT website', 'https://playvalorant.com'],
 ]
 
-// Manual update check. Spectre also checks on launch and every 6 hours; installing works like the title-bar button.
+// manual update check
 function Updates() {
   const [s, setS] = useState(null)
   const [busy, setBusy] = useState(false)

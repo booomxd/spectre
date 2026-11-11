@@ -6,7 +6,7 @@ import logo from '../assets/spectre-logo.svg'
 
 const KINDS = [['suggestion', FiZap, 'Suggestion'], ['bug', FiAlertCircle, 'Bug report'], ['other', FiMessageCircle, 'Something else']]
 
-// Send ideas and bug reports to the developer: by email when it's set up, otherwise as a GitHub issue.
+// send ideas and bug reports to the developer: by email when it's set up
 export default function Suggestions() {
   const { data: cfg } = useInvoke('feedback:config')
   const [kind, setKind] = useState('suggestion')
@@ -23,7 +23,7 @@ export default function Suggestions() {
     openExternal(`https://github.com/${cfg?.repo || 'booomxd/spectre'}/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`)
     toast('Opened GitHub in your browser. Submit the issue there to send it.')
   }
-  // Emailed via Web3Forms from the page itself (its free plan rejects requests from the app's backend).
+  // emailed via Web3Forms from the page itself
   const email = async () => {
     let last = 0
     try { last = +localStorage.getItem('spectre:feedback-at') || 0 } catch (e) { }

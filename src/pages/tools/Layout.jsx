@@ -1,6 +1,4 @@
-// Compact frame shared by the Experimental tools (Rank Editor, Profile, Premier, Status).
-// They render inside Settings > Experimental, so they stay quieter than the main pages: smaller panels,
-// eyebrow titles, one accent action, and the live "how friends see you" preview pinned on the right.
+// compact frame shared by the Experimental tools
 import { FadeIn, cx } from '../../ui'
 
 export function ToolLayout({ aside, children }) {
@@ -12,7 +10,7 @@ export function ToolLayout({ aside, children }) {
   )
 }
 
-// A quiet glass panel with an eyebrow title. `delay` staggers the entrance (seconds).
+// A quiet glass panel with an eyebrow title
 export function Panel({ title, hint, right, delay = 0, className, bodyClassName, children }) {
   return (
     <FadeIn delay={delay} y={6} className={cx('glass rounded-2xl', className)}>
@@ -30,7 +28,7 @@ export function Panel({ title, hint, right, delay = 0, className, bodyClassName,
   )
 }
 
-// Small selectable tile used by the pickers (ranks, cards, borders, titles). `on` = selected.
+// small selectable tile used by the pickers
 export function Choice({ on, onClick, className, style, title, children }) {
   return (
     <button type='button' onClick={onClick} title={title} style={style}

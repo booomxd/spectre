@@ -1,6 +1,4 @@
-// Demo-data mode: answers every backend channel from sample fixtures so the UI runs in a plain browser.
-// Only reachable from src/lib/ipc.js under the Vite dev server with `?demo` in the URL (never in production builds).
-// URL params: ?demo&page=<pageId>&theme=<themeId>&overlay&experimental=1&live=idle (live=idle: not in a match)
+// Demo-data mode: answers every backend channel from sample fixtures so the UI runs in a plain browser
 import { setTheme, THEMES } from '../theme'
 import { BUDDY_LEVELS, CONTRACTS, GUNS, OWNED_CHROMAS, OWNED_LEVELS } from './assets'
 import * as F from './fixtures'
@@ -55,7 +53,7 @@ const db = {
   overrides: {}, keep: false,
 }
 
-// Strip "_private" helper keys used to build fixtures.
+// strip "_private" helper keys used to build fixtures
 const pub = o => (o && typeof o === 'object' && !Array.isArray(o) ? Object.fromEntries(Object.entries(o).filter(([k]) => !k.startsWith('_'))) : o)
 
 function storefront() {
@@ -118,7 +116,7 @@ const applyTool = obj => {
 const riotStatus = { connected: true, puuid: F.ME.puuid, gameName: F.ME.gameName, tagLine: F.ME.tagLine, shard: 'eu', region: 'eu', clientVersion: 'release-11.10-shipping-14-3456789' }
 const overlayState = { open: params.has('overlay'), locked: false }
 
-// Channel -> handler(...args). Mutating channels change only the in-memory stores above.
+// channel -> handler(...args)
 const H = {
   'riot:status': ok(riotStatus),
   'riot:connect': ok(riotStatus),
@@ -175,12 +173,12 @@ const H = {
   'chat:send': (cid, body) => {
     const text = String(body || '').trim()
     if (!text) throw new Error('Message is empty')
-    // Echo only: nothing is sent anywhere.
+    // echo only: nothing is sent anywhere
     return { id: `local-${Date.now()}`, cid, body: text, time: Date.now(), puuid: F.ME.puuid, gameName: F.ME.gameName, tagLine: F.ME.tagLine, fromMe: true }
   },
 
   'wishlist:list': () => db.wishlist || [],
-  // Sample announcement so demo screenshots show the banner.
+  // sample announcement so demo screenshots show the banner
   'announce:list': () => ({ version: '4.0.0', items: [{ id: 'demo-welcome', title: 'Spectre 4.0 is here', body: 'Faster tab switching and smoother scrolling. Thanks for using Spectre!', link: 'https://github.com/booomxd/spectre/releases', linkLabel: 'Release notes' }] }),
   'wishlist:toggle': w => { const l = db.wishlist || []; db.wishlist = l.some(i => i.id === w.id) ? l.filter(i => i.id !== w.id) : [...l, w]; return db.wishlist },
   'wishlist:check': ok({ hits: [] }),
@@ -306,7 +304,7 @@ export async function invoke(channel, ...args) {
 
 export const isOverlay = () => params.has('overlay')
 
-// Runs once when demo mode loads: theme, experimental flag, starting page, and a guard on outgoing form posts.
+// runs once when demo mode loads: theme, experimental flag, starting page, and a guard on outgoing form posts
 let booted = false
 export function demoBoot() {
   if (booted) return
@@ -316,12 +314,12 @@ export function demoBoot() {
   if (params.get('experimental') === '1') {
     try { localStorage.setItem('spectre.experimental', '1') } catch (e) { /* storage unavailable */ }
   }
-  // The feedback page posts to a form service; answer it locally so demo clicks never send anything.
+  // the feedback page posts to a form service
   const realFetch = window.fetch.bind(window)
   window.fetch = (url, opts) => (String(url).includes('api.web3forms.com')
     ? Promise.resolve(new Response(JSON.stringify({ success: true, message: 'Demo: not sent' }), { headers: { 'Content-Type': 'application/json' } }))
     : realFetch(url, opts))
-  // Open the requested page once the shell has mounted its navigate listener (settings.startPage covers first load too).
+  // open the requested page once the shell has mounted its navigate listener
   const page = params.get('page')
   if (page) {
     const go = (tries = 0) => {

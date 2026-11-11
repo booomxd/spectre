@@ -1,9 +1,8 @@
-// Shared list/detail layout for the Squad pages (Friends, Feed, Notes, Lookup).
-// Local to the Squad pages: a left list pane with its own scroller and a right detail area.
+// shared list/detail layout for the Squad pages
 import { FiSearch } from 'react-icons/fi'
 import { Input, Pill, cx, pressable } from '../../ui'
 
-// Fills the page body. Use with <Page bodyClassName={SPLIT_BODY}>.
+// fills the page body
 export const SPLIT_BODY = '!overflow-hidden flex min-h-0'
 
 export function SplitView({ list, children, listWidth = 340, className }) {
@@ -15,7 +14,7 @@ export function SplitView({ list, children, listWidth = 340, className }) {
   )
 }
 
-// Glass pane with a fixed header and a scrolling body.
+// glass pane with a fixed header and a scrolling body
 export function Pane({ title, right, header, footer, children, className, bodyClassName }) {
   return (
     <div className={cx('glass rounded-3xl flex flex-col min-h-0 h-full overflow-hidden', className)}>
@@ -41,7 +40,7 @@ export function SearchField({ value, onChange, placeholder, className, autoFocus
   )
 }
 
-// Group label inside a list pane.
+// group label inside a list pane
 export function ListLabel({ children, count }) {
   return (
     <div className='flex items-center justify-between px-2.5 pt-4 pb-1.5 first:pt-1'>
@@ -51,7 +50,7 @@ export function ListLabel({ children, count }) {
   )
 }
 
-// A selectable row in a list pane. The selection pill slides between rows (shared layoutId per list).
+// A selectable row in a list pane
 export function ListRow({ selected, onClick, layoutId, className, children, dim, as: Tag = 'div', ...rest }) {
   return (
     <Tag {...(Tag === 'div' ? pressable(onClick) : { onClick })} {...rest}
@@ -63,7 +62,7 @@ export function ListRow({ selected, onClick, layoutId, className, children, dim,
   )
 }
 
-// Big detail header: optional art backdrop, eyebrow, title, meta and actions.
+// big detail header: optional art backdrop, eyebrow, title, meta and actions
 export function DetailHero({ art, eyebrow, title, meta, actions, children, className }) {
   return (
     <div className={cx('glass relative overflow-hidden rounded-3xl', className)}>

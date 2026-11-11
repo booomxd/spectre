@@ -1,4 +1,4 @@
-// App settings (one JSON store) plus small app helpers used by the Settings page.
+// app settings (one JSON store) plus small app helpers used by the Settings page
 use crate::core::error::{msg, Res};
 use crate::core::{Args, Ctx, Registry};
 use once_cell::sync::Lazy;
@@ -25,14 +25,14 @@ pub fn defaults() -> Value {
     })
 }
 
-/// `{ ...a, ...b }` for two JSON objects (non-objects count as empty).
+/// `{ ...a, ...b }` for two JSON objects
 pub fn merge(a: &Value, b: &Value) -> Value {
     let mut out: Map<String, Value> = a.as_object().cloned().unwrap_or_default();
     if let Some(b) = b.as_object() { for (k, v) in b { out.insert(k.clone(), v.clone()); } }
     Value::Object(out)
 }
 
-/// `{ ...a, ...b }` with the nested overlay / discord groups merged one level deep.
+/// `{ ...a, ...b }` with the nested overlay / discord groups merged one level deep
 fn merge_settings(a: &Value, b: &Value) -> Value {
     let mut out = merge(a, b);
     for group in ["overlay", "discord"] {
@@ -41,7 +41,7 @@ fn merge_settings(a: &Value, b: &Value) -> Value {
     out
 }
 
-/// Stored values merged over the defaults (one level deep for the nested groups).
+/// stored values merged over the defaults
 pub fn load(ctx: &Ctx) -> Value {
     let stored = ctx.riot.read_store("settings", json!({}));
     merge_settings(&defaults(), if stored.is_object() { &stored } else { &Value::Null })
@@ -50,10 +50,10 @@ pub fn load(ctx: &Ctx) -> Value {
 type Listener = Box<dyn Fn(&Ctx, &Value, &Value) + Send + Sync>;
 static LISTENERS: Lazy<Mutex<Vec<Listener>>> = Lazy::new(|| Mutex::new(Vec::new()));
 
-/// Other backend modules (e.g. the overlay's hotkeys) can react to saved changes: f(ctx, next, patch).
+/// other backend modules (e.g. the overlay's hotkeys) can react to saved changes: f
 pub fn on_change(f: impl Fn(&Ctx, &Value, &Value) + Send + Sync + 'static) { LISTENERS.lock().unwrap().push(Box::new(f)); }
 
-/// Saves a patch over the current settings and tells listeners. Returns the new settings.
+/// saves a patch over the current settings and tells listeners
 pub fn update(ctx: &Ctx, patch: &Value) -> Res<Value> {
     let next = merge_settings(&load(ctx), patch);
     ctx.riot.write_store("settings", &next)?;
@@ -94,8 +94,7 @@ pub fn register(reg: &mut Registry, _ctx: &Ctx) {
         Ok(Value::Null)
     });
 
-    // Clears the in-memory content caches; saved settings, memos etc. are kept. The webview's own data isn't wiped:
-    // WebView2 can only clear all of it at once, which would also lose the theme and other page preferences.
+    // clears the in-memory content caches
     reg.add("app:clearCache", |ctx, _| async move {
         ctx.riot.clear_api_cache();
         Ok(json!(true))

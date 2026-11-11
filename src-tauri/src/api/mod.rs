@@ -1,4 +1,4 @@
-// Feature modules, one per area of the app. Each registers its channels (and any background tasks).
+// feature modules, one per area of the app
 use crate::core::{Ctx, Registry};
 
 pub mod known;

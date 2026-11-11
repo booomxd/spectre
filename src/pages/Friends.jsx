@@ -22,7 +22,7 @@ function statusLine(f) {
   }
 }
 
-// Quick actions for one friend (row hover and the chat header).
+// quick actions for one friend
 function FriendActions({ f, canInvite, onInvite, onChat }) {
   const b = 'w-8 h-8 rounded-full flex items-center justify-center text-muted hover:text-text hover:bg-surface-2 transition-colors disabled:opacity-40 disabled:pointer-events-none'
   return (
@@ -200,7 +200,7 @@ function FriendsBody({ active }) {
   const [q, setQ] = useState('')
   const [chat, setChat] = useState(null)
   const byPuuid = useMemo(() => Object.fromEntries((friends.data || []).map(f => [f.puuid, f])), [friends.data])
-  // A DM's conversation id is the friend's pid; reuse the existing conversation if there is one.
+  // A DM's conversation id is the friend's pid
   const openChat = (cid, puuid) => setChat({ cid, puuid })
   const chatWith = f => {
     const cid = convs.data?.find(c => c.puuid === f.puuid)?.cid || f.pid

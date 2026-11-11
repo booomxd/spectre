@@ -4,8 +4,7 @@ import { FiEyeOff, FiX } from 'react-icons/fi'
 import { AnimatePresence, Badge, SPRING_SOFT, Scrim, m, useReducedMotion } from '../../ui'
 import { AgentIcon, RankGlow, useRankColor } from './parts'
 
-// Side panel that springs in from the right, below the window's top bar (the dock row stays usable for window controls).
-// Closes on Escape or a scrim click. The scrim has no blur; only the panel itself blurs (never stacked).
+// side panel that springs in from the right, below the window's top bar
 export default function Drawer({ open, onClose, children, width = 'min(820px, 62vw)' }) {
   const reduce = useReducedMotion()
   useEffect(() => {
@@ -28,7 +27,7 @@ export default function Drawer({ open, onClose, children, width = 'min(820px, 62
     </AnimatePresence>, document.body)
 }
 
-// Panel heading for a live-match player. Hidden players show only their agent, never a name.
+// panel heading for a live-match player
 export function PanelHeader({ player: p, sub, actions, onClose }) {
   const color = useRankColor(p.ranked ? p.rank : 0)
   return (

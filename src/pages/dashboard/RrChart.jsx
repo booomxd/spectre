@@ -3,8 +3,7 @@ import { useContent, useTiers } from '../../lib/content'
 
 const PL = 46, PR = 20, PT = 18, PB = 28
 
-// Competitive ladder line chart. `rows` = [{ ladder, change, tierAfter, rrAfter, mapId, time }] oldest first.
-// `height` sets the viewBox height (wide charts use 260, compact tiles ~200). Entrance is opacity / transform only.
+// competitive ladder line chart
 export default function RrChart({ rows, height = 260, width = 800 }) {
   const W = width, H = height
   const tiers = useTiers()
@@ -18,7 +17,7 @@ export default function RrChart({ rows, height = 260, width = 800 }) {
   const x = i => PL + (rows.length === 1 ? (W - PL - PR) / 2 : i * (W - PL - PR) / (rows.length - 1))
   const y = v => PT + (1 - (v - lo) / (hi - lo)) * (H - PT - PB)
   const pts = rows.map((r, i) => [x(i), y(r.ladder)])
-  // Smooth curve (monotone-ish cubic through the points).
+  // smooth curve
   const line = pts.map((p, i) => {
     if (!i) return `M${p[0].toFixed(1)} ${p[1].toFixed(1)}`
     const q = pts[i - 1], mx = (q[0] + p[0]) / 2
@@ -30,7 +29,7 @@ export default function RrChart({ rows, height = 260, width = 800 }) {
   const mapName = id => maps?.find(m => m.mapUrl === id)?.displayName || ''
   const h = hover != null ? rows[hover] : null
   const last = pts[pts.length - 1]
-  // Entrance uses CSS keyframes (fill-mode both), so reduced motion simply shows the final state.
+  // entrance uses CSS keyframes (fill-mode both)
   const fade = (dur, delay = 0) => ({ animation: `fade ${dur}s ease ${delay}s both` })
 
   return (

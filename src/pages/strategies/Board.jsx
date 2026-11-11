@@ -1,13 +1,13 @@
-// SVG tactical board: map image, drawing tools, agent/ability tokens, zoom + pan, drop target.
+// SVG tactical board: map image, drawing tools, agent/ability tokens, zoom + pan, drop target
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react'
 import { FiArrowUpRight, FiEdit3, FiGrid, FiMapPin, FiMaximize, FiMinus, FiMousePointer, FiPlus, FiRotateCw, FiSquare, FiType } from 'react-icons/fi'
 import { RiEraserLine } from 'react-icons/ri'
 import { COLORS, SIZE, TOKEN_R, WIDTHS, arrowHead, bbox, clamp, isToken, moveItem, penPath, snapVal, teamColor, uid } from './model'
 import { KIND_COLOR, ppmOf, utilGeom } from './utility'
 
-// View rotation (degrees, around the board centre). Items keep board coordinates; only the view turns.
+// view rotation (degrees, around the board centre)
 const turn = (x, y, deg) => { const a = deg * Math.PI / 180, c = Math.cos(a), s = Math.sin(a), dx = x - SIZE / 2, dy = y - SIZE / 2; return [SIZE / 2 + dx * c - dy * s, SIZE / 2 + dx * s + dy * c] }
-// Callout positions: valorant-api maps game units to 0..1 minimap space (x from game Y, y from game X).
+// callout positions: valorant-api maps game units to 0..1 minimap space
 const calloutsOf = (map) => !map?.callouts || !map.xMultiplier ? [] : map.callouts.map(c => ({ name: c.regionName, x: (c.location.y * map.xMultiplier + map.xScalarToAdd) * SIZE, y: (c.location.x * map.yMultiplier + map.yScalarToAdd) * SIZE }))
 
 const TOOLS = [
@@ -113,7 +113,7 @@ const Board = forwardRef(function Board({ items, map, side, active, locked, onLi
     return turn((e.clientX - r.left - v.x) / v.k, (e.clientY - r.top - v.y) / v.k, -P.current.vr)
   }
 
-  // wheel zoom around the cursor (non-passive so the page never scrolls)
+  // wheel zoom around the cursor
   useEffect(() => {
     const el = svg.current
     const onWheel = (e) => {
@@ -136,7 +136,7 @@ const Board = forwardRef(function Board({ items, map, side, active, locked, onLi
   }
 
   useImperativeHandle(ref, () => ({
-    // Adds a palette item at the center of the visible area (or at a board point).
+    // adds a palette item at the center of the visible area
     addItem(payload, at) {
       const { view: v, items: its, snap: sn } = P.current
       const el = wrap.current
@@ -183,7 +183,7 @@ const Board = forwardRef(function Board({ items, map, side, active, locked, onLi
   }, [active, sel, onUndo, onRedo, onCommit])
 
   useEffect(() => { setSel(null); setEdit(null) }, [map?.uuid, locked])
-  // Selecting an agent (or one of its abilities) on the board shows that agent's abilities in the side panel.
+  // selecting an agent (or one of its abilities) on the board shows that agent's abilities in the side panel
   useEffect(() => { const it = items.find(i => i.id === sel); if (it?.agentId) onPickAgent?.(it.agentId) }, [sel]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const erase = (e) => {

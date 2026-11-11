@@ -1,4 +1,4 @@
-// Friends, presences, friend requests and the current party.
+// friends, presences, friend requests and the current party
 use crate::core::error::{msg, Res};
 use crate::core::riot::now_ms;
 use crate::core::{js, truthy, Args, Ctx, Registry};
@@ -9,7 +9,7 @@ use serde_json::{json, Map, Value};
 use std::collections::HashMap;
 use std::sync::Mutex;
 
-/// JS `encodeURIComponent`.
+/// JS `encodeURIComponent`
 fn enc(s: &str) -> String {
     let mut out = String::new();
     for b in s.bytes() {
@@ -18,7 +18,7 @@ fn enc(s: &str) -> String {
     out
 }
 
-/// JS `String(arg)` for a handler argument (undefined when missing).
+/// JS `String(arg)` for a handler argument
 fn js_string(v: Option<&Value>) -> String {
     match v {
         None => "undefined".into(),
@@ -28,17 +28,17 @@ fn js_string(v: Option<&Value>) -> String {
     }
 }
 
-/// Copies `src[key]` into `out[name]` only when present (JS leaves undefined fields out of the JSON).
+/// copies `src[key]` into `out[name]` only when present
 fn put(out: &mut Map<String, Value>, name: &str, v: Option<&Value>) {
     if let Some(v) = v { out.insert(name.to_string(), v.clone()); }
 }
 
-/// `a || b || ... || default`.
+/// `a || b || ... || default`
 fn or_chain(vals: &[&Value], default: Value) -> Value {
     vals.iter().find(|v| truthy(v)).map(|v| (*v).clone()).unwrap_or(default)
 }
 
-/// `a ?? b ?? ... ?? default`.
+/// `a ?? b ?? ... ?? default`
 fn nullish_chain(vals: &[&Value], default: Value) -> Value {
     vals.iter().find(|v| !v.is_null()).map(|v| (*v).clone()).unwrap_or(default)
 }
@@ -46,7 +46,7 @@ fn nullish_chain(vals: &[&Value], default: Value) -> Value {
 fn decode(p: &Value) -> Value {
     if !truthy(&p["private"]) { return Value::Null; }
     let Some(s) = p["private"].as_str() else { return Value::Null };
-    // Lenient like Node's Buffer.from(s, 'base64'): url-safe chars allowed, junk skipped, stops at '=', no padding needed.
+    // lenient like Node's Buffer.from(s, 'base64'): url-safe chars allowed, junk skipped, stops at '=', no padding needed
     let mut clean: String = s.chars().take_while(|&c| c != '=')
         .filter_map(|c| match c { '-' => Some('+'), '_' => Some('/'), c if c.is_ascii_alphanumeric() || c == '+' || c == '/' => Some(c), _ => None })
         .collect();
@@ -59,7 +59,7 @@ fn decode(p: &Value) -> Value {
         .unwrap_or(Value::Null)
 }
 
-// Normalises both the nested and the flat presence layouts.
+// normalises both the nested and the flat presence layouts
 fn flatten(d: &Value) -> Value {
     let (pl, pa, ma) = (&d["playerPresenceData"], &d["partyPresenceData"], &d["matchPresenceData"]);
     json!({
@@ -80,13 +80,12 @@ fn flatten(d: &Value) -> Value {
     })
 }
 
-// puuid -> best presence (VALORANT first, then any other game; riot_client entries are skipped).
+// puuid -> best presence (VALORANT first, then any other game
 async fn presences(ctx: &Ctx) -> Res<HashMap<String, Value>> {
     let res = ctx.riot.local("get", "chat/v4/presences", None).await?;
     let mut out: HashMap<String, Value> = HashMap::new();
     for p in js::arr(&res["presences"]) {
-        // state "mobile" is Riot's placeholder for someone who is offline (it comes tagged league_of_legends even if
-        // they never play it); the game's own friends list shows them as offline, so do the same.
+        // state "mobile" is Riot's placeholder for someone who is offline
         if !truthy(&p["puuid"]) || p["product"] == "riot_client" || p["state"] == "mobile" || p["state"] == "offline" { continue; }
         let id = js::s(&p["puuid"]);
         if out.get(&id).is_some_and(|o| o["product"] == "valorant") { continue; }
@@ -152,7 +151,7 @@ async fn in_party(ctx: &Ctx) -> Res<String> {
     Ok(js::s(&id))
 }
 
-// Queue ids Riot has switched on right now (parties/customgameconfigs), cached for five minutes. Empty when unknown.
+// queue ids Riot has switched on right now (parties/customgameconfigs), cached for five minutes
 static QUEUES_ON: Lazy<Mutex<(i64, Vec<String>)>> = Lazy::new(|| Mutex::new((0, Vec::new())));
 async fn enabled_queues(ctx: &Ctx) -> Vec<String> {
     {
@@ -165,12 +164,12 @@ async fn enabled_queues(ctx: &Ctx) -> Vec<String> {
     if !list.is_empty() { *QUEUES_ON.lock().unwrap() = (now_ms(), list.clone()); }
     list
 }
-/// Riot's "queue is disabled" refusal in plain words.
+/// Riot's "queue is disabled" refusal in plain words
 fn queue_off(e: crate::core::error::Error) -> crate::core::error::Error {
     if e.to_string().to_lowercase().contains("queue is disabled") { msg("Riot has this mode turned off for your party right now. Pick another mode.") } else { e }
 }
 
-// Party members' current ranks (the party data doesn't carry them), cached for five minutes.
+// party members' current ranks (the party data doesn't carry them), cached for five minutes
 static RANK_CACHE: Lazy<Mutex<HashMap<String, (i64, Value)>>> = Lazy::new(|| Mutex::new(HashMap::new()));
 
 async fn rank_of(ctx: &Ctx, puuid: String) -> Value {
@@ -185,7 +184,7 @@ async fn rank_of(ctx: &Ctx, puuid: String) -> Value {
     tier
 }
 
-// Direct messages. A DM conversation id (cid) is the friend's pid, e.g. "<puuid>@jp1.pvp.net".
+// direct messages
 fn to_message(ctx: &Ctx, m: &Value) -> Value {
     let mut o = Map::new();
     put(&mut o, "id", m.get("id"));
@@ -233,7 +232,7 @@ pub fn register(reg: &mut Registry, _ctx: &Ctx) {
         ctx.riot.local("post", "chat/v4/friendrequests", Some(puuid_body(&a))).await?;
         Ok(json!(true))
     });
-    // Decline (incoming) and cancel (outgoing) are the same DELETE.
+    // decline (incoming) and cancel (outgoing) are the same DELETE
     reg.add("social:declineRequest", |ctx, a: Args| async move {
         ctx.riot.local("delete", "chat/v4/friendrequests", Some(puuid_body(&a))).await?;
         Ok(json!(true))
@@ -253,7 +252,7 @@ pub fn register(reg: &mut Registry, _ctx: &Ctx) {
         if !truthy(&id) { return Ok(Value::Null); }
         let p = ctx.riot.glz("get", &format!("parties/v1/parties/{}", js::s(&id)), None).await?;
         let members = js::arr(&p["Members"]);
-        // Streamer mode hides names, except yours and your friends' (the client shows those to you anyway).
+        // streamer mode hides names, except yours and your friends'
         let me = ctx.riot.puuid();
         let friends = super::known::friend_puuids(&ctx).await.unwrap_or_default();
         let visible = |m: &Value| { let s = js::s(&m["Subject"]); s == me || friends.contains(&s) || !truthy(&m["PlayerIdentity"]["Incognito"]) };
@@ -287,9 +286,7 @@ pub fn register(reg: &mut Registry, _ctx: &Ctx) {
         o.insert("open".into(), json!(p["Accessibility"] == "OPEN"));
         o.insert("iOwn".into(), json!(i_own));
         o.insert("queueId".into(), js::or(&mm["QueueID"], Value::Null));
-        // Modes to offer: the standard modes Riot has switched on, in the game's order, plus anything else the party
-        // lists. The party's own EligibleQueues leaves out Competitive even when the game lets you pick it, so it
-        // can't be the only source. If Riot refuses a mode, the error says so.
+        // modes to offer: the standard modes Riot has switched on, in the game's order, plus anything else the party lists
         let on = enabled_queues(&ctx).await;
         let is_on = |q: &str| on.is_empty() || on.iter().any(|x| x == q);
         let mut queues: Vec<String> = ["unrated", "competitive", "swiftplay", "spikerush", "deathmatch", "hurm", "ggteam"].iter()
@@ -317,10 +314,10 @@ pub fn register(reg: &mut Registry, _ctx: &Ctx) {
         ctx.riot.glz("post", &path, None).await?;
         Ok(json!(true))
     });
-    // Lobby controls for your own party. Riot rejects them (with an error shown to the user) while a match is running.
+    // Lobby controls for your own party
     reg.add("social:queue", |ctx, a: Args| async move {
         let id = in_party(&ctx).await?;
-        // The old makedefault?queueID= route now returns 404; the client uses POST .../queue with a JSON body.
+        // the old makedefault?queueID= route now returns 404
         ctx.riot.glz("post", &format!("parties/v1/parties/{id}/queue"), Some(json!({ "queueID": js_string(a.0.first()) }))).await.map_err(queue_off)?;
         Ok(json!(true))
     });
@@ -349,7 +346,7 @@ pub fn register(reg: &mut Registry, _ctx: &Ctx) {
         Ok(json!(true))
     });
 
-    // Leaving (own puuid) and kicking (another member, owner only) are the same DELETE.
+    // leaving (own puuid) and kicking (another member, owner only) are the same DELETE
     reg.add("social:partyRemove", |ctx, a: Args| async move {
         ctx.riot.glz("delete", &format!("parties/v1/players/{}", js_string(a.0.first())), None).await?;
         Ok(json!(true))
@@ -368,7 +365,7 @@ pub fn register(reg: &mut Registry, _ctx: &Ctx) {
             if newer { last.insert(cid, m); }
         }
         let mut rows: Vec<(f64, Value)> = js::arr(&convs["conversations"]).into_iter()
-            // DMs are type "chat" with a player pid as cid; party/team chats live on ares-* hosts.
+            // DMs are type "chat" with a player pid as cid
             .filter(|c| c["type"] == "chat" && DM_CID.is_match(&js_string(c.get("cid"))))
             .map(|c| {
                 let cid = js::s(&c["cid"]);

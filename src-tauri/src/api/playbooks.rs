@@ -1,4 +1,4 @@
-// Strategy playbooks: folders (playbooks) of strategies, each with steps of board items.
+// strategy playbooks: folders (playbooks) of strategies, each with steps of board items
 use crate::api::memo::slice16;
 use crate::core::error::{msg, Res};
 use crate::core::riot::now_ms;
@@ -12,7 +12,7 @@ fn load(ctx: &Ctx) -> Vec<Value> {
     match ctx.riot.read_store("playbooks", json!([])) { Value::Array(a) => a, _ => Vec::new() }
 }
 
-/// JS `a === b` where None is undefined (objects / arrays are never equal, numbers compare by value).
+/// JS `a === b` where None is undefined
 fn strict_eq(a: Option<&Value>, b: Option<&Value>) -> bool {
     match (a, b) {
         (None, None) => true,
@@ -25,10 +25,10 @@ fn strict_eq(a: Option<&Value>, b: Option<&Value>) -> bool {
 
 fn get_id(p: &Value) -> Option<&Value> { p.as_object().and_then(|o| o.get("id")) }
 
-// JS `.` never matches a line terminator.
+// JS `.` never matches a line terminator
 static DATA_URL: Lazy<Regex> = Lazy::new(|| Regex::new(r"^data:image/png;base64,([^\n\r\x{2028}\x{2029}]+)$").unwrap());
 
-/// Node's lenient `Buffer.from(s, 'base64')`: accepts the url-safe alphabet, skips anything else, stops at '='.
+/// Node's lenient `Buffer.from(s, 'base64')`: accepts the url-safe alphabet, skips anything else, stops at '='
 fn node_base64(s: &str) -> Vec<u8> {
     let (mut out, mut acc, mut bits) = (Vec::new(), 0u32, 0u32);
     for c in s.chars() {
@@ -61,7 +61,7 @@ async fn image_data(ctx: &Ctx, u: &str) -> Res<String> {
 pub fn register(reg: &mut Registry, _ctx: &Ctx) {
     reg.add("playbooks:list", |ctx, _| async move { Ok(Value::Array(load(&ctx))) });
 
-    // Upsert a whole playbook by id.
+    // upsert a whole playbook by id
     reg.add("playbooks:save", |ctx, a: Args| async move {
         let pb = a.val(0);
         if !truthy(&pb["id"]) { return Err(msg("Playbook id missing")); }
@@ -81,7 +81,7 @@ pub fn register(reg: &mut Registry, _ctx: &Ctx) {
         Ok(json!(true))
     });
 
-    // Saves a PNG data URL through a native save dialog.
+    // saves a PNG data URL through a native save dialog
     reg.add("playbooks:exportPng", |ctx, a: Args| async move {
         let p = a.val(0);
         let data_url = js::s(&js::or(&p["dataUrl"], json!("")));
@@ -104,14 +104,14 @@ pub fn register(reg: &mut Registry, _ctx: &Ctx) {
         Ok(json!({ "saved": true, "path": path.to_string_lossy() }))
     });
 
-    // valorant-api.com images have no CORS headers, so fetch them here as data URLs to keep the export canvas untainted.
+    // valorant-api.com images have no CORS headers
     reg.add("playbooks:imageData", |ctx, a: Args| async move {
         let mut urls: Vec<String> = Vec::new();
         for u in js::arr(&a.val(0)) {
             let u = crate::api::tools::js_string(&u);
             if !urls.contains(&u) && MEDIA.is_match(&u) { urls.push(u); }
         }
-        // Keys land in completion order, like the JS `out[u] = ...` inside Promise.all.
+        // keys land in completion order, like the JS `out[u] = ...` inside Promise.all
         let mut pending: futures::stream::FuturesUnordered<_> = urls.iter().map(|u| { let ctx = &ctx; async move { (u, image_data(ctx, u).await) } }).collect();
         let mut out = Map::new();
         while let Some((u, r)) = futures::StreamExt::next(&mut pending).await {

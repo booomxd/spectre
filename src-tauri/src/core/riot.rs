@@ -1,6 +1,4 @@
-// Shared Riot client used by every feature module in src/api.
-// Connects through the local Riot Client (lockfile), then talks to the pd / glz / shared endpoints with the tokens it
-// hands out.
+// shared Riot client used by every feature module in src/api
 use super::error::{msg, Error, Res};
 use base64::Engine;
 use once_cell::sync::Lazy;
@@ -13,7 +11,7 @@ use std::sync::{Mutex, RwLock};
 use std::time::Duration;
 
 const CLIENT_PLATFORM: &str = "ew0KCSJwbGF0Zm9ybVR5cGUiOiAiUEMiLA0KCSJwbGF0Zm9ybU9TIjogIldpbmRvd3MiLA0KCSJwbGF0Zm9ybU9TVmVyc2lvbiI6ICIxMC4wLjE5MDQyLjEuNzY4LjY0Yml0IiwNCgkicGxhdGZvcm1DaGlwc2V0IjogIlVua25vd24iDQp9";
-/// Tokens expire after about an hour: they are renewed after 45 minutes, and once more on an auth failure.
+/// tokens expire after about an hour: they are renewed after 45 minutes, and once more on an auth failure
 const TOKEN_TTL_MS: i64 = 45 * 60 * 1000;
 
 #[derive(Default, Clone)]
@@ -34,16 +32,16 @@ pub struct State {
 
 pub struct Riot {
     state: RwLock<State>,
-    /// Remote (pd / glz / shared, valorant-api, GitHub...).
+    /// remote
     http: Client,
-    /// The Riot Client's local API uses a self-signed certificate on 127.0.0.1 only.
+    /// the Riot Client's local API uses a self-signed certificate on 127.0.0.1 only
     local_http: Client,
     refresh: tokio::sync::Mutex<()>,
     api_cache: Mutex<HashMap<String, Value>>,
     store_dir: RwLock<Option<PathBuf>>,
 }
 
-/// Milliseconds since the epoch, like JS `Date.now()`.
+/// milliseconds since the epoch, like JS `Date.now()`
 pub fn now_ms() -> i64 { chrono::Utc::now().timestamp_millis() }
 
 fn local_app_data() -> PathBuf { PathBuf::from(std::env::var("LOCALAPPDATA").unwrap_or_default()) }
@@ -59,8 +57,7 @@ static RE_VERSION: Lazy<Regex> = Lazy::new(|| Regex::new(r"CI server version: (\
 static RE_PD: Lazy<Regex> = Lazy::new(|| Regex::new(r"https://pd\.(\w+)\.a\.pvp\.net").unwrap());
 static RE_GLZ: Lazy<Regex> = Lazy::new(|| Regex::new(r"https://glz-(\w+)-1\.\w+\.a\.pvp\.net").unwrap());
 
-/// Sends a request and returns the parsed JSON body (a string if it isn't JSON, Null if empty).
-/// Non-2xx responses become `Error::Http` with the parsed body, like an axios error.
+/// sends a request and returns the parsed JSON body
 pub async fn send(req: reqwest::RequestBuilder) -> Res<Value> {
     let res = req.send().await?;
     let status = res.status();
@@ -83,15 +80,15 @@ impl Riot {
         }
     }
 
-    /// A copy of the connection state.
+    /// A copy of the connection state
     pub fn state(&self) -> State { self.state.read().unwrap().clone() }
     pub fn connected(&self) -> bool { self.state.read().unwrap().connected }
-    /// The signed-in player's puuid ("" before the first connect).
+    /// the signed-in player's puuid
     pub fn puuid(&self) -> String { self.state.read().unwrap().puuid.clone().unwrap_or_default() }
-    /// HTTP client for anything that isn't the Riot Client's local API (valorant-api, GitHub, playvalorant...).
+    /// HTTP client for anything that isn't the Riot Client's local API
     pub fn http(&self) -> &Client { &self.http }
 
-    /// The Riot Client's local API.
+    /// the Riot Client's local API
     pub async fn local(&self, m: &str, path: &str, body: Option<Value>) -> Res<Value> {
         let (port, password) = { let s = self.state.read().unwrap(); (s.port.clone(), s.password.clone()) };
         if port.is_empty() { return Err(msg("Not connected to the Riot Client")); }
@@ -103,8 +100,7 @@ impl Riot {
         send(req).await
     }
 
-    /// The Riot Client answers 400 "Entitlements token is not ready yet" for a few seconds while it renews its own
-    /// session, so token reads are retried for a while. Concurrent refreshes wait for the one in flight.
+    /// the Riot Client answers 400 "Entitlements token is not ready yet" for a few seconds while it renews its own session
     pub async fn refresh_tokens(&self) -> Res<()> {
         let started = now_ms();
         let _guard = self.refresh.lock().await;
@@ -141,7 +137,7 @@ impl Riot {
         }
         self.refresh_tokens().await?;
 
-        // valorant-api.com lags behind live patches, so prefer the version the running game logged.
+        // valorant-api.com lags behind live patches
         let log = read_log();
         let mut client_version = cap(&RE_VERSION, &log);
         if client_version.is_none() {
@@ -158,8 +154,7 @@ impl Riot {
                 if let Some(arg) = arg { shard = arg.split('=').nth(1).map(str::to_string); }
             }
         }
-        // Without the game running there is no -ares-deployment arg; fall back to the game log,
-        // then to the chat region (jp1 lives on ap, br/latam on na).
+        // without the game running there is no -ares-deployment arg
         let session = self.local("get", "chat/v1/session", None).await?;
         if shard.is_none() { shard = cap(&RE_PD, &log); }
         let chat_region: String = session["region"].as_str().unwrap_or("").chars().filter(|c| !c.is_ascii_digit()).collect();
@@ -180,7 +175,7 @@ impl Riot {
         Ok(self.status())
     }
 
-    /// Marks the connection lost (the connect loop then retries).
+    /// marks the connection lost
     pub fn disconnect(&self) { self.state.write().unwrap().connected = false; }
 
     pub fn status(&self) -> Value {
@@ -230,7 +225,7 @@ impl Riot {
         self.remote(format!("https://shared.{}.a.pvp.net", self.shard()), m, path, body).await
     }
 
-    /// valorant-api.com content (agents, maps, weapons, tiers...): the `data` field, cached for the session.
+    /// valorant-api.com content (agents, maps, weapons, tiers...): the `data` field, cached for the session
     pub async fn val_api(&self, path: &str) -> Res<Value> {
         let key = path.trim_start_matches('/').to_string();
         if let Some(v) = self.api_cache.lock().unwrap().get(&key) { return Ok(v.clone()); }
@@ -240,8 +235,7 @@ impl Riot {
     }
     pub fn clear_api_cache(&self) { self.api_cache.lock().unwrap().clear(); }
 
-    /// puuid -> { gameName, tagLine }. Some players are hidden by streamer mode; callers must respect that
-    /// themselves using the match / presence data (this only resolves names).
+    /// puuid -> { gameName, tagLine }
     pub async fn names(&self, puuids: &[String]) -> Res<Map<String, Value>> {
         let mut list: Vec<String> = Vec::new();
         for p in puuids { if !p.is_empty() && !list.contains(p) { list.push(p.clone()); } }
@@ -264,7 +258,7 @@ impl Riot {
     }
     pub fn store_dir(&self) -> PathBuf { self.store_dir.read().unwrap().clone().unwrap_or_else(|| PathBuf::from("store")) }
 
-    /// The stored JSON, or `fallback` if it is missing or unreadable.
+    /// the stored JSON, or `fallback` if it is missing or unreadable
     pub fn read_store(&self, name: &str, fallback: Value) -> Value {
         std::fs::read_to_string(self.store_dir().join(format!("{name}.json")))
             .ok().and_then(|t| serde_json::from_str(&t).ok()).unwrap_or(fallback)
@@ -275,5 +269,5 @@ impl Riot {
     }
 }
 
-/// %APPDATA%\Spectre: the same folder the Electron app used, so settings, notes and playbooks carry over.
+/// %APPDATA%\Spectre: the same folder the Electron app used
 pub fn data_dir() -> PathBuf { PathBuf::from(std::env::var("APPDATA").unwrap_or_default()).join("Spectre") }

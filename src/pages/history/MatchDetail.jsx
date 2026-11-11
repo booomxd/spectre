@@ -61,7 +61,7 @@ function Scoreboard({ title, tone, players, me, agents, memos, onSearch, onMemo 
   )
 }
 
-// Round-by-round strip: one lane per team, icon sits in the lane of the round winner.
+// Round-by-round strip: one lane per team, icon sits in the lane of the round winner
 function Timeline({ rounds, teams, myTeam }) {
   const enemy = teams.find(t => t.id !== myTeam)?.id
   const lanes = [{ id: myTeam, label: 'You' }, { id: enemy, label: 'Enemy' }]
@@ -125,7 +125,7 @@ export default function MatchDetail({ matchId, me, memos = {}, onSearch, onMemo 
     <div className='flex flex-col gap-4'>
       <div className='glass relative overflow-hidden rounded-3xl h-32 flex items-center px-7'>
         {map?.splash && <img decoding='async' src={map.splash} alt='' className='absolute inset-0 w-full h-full object-cover opacity-55' draggable={false} />}
-        {/* Fades the map art into the modal's own fill so text stays readable on light and dark themes. */}
+        {/* fades the map art into the modal's own fill so text stays readable on light and dark themes */}
         <div className='absolute inset-0 bg-gradient-to-r from-panel via-panel/75 to-panel/10' />
         <div className='relative flex items-center gap-5 w-full'>
           <div>

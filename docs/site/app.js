@@ -1,4 +1,4 @@
-// Spectre website: dock, hero depth, scroll reveals, theme swatches, screenshot lightbox and live release info from GitHub.
+// Spectre website: dock, hero depth, scroll reveals, theme swatches, screenshot lightbox and live release info from GitHub
 const REPO = 'booomxd/spectre'
 const $ = (s, el = document) => el.querySelector(s)
 const $$ = (s, el = document) => [...el.querySelectorAll(s)]
@@ -14,8 +14,7 @@ function markTheme(key) {
   const t = Theme?.themes[key]
   if (t) bind('theme-name').forEach(el => { el.textContent = t[0] })
 }
-// The new colours open in a circle from the swatch that was clicked. The browser snapshots the page once per
-// theme, so nothing is repainted frame by frame. Without view transitions (or with reduced motion) it just switches.
+// the new colours open in a circle from the swatch that was clicked
 function switchTheme(key, from) {
   const run = () => { Theme.apply(key, true); markTheme(key) }
   if (reduced || !document.startViewTransition || key === document.documentElement.dataset.theme) return run()
@@ -53,7 +52,7 @@ document.addEventListener('click', e => { if (dock.classList.contains('open') &&
 
 const navLinks = $$('.dock-links a[href^="#"]')
 const sections = $$('main > section')
-// One underline slides between the links instead of each link switching its own on and off.
+// one underline slides between the links instead of each link switching its own on and off
 const ind = document.createElement('span')
 ind.className = 'dock-ind'
 ind.setAttribute('aria-hidden', 'true')
@@ -63,7 +62,7 @@ function moveInd() {
   if (!a || !a.offsetWidth) { ind.classList.remove('on'); return }
   const to = `translateX(${a.offsetLeft + a.offsetWidth / 2 - 7}px)`
   if (ind.classList.contains('on')) { ind.style.transform = to; return }
-  // Appearing: start under the link rather than sliding in from the edge.
+  // appearing: start under the link rather than sliding in from the edge
   ind.style.transition = 'none'
   ind.style.transform = to
   void ind.offsetWidth
@@ -144,8 +143,7 @@ function settle(el) {
 function revealAll() { reveals.forEach(el => el.classList.remove('reveal', 'in')) }
 if (reduced || !('IntersectionObserver' in window)) revealAll()
 else {
-  // A fast fling or an anchor jump can carry an element past the viewport between two observer checks, so whenever
-  // anything is revealed, everything above the bottom of the screen that is still waiting is revealed with it.
+  // A fast fling or an anchor jump can carry an element past the viewport between two observer checks
   const pending = new Set(reveals)
   const flush = () => {
     for (const el of pending) {
@@ -237,7 +235,7 @@ const inline = s => esc(s)
   .replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
   .replace(/(^|[\s(])_([^_]+)_(?=[\s).,]|$)/g, '$1<em>$2</em>')
 
-// Renders the release body: each "###" section becomes a column, the download section and footer are skipped.
+// renders the release body: each "###" section becomes a column, the download section and footer are skipped
 function renderNotes(body) {
   const out = []
   let col = null
@@ -301,8 +299,7 @@ async function releases() {
     const cached = JSON.parse(sessionStorage.getItem('spectre-releases-2'))
     if (cached && Date.now() - cached.at < 2 * 60e3) return cached.data
   } catch {}
-  // GitHub allows 60 unauthenticated calls an hour per connection. When it refuses, use the last list this
-  // browser saw; with none, the page keeps its static fallbacks (the button still links to the latest release).
+  // GitHub allows 60 unauthenticated calls an hour per connection
   let r
   try { r = await fetch(`https://api.github.com/repos/${REPO}/releases?per_page=30`, { headers: { Accept: 'application/vnd.github+json' } }) } catch {}
   if (!r || !r.ok) {
@@ -322,7 +319,7 @@ async function loadRelease() {
   const all = await releases()
   const rel = all.find(r => !r.draft && !r.prerelease)
   if (!rel) return
-  // Installer names: Spectre-x.y.z-setup.exe, Spectre_x.y.z_x64-setup.exe or the older Spectre.Setup.x.y.z.exe; any .exe as a fallback
+  // installer names: Spectre-x.y.z-setup.exe, Spectre_x.y.z_x64-setup.exe or the older Spectre.Setup.x.y.z.exe
   const installer = rel.assets.find(a => /setup.*\.exe$/i.test(a.name)) || rel.assets.find(a => /\.exe$/i.test(a.name))
   const version = rel.tag.replace(/^v/, '')
 

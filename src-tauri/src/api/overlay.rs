@@ -1,6 +1,4 @@
-// Always-on-top transparent overlay window (the app's own bundle; the React app detects it by the window label "overlay").
-// Shown without stealing focus from the game, toggled from the app or a global hotkey, optionally click-through
-// ("locked") and optionally shown automatically while you're in agent select or a match.
+// Always-on-top transparent overlay window (the app's own bundle
 use crate::api::settings;
 use crate::core::error::{msg, Res};
 use crate::core::{js, truthy, Args, Ctx, Registry};
@@ -12,8 +10,7 @@ use std::time::Duration;
 use tauri::webview::PageLoadEvent;
 use tauri::{Manager, WebviewWindow, WindowEvent};
 
-// JS `let win`. Never call window methods while holding this lock (they may wait on the main thread, whose
-// window-event handlers lock it too): clone the handle out with `win()`.
+// JS `let win`
 static WIN: Lazy<Mutex<Option<WebviewWindow>>> = Lazy::new(|| Mutex::new(None));
 
 fn defaults() -> Value { json!({ "width": 340, "height": 480, "x": null, "y": 80 }) }
@@ -23,7 +20,7 @@ fn win() -> Option<WebviewWindow> { WIN.lock().unwrap().clone() }
 fn visible() -> bool { win().map(|w| w.is_visible().unwrap_or(false)).unwrap_or(false) }
 fn state(ctx: &Ctx) -> Value { json!({ "open": visible(), "locked": truthy(&cfg(ctx)["locked"]) }) }
 
-// Electron's getPosition / getSize are in DIPs (logical pixels); Tauri reports physical ones.
+// Electron's getPosition / getSize are in DIPs
 fn save_pos(ctx: &Ctx) {
     let Some(w) = win() else { return };
     let (Ok(scale), Ok(pos), Ok(size)) = (w.scale_factor(), w.outer_position(), w.outer_size()) else { return };
@@ -34,11 +31,7 @@ fn save_pos(ctx: &Ctx) {
     }));
 }
 
-// Native show / hide / click-through. tao drops its "don't focus" marker right after creating the window, so its
-// show() (and any style change it applies to a visible window, e.g. set_ignore_cursor_events) ends in
-// ShowWindow(SW_SHOW), which activates the overlay and can take focus from the game (a hotkey press gives the app
-// foreground rights). Electron's showInactive / setIgnoreMouseEvents never activate, so these go straight to user32;
-// tao's own visibility / cursor flags are never changed after creation, so it never re-applies styles over these.
+// native show / hide / click-through. tao drops its "don't focus" marker right after creating the window
 #[cfg(windows)]
 mod native {
     use std::ffi::c_void;
@@ -59,7 +52,7 @@ mod native {
     const SWP_REFRESH: u32 = 0x1 | 0x2 | 0x4 | 0x10 | 0x20;
     pub fn show_inactive(h: isize) { unsafe { ShowWindow(h as Hwnd, SW_SHOWNOACTIVATE); } }
     pub fn hide(h: isize) { unsafe { ShowWindow(h as Hwnd, SW_HIDE); } }
-    // Same styles tao / Chromium use for ignoring the mouse.
+    // same styles tao / Chromium use for ignoring the mouse
     pub fn click_through(h: isize, on: bool) {
         unsafe {
             let ex = GetWindowLongW(h as Hwnd, GWL_EXSTYLE);
@@ -70,7 +63,7 @@ mod native {
             }
         }
     }
-    /// Runs `f(hwnd)` on the main (window) thread and waits for it, so state read right after sees the change.
+    /// runs `f(hwnd)` on the main (window) thread and waits for it
     pub fn on_main(w: &tauri::WebviewWindow, f: impl FnOnce(isize) + Send + 'static) {
         let Ok(h) = w.hwnd() else { return };
         let h = h.0 as isize;
@@ -79,7 +72,7 @@ mod native {
     }
 }
 
-// Click-through: the game gets every click while locked.
+// Click-through: the game gets every click while locked
 #[cfg(windows)]
 fn lock_window(w: &WebviewWindow, ctx: &Ctx) {
     let locked = truthy(&cfg(ctx)["locked"]);
@@ -89,8 +82,7 @@ fn lock_window(w: &WebviewWindow, ctx: &Ctx) {
 fn lock_window(w: &WebviewWindow, ctx: &Ctx) { let _ = w.set_ignore_cursor_events(truthy(&cfg(ctx)["locked"])); }
 fn apply_lock(ctx: &Ctx) { if let Some(w) = win() { lock_window(&w, ctx); } }
 
-// Electron's showInactive (SW_SHOWNOACTIVATE). Tauri has no show/hide window events, so the 'show' / 'hide' emits
-// happen here.
+// Electron's showInactive (SW_SHOWNOACTIVATE)
 fn show_inactive(w: &WebviewWindow, ctx: &Ctx) {
     #[cfg(windows)]
     native::on_main(w, native::show_inactive);
@@ -112,8 +104,7 @@ fn create(ctx: &Ctx) -> Res<()> {
     let ready = Arc::new(AtomicBool::new(false));
     let c = ctx.clone();
     let mut b = tauri::WebviewWindowBuilder::new(app, "overlay", tauri::WebviewUrl::App("index.html".into()))
-        // Must match the main window's additionalBrowserArgs in tauri.conf.json exactly: WebView2 refuses to
-        // create a second webview with different browser arguments in the same data folder.
+        // must match the main window's additionalBrowserArgs in tauri.conf.json exactly: WebView2 refuses to create a second webview with different browser arguments in the same data folder
         .additional_browser_args(crate::BROWSER_ARGS)
         .title("Spectre")
         .inner_size(dim("width"), dim("height"))
@@ -126,14 +117,14 @@ fn create(ctx: &Ctx) -> Res<()> {
         .resizable(true)
         .min_inner_size(260.0, 160.0)
         .focused(false)
-        // ready-to-show (once): lock, show without focus, tell the renderer.
+        // ready-to-show (once): lock, show without focus, tell the renderer
         .on_page_load(move |w, p| {
             if p.event() != PageLoadEvent::Finished || ready.swap(true, Ordering::SeqCst) { return; }
             lock_window(&w, &c);
             show_inactive(&w, &c);
             c.emit("overlay:state", state(&c));
         });
-    // Electron centers the window when x is missing.
+    // electron centers the window when x is missing
     b = match (s["x"].as_f64(), s["y"].as_f64()) {
         (Some(x), Some(y)) => b.position(x, y),
         _ => b.center(),
@@ -152,7 +143,7 @@ fn create(ctx: &Ctx) -> Res<()> {
     Ok(())
 }
 
-// Shown without taking focus, so the game keeps keyboard and mouse.
+// shown without taking focus
 fn show(ctx: &Ctx) -> Res<()> {
     let Some(w) = win() else { return create(ctx) };
     lock_window(&w, ctx);
@@ -183,8 +174,7 @@ fn set_locked(ctx: &Ctx, locked: bool) -> Res<()> {
 struct Hotkeys { registered: Vec<String>, paused: bool, hotkeys: Value }
 static HK: Lazy<Mutex<Hotkeys>> = Lazy::new(|| Mutex::new(Hotkeys { registered: Vec::new(), paused: false, hotkeys: json!({}) }));
 
-/// Electron accelerator -> global-hotkey syntax. The Settings page records Electron names; the only one the
-/// parser doesn't know is "Return".
+/// electron accelerator -> global-hotkey syntax
 fn accelerator(key: &str) -> String {
     key.split('+').map(|k| if k.eq_ignore_ascii_case("return") { "Enter" } else { k }).collect::<Vec<_>>().join("+")
 }
@@ -192,7 +182,7 @@ fn accelerator(key: &str) -> String {
 // Holding HK across the plugin calls (they run on the main thread) serializes re-registration like JS's single thread;
 // nothing on the main thread locks HK (hotkey presses are handed to the async runtime).
 fn register_hotkeys_locked(ctx: &Ctx, hk: &mut Hotkeys) {
-    // Not running inside the app (spectre-try).
+    // not running inside the app (spectre-try)
     let Some(app) = ctx.app.clone() else { return };
     use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
     let gs = app.global_shortcut();
@@ -208,7 +198,7 @@ fn register_hotkeys_locked(ctx: &Ctx, hk: &mut Hotkeys) {
                     gs.on_shortcut(accelerator(k).as_str(), move |_, _, ev| {
                         if ev.state != ShortcutState::Pressed { return; }
                         let cx = cx.clone();
-                        // Off the main thread: building the window or re-registering hotkeys from here would deadlock.
+                        // off the main thread: building the window or re-registering hotkeys from here would deadlock
                         crate::core::spawn(async move {
                             let _ = if name == "toggle" { toggle(&cx) } else { set_locked(&cx, !truthy(&cfg(&cx)["locked"])) };
                         });
@@ -244,7 +234,7 @@ async fn auto_tick(ctx: &Ctx) {
     if !truthy(&cfg(ctx)["autoShow"]) || !ctx.riot.connected() { return; }
     let now = in_match(ctx).await;
     let was = WAS_IN_MATCH.load(Ordering::SeqCst);
-    // Only act when a match starts or ends, so hiding it by hand mid-match sticks.
+    // only act when a match starts or ends
     if now && !was && !visible() {
         if show(ctx).is_err() { return; } // JS: the throw ends the tick before anything is updated
         AUTO_SHOWN.store(true, Ordering::SeqCst);
@@ -270,7 +260,7 @@ pub fn register(reg: &mut Registry, ctx: &Ctx) {
     }
 
     register_hotkeys(ctx);
-    // The overlay goes away with the app instead of keeping it alive on its own.
+    // the overlay goes away with the app instead of keeping it alive on its own
     if let Some(main) = ctx.app.as_ref().and_then(|a| a.get_webview_window("main")) {
         let c = ctx.clone();
         main.on_window_event(move |e| { if let WindowEvent::Destroyed = e { destroy(&c); } });
@@ -281,7 +271,7 @@ pub fn register(reg: &mut Registry, ctx: &Ctx) {
     reg.add("overlay:close", |ctx, _| async move { hide(&ctx); Ok(state(&ctx)) });
     reg.add("overlay:lock", |ctx, a: Args| async move { set_locked(&ctx, a.truthy(0))?; Ok(state(&ctx)) });
     reg.add("overlay:hotkeys", |_, _| async move { Ok(HK.lock().unwrap().hotkeys.clone()) });
-    // Paused while the Settings page records a new key, so pressing the current combo doesn't fire it.
+    // paused while the Settings page records a new key
     reg.add("overlay:pauseHotkeys", |ctx, a: Args| async move {
         let mut hk = HK.lock().unwrap();
         hk.paused = a.truthy(0);

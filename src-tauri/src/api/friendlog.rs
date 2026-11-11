@@ -1,5 +1,4 @@
-// Friend activity: snapshots your friends list and records who was added, removed or renamed since the last look.
-// Stored per signed-in account in userData/friendlog.json as { [myPuuid]: { snapshot: { puuid: 'Name#Tag' }, events, lastScan } }.
+// friend activity: snapshots your friends list and records who was added, removed or renamed since the last look
 use crate::api::tools::js_string;
 use crate::core::error::{msg, Res};
 use crate::core::riot::now_ms;
@@ -14,7 +13,7 @@ const SCAN_EVERY: Duration = Duration::from_secs(2 * 60);
 const MAX_EVENTS: usize = 500;
 
 fn load(ctx: &Ctx) -> Value { ctx.riot.read_store("friendlog", json!({})) }
-/// `riot.state.puuid` as an object key (JS state starts with `puuid: null`, which becomes the key "null").
+/// `riot.state.puuid` as an object key (JS state starts with `puuid: null`
 fn my_key(ctx: &Ctx) -> String { ctx.riot.state().puuid.unwrap_or_else(|| "null".into()) }
 fn mine(ctx: &Ctx, all: &Value) -> Value {
     js::or(&all[my_key(ctx)], json!({ "snapshot": null, "events": [], "lastScan": null }))
@@ -23,7 +22,7 @@ fn mine(ctx: &Ctx, all: &Value) -> Value {
 type Scan = Shared<BoxFuture<'static, Res<Value>>>;
 static SCANNING: Lazy<Mutex<Option<Scan>>> = Lazy::new(|| Mutex::new(None));
 
-/// The account the Riot Client is signed in to right now, straight from the client.
+/// the account the Riot Client is signed in to right now, straight from the client
 async fn live_puuid(ctx: &Ctx) -> Option<String> {
     let s = ctx.riot.local("get", "chat/v1/session", None).await.ok()?;
     let p = js_string(&js::or(&s["puuid"], json!("")));
@@ -31,9 +30,7 @@ async fn live_puuid(ctx: &Ctx) -> Option<String> {
 }
 
 async fn run_scan(ctx: &Ctx) -> Res<Value> {
-    // Switching accounts: Spectre's cached puuid can lag behind the client for a moment, so the new account's
-    // friends would be diffed against the old account's snapshot (hundreds of fake adds and removals). Only scan
-    // when the client confirms the same account before and after reading the list.
+    // switching accounts: Spectre's cached puuid can lag behind the client for a moment
     let key = my_key(ctx);
     if live_puuid(ctx).await.as_deref() != Some(key.as_str()) { return Ok(mine(ctx, &load(ctx))); }
     let res = ctx.riot.local("get", "chat/v4/friends", None).await?;
@@ -50,7 +47,7 @@ async fn run_scan(ctx: &Ctx) -> Res<Value> {
     let snapshot = me["snapshot"].as_object().cloned();
     let snap_truthy = truthy(&me["snapshot"]);
     let snap_len = snapshot.as_ref().map_or(0, Map::len);
-    // The Riot Client briefly reports an empty list while it starts; never read that as "everyone left".
+    // the Riot Client briefly reports an empty list while it starts
     if now.is_empty() && snap_truthy && snap_len > 0 { return Ok(me); }
     let at = now_ms();
     let mut found: Vec<Value> = Vec::new();
@@ -67,7 +64,7 @@ async fn run_scan(ctx: &Ctx) -> Res<Value> {
             if !now.contains_key(puuid) { found.push(json!({ "type": "removed", "puuid": puuid, "name": name, "at": at })); }
         }
     }
-    // Keep a known name when the client hands back a blank one.
+    // keep a known name when the client hands back a blank one
     for (puuid, name) in now.iter_mut() {
         if name == "#" {
             if let Some(old) = snapshot.as_ref().and_then(|s| s.get(puuid)).filter(|v| truthy(v)) { *name = old.clone(); }

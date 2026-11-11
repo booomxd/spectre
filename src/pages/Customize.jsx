@@ -34,7 +34,7 @@ export default function Customize({ active }) {
   const curLevel = level === '' ? (pp?.accountLevel ?? 1) : parseInt(level) || 1
   const curIdle = idle ?? presence.data?.current?.isIdle ?? false
 
-  // Cards and titles are presence-only (shown to friends, never equipped), so every one can be picked.
+  // cards and titles are presence-only
   const allCards = useMemo(() => cards?.filter(c => c.displayIcon), [cards])
   const allTitles = useMemo(() => titles?.filter(t => t.titleText), [titles])
   const shownCards = allCards?.filter(c => c.displayName.toLowerCase().includes(q.toLowerCase()))

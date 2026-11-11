@@ -62,7 +62,7 @@ function LoadoutView({ active }) {
     setTmp(gunToEdit(eff(g)))
     setEditing(w)
   }
-  // Equips the edited gun in game right away (together with any other pending edits).
+  // equips the edited gun in game right away
   const applyGun = async () => {
     const all = { ...edits, [lc(editing.uuid)]: tmp }
     setSaving(true)

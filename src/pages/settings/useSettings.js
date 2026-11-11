@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { invoke, useEvent } from '../../lib/ipc'
 import { toast } from '../../ui'
 
-// Settings object + a patch function (optimistic; the backend merges nested groups).
+// Settings object + a patch function (optimistic
 export function useSettings() {
   const [settings, setSettings] = useState(null)
   const [error, setError] = useState(null)

@@ -4,8 +4,7 @@ import { Empty, Input, cx } from '../../ui'
 import { useContent } from '../../lib/content'
 import { lc } from './gear'
 
-// Owned buddies only. value = { charmId, levelId, instance } or null.
-// `usedInstances` = buddy instances already on other weapons in the pending loadout.
+// owned buddies only. value = { charmId, levelId, instance } or null
 export default function BuddyPicker({ owned, value, usedInstances, onChange }) {
   const buddies = useContent('buddies')
   const [q, setQ] = useState('')

@@ -1,5 +1,4 @@
-// The experimental (LARP) tools shown in Settings > Experimental. Ids are the old page ids, so navigate('rank') etc. still work.
-// Plain data only (no page imports), so the nav and the shell can use it without an import cycle.
+// the experimental (LARP) tools shown in Settings > Experimental
 import { FiTarget, FiUser, FiZap } from 'react-icons/fi'
 import { GiTrophy } from 'react-icons/gi'
 

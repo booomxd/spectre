@@ -1,4 +1,4 @@
-// Left panel: playbooks (folders) containing strategies, with search and hover actions.
+// left panel: playbooks (folders) containing strategies, with search and hover actions
 import { useMemo, useState } from 'react'
 import { FiChevronRight, FiCopy, FiEdit2, FiFolder, FiPlus, FiSearch, FiTrash2 } from 'react-icons/fi'
 import { Badge, Button, Empty, Input, Skeleton, pressable } from '../../ui'

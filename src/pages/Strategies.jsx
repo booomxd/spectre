@@ -1,4 +1,4 @@
-// Strategies: playbook library + tactical whiteboard with steps, animation, notes and PNG export.
+// strategies: playbook library + tactical whiteboard with steps, animation, notes and PNG export
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { FiCheck, FiCopy, FiDownload, FiPause, FiPlay, FiPlus, FiRotateCcw, FiRotateCw, FiTrash2, FiCompass } from 'react-icons/fi'
 import { Badge, Button, Empty, ErrorState, Input, Modal, Select, Skeleton, Tabs, toast } from '../ui'
@@ -97,7 +97,7 @@ export default function Strategies({ active }) {
 
   const stopPlay = useCallback(() => { cancelAnimationFrame(raf.current); clearTimeout(raf.current); setPlaying(false); setAnim(null) }, [])
   const resetHist = () => { hist.current = { past: [], future: [], base: null } }
-  // Playback stops when you leave the page (it would otherwise keep animating off screen).
+  // playback stops when you leave the page
   useEffect(() => { if (active === false) stopPlay() }, [active, stopPlay])
   const selectStrategy = (pid, sid) => { stopPlay(); resetHist(); setStepIdx(0); setStepEdit(null); setSel({ pid, sid }) }
 
@@ -154,7 +154,7 @@ export default function Strategies({ active }) {
     if (steps.length < 2) { toast('Add a second step to animate between positions'); return }
     let i = idx >= steps.length - 1 ? 0 : idx
     setPlaying(true); setStepIdx(i); setAnim(null)
-    // Reduced motion: no glide, each step just holds a little longer before the next one appears.
+    // reduced motion: no glide, each step just holds a little longer before the next one appears
     const reduce = prefersReducedMotion()
     const HOLD = reduce ? 1100 : 600, MOVE = reduce ? 0 : 1100
     const run = () => {
@@ -335,7 +335,7 @@ export default function Strategies({ active }) {
 function PromptModal({ modal: current, onClose }) {
   const [value, setValue] = useState('')
   useEffect(() => { if (current?.kind === 'prompt') setValue(current.value) }, [current])
-  // Keep the last dialog's content while it animates out (the Modal stays mounted with open=false).
+  // keep the last dialog's content while it animates out
   const last = useRef(null)
   if (current) last.current = current
   const modal = current || last.current

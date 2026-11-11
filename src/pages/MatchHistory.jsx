@@ -1,7 +1,7 @@
 import { RequireRiot, Page } from '../ui'
 import HistoryPanel from './history/HistoryPanel'
 
-// Recent matches for you, or for another player when opened with { puuid }.
+// recent matches for you, or for another player when opened with { puuid }
 export default function MatchHistory({ params }) {
   const other = params?.puuid
   return (

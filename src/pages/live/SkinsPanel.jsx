@@ -5,7 +5,7 @@ import { PanelHeader } from './Drawer'
 
 const CARD_MASK = { WebkitMaskImage: 'linear-gradient(90deg, #000 30%, transparent)', maskImage: 'linear-gradient(90deg, #000 30%, transparent)' }
 
-// A player's in-match loadout: card and title (named players only), sprays, and every weapon's skin and buddy.
+// A player's in-match loadout: card and title (named players only), sprays, and every weapon's skin and buddy
 export default function SkinsPanel({ player, onClose }) {
   const { data, error, loading, reload } = useInvoke('live:loadout', [player.ref])
   const sub = ['Loadout', player.agent?.name, data && `${data.weapons.length} weapons`].filter(Boolean).join(' · ')

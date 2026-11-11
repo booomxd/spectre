@@ -15,7 +15,7 @@ export default function Weapons() {
   const weapons = useWeapons()
   const { owned } = useOwned(!riot.connected)
   const tiers = useContentTiers()
-  // The category, weapon and All / Owned choice are remembered between launches.
+  // the category, weapon and All / Owned choice are remembered between launches
   const [cat, setCat] = useStored('weapons-cat', 'Rifle')
   const [wid, setWid] = useStored('weapons-wid', null)
   const [filter, setFilter] = useStored('weapons-filter', 'all', ['all', 'owned'])
@@ -175,7 +175,7 @@ export default function Weapons() {
   )
 }
 
-// Skin detail: video preview (or render) with level and variant pickers.
+// skin detail: video preview (or render) with level and variant pickers
 function SkinModal({ skin, weapon, owned, showOwned, tiers, onClose }) {
   const [li, setLi] = useState(0)
   const [ci, setCi] = useState(0)
@@ -183,7 +183,7 @@ function SkinModal({ skin, weapon, owned, showOwned, tiers, onClose }) {
   if (skin !== lastSkin) { setLastSkin(skin); setLi(0); setCi(0) }
   if (!skin) return <Modal open={false} />
   const level = skin.levels[li], chroma = skin.chromas[ci]
-  // A picked variant wins; otherwise the level's video.
+  // A picked variant wins
   const video = ci > 0 ? chroma.streamedVideo || null : level.streamedVideo || skin.chromas[0]?.streamedVideo || null
   const image = (ci > 0 && chroma.fullRender) || skinImage(skin)
   const t = tiers[lc(skin.contentTierUuid)]

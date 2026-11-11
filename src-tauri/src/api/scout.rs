@@ -1,6 +1,4 @@
-// Rank and scouting for a player by puuid: current/peak rank and act history from the MMR endpoint, plus recent
-// competitive form from competitive updates and match details. Results carry no names, match ids or teammates, so
-// they are safe to show for streamer-mode players. One shared cache for every module.
+// rank and scouting for a player by puuid: current/peak rank and act history from the MMR endpoint, plus recent competitive form from competitive updates and match details
 use crate::core::error::Res;
 use crate::core::riot::now_ms;
 use crate::core::{js, truthy, Ctx};
@@ -11,12 +9,12 @@ use serde_json::{json, Map, Value};
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::sync::{Arc, Mutex};
 
-// Before Episode 5 Act 1 (when Ascendant was added) tiers 21-24 were Immortal 1-3 and Radiant; today they are 24-27.
+// before Episode 5 Act 1 (when Ascendant was added) tiers 21-24 were Immortal 1-3 and Radiant
 const ASCENDANT_START: i64 = 1655769600000; // Date.parse('2022-06-21T00:00:00Z')
-// A death counts as traded (the T in KAST) if a teammate kills the killer within this window.
+// A death counts as traded (the T in KAST) if a teammate kills the killer within this window
 const TRADE_MS: f64 = 5000.0;
 
-/// Current act id, plus the ids of acts from before Ascendant existed (all lowercase).
+/// current act id, plus the ids of acts from before Ascendant existed
 #[derive(Clone, Default)]
 pub struct Acts {
     pub current: Option<String>,
@@ -25,7 +23,7 @@ pub struct Acts {
 
 static ACT_CACHE: Lazy<Mutex<Option<(i64, Acts)>>> = Lazy::new(|| Mutex::new(None));
 
-/// Cached 10 minutes (1 minute when incomplete).
+/// cached 10 minutes (1 minute when incomplete)
 pub async fn acts(ctx: &Ctx) -> Acts {
     if let Some((at, a)) = ACT_CACHE.lock().unwrap().as_ref() {
         if now_ms() - at < 600000 { return a.clone(); }
@@ -38,7 +36,7 @@ pub async fn acts(ctx: &Ctx) -> Acts {
     }
     if let Ok(list) = ctx.riot.val_api("seasons").await {
         let now = now_ms();
-        // A missing uuid throws in JS and ends the loop; mirror that with a labelled break.
+        // A missing uuid throws in JS and ends the loop
         'seasons: for s in js::arr(&list) {
             if s["type"] != "EAresSeasonType::Act" { continue; }
             let start = js::parse_date(&s["startTime"]);
@@ -50,14 +48,14 @@ pub async fn acts(ctx: &Ctx) -> Acts {
             }
         }
     }
-    // Incomplete data is retried after a minute rather than kept for ten.
+    // incomplete data is retried after a minute rather than kept for ten
     let at = if current.is_some() && !old.is_empty() { now_ms() } else { now_ms() - 540000 };
     let a = Acts { current, old };
     *ACT_CACHE.lock().unwrap() = Some((at, a.clone()));
     a
 }
 
-/// `Math.round` keeping NaN as null, like JSON.stringify does.
+/// `Math.round` keeping NaN as null, like JSON.stringify does
 fn rnd(x: f64) -> Value { js::number(js::round(x)) }
 
 /// { current: { tier, rr, seasonId, wins, games }, peak: { tier, seasonId }, history: [...] }. Errors if MMR fails.
@@ -74,7 +72,7 @@ pub async fn rank(ctx: &Ctx, puuid: &str) -> Res<Value> {
     for (id, s) in &seasons {
         let mut top = js::num(&js::or(&s["CompetitiveTier"], json!(0)));
         for (k, _) in js::entries(&s["WinsByTier"]) {
-            // Number(key): NaN for non-numeric keys, which poisons Math.max like in JS.
+            // Number(key): NaN for non-numeric keys
             let n = if k.trim().is_empty() { 0.0 } else { k.trim().parse::<f64>().unwrap_or(f64::NAN) };
             top = if n.is_nan() || top.is_nan() { f64::NAN } else { top.max(n) };
         }
@@ -89,7 +87,7 @@ pub async fn rank(ctx: &Ctx, puuid: &str) -> Res<Value> {
         }
     }
     let current = if let Some(cur_id) = &a.current {
-        // Only this act counts: someone who hasn't played or finished placements this act is Unranked.
+        // only this act counts: someone who hasn't played or finished placements this act is Unranked
         let cur = seasons.iter().find(|(id, _)| id == cur_id).map(|(_, s)| s.clone()).unwrap_or(Value::Null);
         json!({
             "tier": js::or(&cur["CompetitiveTier"], json!(0)), "rr": js::or(&cur["RankedRating"], json!(0)), "seasonId": cur_id,
@@ -107,7 +105,7 @@ pub async fn rank(ctx: &Ctx, puuid: &str) -> Res<Value> {
     Ok(json!({ "current": current, "peak": peak, "history": history }))
 }
 
-// Match details trimmed to what scouting needs; matches never change, so they are cached.
+// match details trimmed to what scouting needs
 struct Kill { killer: Value, victim: Value, assists: Vec<Value>, t: f64 }
 struct Round { kills: Vec<Kill>, damage: HashMap<String, (f64, f64, f64)> }
 struct Team { id: Value, won: bool, rounds: Value }
@@ -168,7 +166,7 @@ fn slim(m: &Value) -> Slim {
     }
 }
 
-// One player's line for one match. No match id or other players are included.
+// one player's line for one match
 struct Line { v: Map<String, Value>, kills: f64, deaths: f64, assists: f64, acs: f64, adr: f64, fb: f64, win: bool, loss: bool, agent: String, head: f64, shots: f64, kast: f64, rounds: f64 }
 
 fn summarize(m: &Slim, puuid: &str, update: &Value) -> Option<Line> {
@@ -221,7 +219,7 @@ fn aggregate(ms: &[Line]) -> Value {
 }
 
 fn top_agents(ms: &[Line]) -> Value {
-    // (agent, games, wins, kills, deaths, score, rounds) in first-seen order, like Object.values.
+    // (agent, games, wins, kills, deaths, score, rounds) in first-seen order, like Object.values
     let mut by: Vec<(String, f64, f64, f64, f64, f64, f64)> = Vec::new();
     for m in ms {
         let i = match by.iter().position(|a| a.0 == m.agent) { Some(i) => i, None => { by.push((m.agent.clone(), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)); by.len() - 1 } };
@@ -238,7 +236,7 @@ fn top_agents(ms: &[Line]) -> Value {
 
 static SCOUT_CACHE: Lazy<Mutex<HashMap<String, (i64, Value)>>> = Lazy::new(|| Mutex::new(HashMap::new()));
 
-/// Full scout: rank fields plus recent, agents, matches, historyPrivate. Cached five minutes per player.
+/// full scout: rank fields plus recent, agents, matches, historyPrivate
 pub async fn scout(ctx: &Ctx, puuid: &str) -> Res<Value> {
     if let Some((at, v)) = SCOUT_CACHE.lock().unwrap().get(puuid) {
         if now_ms() - at < 5 * 60 * 1000 { return Ok(v.clone()); }

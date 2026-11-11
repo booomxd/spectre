@@ -1,11 +1,10 @@
-// Errors every handler returns. The renderer gets the same text the Electron backend's errMsg() produced:
-// "<status> <message or errorCode>" for HTTP failures, the plain message otherwise.
+// errors every handler returns
 use serde_json::Value;
 use std::fmt;
 
 #[derive(Debug, Clone)]
 pub enum Error {
-    /// An HTTP response with a non-success status, with its parsed body (Null if it wasn't JSON).
+    /// an HTTP response with a non-success status, with its parsed body
     Http { status: u16, body: Value },
     Msg(String),
 }
@@ -13,14 +12,14 @@ pub enum Error {
 pub type Res<T = Value> = Result<T, Error>;
 
 impl Error {
-    /// HTTP status, like JS `err.response?.status`.
+    /// HTTP status, like JS `err.response?.status`
     pub fn status(&self) -> Option<u16> {
         match self {
             Error::Http { status, .. } => Some(*status),
             Error::Msg(_) => None,
         }
     }
-    /// Response body, like JS `err.response?.data`.
+    /// response body, like JS `err.response?.data`
     pub fn body(&self) -> Option<&Value> {
         match self {
             Error::Http { body, .. } => Some(body),
@@ -45,10 +44,10 @@ impl fmt::Display for Error {
 
 impl std::error::Error for Error {}
 
-/// Plain error from a message: `return Err(msg("Enter a Riot ID"))`.
+/// plain error from a message: `return Err(msg("Enter a Riot ID"))`
 pub fn msg(m: impl Into<String>) -> Error { Error::Msg(m.into()) }
 
-/// `bail!("...")` returns early with a message error, like JS `throw new Error(...)`.
+/// `bail!("...")` returns early with a message error, like JS `throw new Error(...)`
 #[macro_export]
 macro_rules! bail {
     ($($t:tt)*) => { return Err($crate::core::error::Error::Msg(format!($($t)*))) };

@@ -1,16 +1,16 @@
-// Battle pass, agent contracts, account XP and competitive history.
+// battle pass, agent contracts, account XP and competitive history
 use crate::core::{js, truthy, Args, Ctx, Registry};
 use serde_json::{json, Map, Value};
 use std::collections::HashMap;
 
-/// `{ k: src.k, ... }` where a missing source property stays undefined (left out of the JSON), like JS.
+/// `{ k: src.k, ... }` where a missing source property stays undefined (left out of the JSON), like JS
 fn pick(src: &Value, keys: &[(&str, &str)]) -> Map<String, Value> {
     let mut o = Map::new();
     for (k, sk) in keys { if let Some(v) = src.get(*sk) { o.insert(k.to_string(), v.clone()); } }
     o
 }
 
-/// JS `Number(x)` for a handler argument (NaN for unparseable strings).
+/// JS `Number(x)` for a handler argument
 fn number_arg(v: &Value) -> f64 {
     match v {
         Value::Number(n) => n.as_f64().unwrap_or(f64::NAN),
@@ -21,7 +21,7 @@ fn number_arg(v: &Value) -> f64 {
     }
 }
 
-/// JS `Number(obj.k)` in arithmetic: a missing property is NaN, null is 0.
+/// JS `Number(obj.k)` in arithmetic: a missing property is NaN, null is 0
 fn prop_num(obj: &Value, k: &str) -> f64 { obj.get(k).map_or(f64::NAN, number_arg) }
 
 pub fn register(reg: &mut Registry, _ctx: &Ctx) {
@@ -90,7 +90,7 @@ pub fn register(reg: &mut Registry, _ctx: &Ctx) {
                 ("id", "MatchID"), ("mapId", "MapID"), ("time", "MatchStartTime"), ("tierBefore", "TierBeforeUpdate"), ("tierAfter", "TierAfterUpdate"),
                 ("rrBefore", "RankedRatingBeforeUpdate"), ("rrAfter", "RankedRatingAfterUpdate"), ("change", "RankedRatingEarned"),
             ]);
-            // absolute RR on the ladder: tier*100 + rr (Radiant/Immortal keep counting upward)
+            // absolute RR on the ladder: tier*100 + rr
             let ladder = js::number(prop_num(m, "TierAfterUpdate") * 100.0 + prop_num(m, "RankedRatingAfterUpdate"));
             o.insert("ladder".into(), ladder);
             Value::Object(o)

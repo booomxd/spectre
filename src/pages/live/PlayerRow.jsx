@@ -8,12 +8,12 @@ import { PARTY_COLORS, cardWide, partyLabel } from './util'
 
 const cx = (...c) => c.filter(Boolean).join(' ')
 
-// Display name respecting streamer mode: hidden players only ever show their agent.
+// display name respecting streamer mode: hidden players only ever show their agent
 export const displayName = p => p.hidden ? (p.agent?.name || 'Hidden player') : p.gameName ? p.gameName : '...'
 
 const title = s => (s || '').toLowerCase().replace(/(^|\s)\S/g, c => c.toUpperCase())
 
-// Fade the wide card art in from the right so text on the left stays readable.
+// fade the wide card art in from the right so text on the left stays readable
 const ART_MASK = { WebkitMaskImage: 'linear-gradient(90deg, transparent 18%, #000 78%)', maskImage: 'linear-gradient(90deg, transparent 18%, #000 78%)' }
 
 function RankBlock({ tier, rr, peak }) {
@@ -34,7 +34,7 @@ function RankBlock({ tier, rr, peak }) {
   )
 }
 
-// Recent competitive form, shown once a player has been scouted (null: scouted, but no recent competitive games).
+// recent competitive form, shown once a player has been scouted
 function MiniStats({ s }) {
   if (!s) return <div className='mt-2 text-[11px] text-muted'>No recent competitive matches</div>
   const chip = (value, label, tone) => (
@@ -51,7 +51,7 @@ function MiniStats({ s }) {
 
 const iconBtn = 'w-9 h-9 shrink-0 rounded-full text-muted glass-inset hover:text-text hover:bg-surface-2 hover:border-accent/40 transition-colors flex items-center justify-center'
 
-// One live-match player. Rendered inside a <Stagger> (the team column); only the first 12 rows animate in.
+// one live-match player
 export default function PlayerRow({ p, i, memo, onScout, onSkins }) {
   const color = p.party != null ? PARTY_COLORS[p.party % PARTY_COLORS.length] : null
   const rank = useRankColor(p.ranked ? p.rank : 0)
@@ -62,7 +62,7 @@ export default function PlayerRow({ p, i, memo, onScout, onSkins }) {
     <Item index={i} className={cx('glass group relative overflow-hidden rounded-[22px] transition-[border-color,box-shadow] duration-200',
       p.self ? 'accent-glow !border-accent/40' : 'hover:border-accent/30')}>
       {p.card && <img decoding='async' src={cardWide(p.card)} alt='' className='absolute inset-y-0 right-0 w-[70%] h-full object-cover opacity-[0.2] pointer-events-none' style={ART_MASK} draggable={false} loading='lazy' />}
-      {/* Rank-colored light behind the portrait. */}
+      {/* Rank-colored light behind the portrait */}
       {rank && <span className='absolute -left-10 top-1/2 -translate-y-1/2 w-44 h-44 rounded-full pointer-events-none opacity-50' style={{ background: `radial-gradient(closest-side, ${rank}40, transparent)` }} />}
       {p.self && <span className='absolute inset-0 bg-gradient-to-r from-accent/[0.10] to-transparent pointer-events-none' />}
       {color && <span className='absolute left-0 top-4 bottom-4 w-[3px] rounded-r-full' style={{ background: color }} title={p.party === 0 ? 'Your party' : 'Premade party'} />}
@@ -106,7 +106,7 @@ export default function PlayerRow({ p, i, memo, onScout, onSkins }) {
         {p.ranked ? <RankBlock tier={p.rank} rr={p.rr} peak={p.peak} />
           : !p.canScout && <span className='inline-flex items-center gap-1.5 h-7 px-3 rounded-full glass-inset text-[11px] font-semibold text-muted shrink-0' title='Streamer mode: hidden by VALORANT'><FiEyeOff size={11} /> Hidden</span>}
 
-        {/* Actions on top, Vandal and Phantom skins under them on wide windows. */}
+        {/* actions on top, Vandal and Phantom skins under them on wide windows */}
         <div className='flex flex-col items-end gap-2 shrink-0'>
           <div className='flex items-center gap-1.5'>
             {p.canScout && (

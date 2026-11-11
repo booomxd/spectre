@@ -9,8 +9,7 @@ import { queueName } from './util'
 const cx = (...c) => c.filter(Boolean).join(' ')
 const label = 'eyebrow mb-2.5'
 
-// Your party and lobby controls: members, invites, invite codes, mode, matchmaking and party access.
-// `matchState` is the live match state: while in agent select or a match only inviting stays available.
+// your party and lobby controls: members, invites, invite codes, mode, matchmaking and party access
 export default function Lobby({ active, matchState }) {
   const party = useInvoke('social:party', [], { poll: active ? 4000 : undefined })
   const [invite, setInvite] = useState('')
@@ -18,8 +17,7 @@ export default function Lobby({ active, matchState }) {
   const [working, setWorking] = useState(null)
   const p = party.data
   const locked = matchState && matchState !== 'menus'
-  // What Find match / Cancel search just asked for (true = searching). It shows at once and is dropped as soon as the
-  // party agrees, or after 15 seconds, so the button never waits on the next party refresh.
+  // what Find match / Cancel search just asked for
   const [asked, setAsked] = useState(null)
   const inQueue = p?.state === 'MATCHMAKING'
   const searching = asked ?? inQueue
@@ -32,7 +30,7 @@ export default function Lobby({ active, matchState }) {
 
   const act = async (key, fn, ok) => {
     setWorking(key)
-    // A request that never comes back must not leave the button spinning forever.
+    // A request that never comes back must not leave the button spinning forever
     const late = new Promise((_, no) => setTimeout(() => no(new Error("Riot didn't answer. Try again.")), 15000))
     const r = await withToast(Promise.race([fn(), late]), ok)
     setWorking(null)

@@ -1,11 +1,11 @@
-// Player memos: notes, tags and a rating per puuid, stored in userData/memos.json.
+// player memos: notes, tags and a rating per puuid, stored in userData/memos.json
 use crate::api::tools::js_string;
 use crate::core::error::msg;
 use crate::core::riot::now_ms;
 use crate::core::{js, truthy, Args, Ctx, Registry};
 use serde_json::{json, Map, Value};
 
-/// JS `s.slice(0, n)` (counts UTF-16 code units, like JS strings).
+/// JS `s.slice(0, n)`
 pub(crate) fn slice16(s: &str, n: usize) -> String {
     let units: Vec<u16> = s.encode_utf16().take(n).collect();
     String::from_utf16_lossy(&units)

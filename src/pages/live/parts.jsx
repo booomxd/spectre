@@ -4,19 +4,19 @@ import { GUN_ICON, cardIcon, queueName, useModeIcon } from './util'
 
 const cx = (...c) => c.filter(Boolean).join(' ')
 
-// A white valorant-api icon drawn in the current text color, so it follows the theme like the other icons.
+// A white valorant-api icon drawn in the current text color
 export function MaskIcon({ src, size = '1em', width, className, style, title }) {
   const mask = { WebkitMaskImage: `url(${src})`, maskImage: `url(${src})`, WebkitMaskSize: 'contain', maskSize: 'contain', WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat', WebkitMaskPosition: 'center', maskPosition: 'center' }
   return <span role='img' aria-label={title} title={title} className={cx('inline-block shrink-0 bg-current', className)} style={{ width: width ?? size, height: size, ...mask, ...style }} />
 }
 
-// Game mode icon for a queue id (nothing until valorant-api's mode list loads).
+// game mode icon for a queue id
 export function ModeIcon({ queue, size = 16, className }) {
   const src = useModeIcon(queue)
   return src ? <MaskIcon src={src} size={size} className={className} title={queueName(queue)} /> : null
 }
 
-// Gun silhouette, drawn wider than its box so it lines up with square icons.
+// gun silhouette, drawn wider than its box so it lines up with square icons
 export function GunIcon({ size = 16, className }) {
   const n = typeof size === 'number' ? size : 16
   return <MaskIcon src={GUN_ICON} size={n} width={n * 1.6} className={className} style={{ margin: `0 ${-n * 0.3}px` }} />
@@ -30,7 +30,7 @@ export function RankIcon({ tier, size = 28, className }) {
   return <img decoding='async' src={src} alt={t?.tierName || 'Unranked'} title={t?.tierName || 'Unranked'} width={size} height={size} className={cx('shrink-0 object-contain', !tier && 'opacity-50', className)} />
 }
 
-// Player card art; falls back to the name's capitalized initial when there is no card (e.g. offline friends).
+// player card art; falls back to the name's capitalized initial when there is no card
 export function PlayerCard({ id, name, size = 40, className }) {
   const src = cardIcon(id)
   const initial = name ? [...name.trim()][0]?.toUpperCase() : null
@@ -55,14 +55,14 @@ export function StatusDot({ state, className }) {
   return <span className={cx('inline-block w-2 h-2 rounded-full', color, (state === 'queue' || state === 'ingame') && 'anim-pulse', className)} />
 }
 
-// Tier color as '#rrggbb' (valorant-api gives 'rrggbbaa'); null for unranked or while tiers load.
+// tier color as '#rrggbb'
 export function useRankColor(tier) {
   const tiers = useTiers()
   const c = tier > 0 && tiers?.[tier]?.color
   return c ? `#${c.slice(0, 6)}` : null
 }
 
-// Rank icon sitting on a soft glow in its own tier color. The glow is static (no animated filter).
+// rank icon sitting on a soft glow in its own tier color
 export function RankGlow({ tier, size = 34, className }) {
   const color = useRankColor(tier)
   return (

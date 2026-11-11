@@ -1,6 +1,4 @@
-// Store wishlist: skins you want, and a Windows notification when one turns up in your daily offers, the Night Market
-// or a featured bundle. Stored in userData/wishlist.json as { items: [{ id, name }], notified: [keys] }, where id is
-// the skin's first level uuid (what the store lists) and a key marks one alert per account, item and store rotation.
+// Store wishlist: skins you want, and a Windows notification when one turns up in your daily offers, the Night Market or a featured bundle
 use crate::core::error::{msg, Res};
 use crate::core::riot::now_ms;
 use crate::core::{js, truthy, Args, Ctx, Registry};
@@ -13,9 +11,9 @@ use std::time::Duration;
 const TICK: Duration = Duration::from_secs(5 * 60);
 const MAX_ITEMS: usize = 100;
 
-/// When the store is next worth reading (ms). 0 = as soon as the Riot Client is connected.
+/// when the store is next worth reading (ms). 0 = as soon as the Riot Client is connected
 static NEXT_CHECK: AtomicI64 = AtomicI64::new(0);
-/// The account the last check was for, so switching accounts checks again straight away.
+/// the account the last check was for
 static LAST_PUUID: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new(String::new()));
 
 fn load(ctx: &Ctx) -> Value {
@@ -24,13 +22,13 @@ fn load(ctx: &Ctx) -> Value {
 }
 fn id_of(v: &Value) -> String { v.as_str().unwrap_or("").trim().to_lowercase() }
 
-/// A Windows notification from Spectre (does nothing in the command-line helper).
+/// A Windows notification from Spectre
 pub fn notify(ctx: &Ctx, title: &str, body: &str) {
     use tauri_plugin_notification::NotificationExt;
     if let Some(app) = &ctx.app { let _ = app.notification().builder().title(title).body(body).show(); }
 }
 
-/// Reads the store and returns the wishlist items on offer right now. New ones raise one notification.
+/// reads the store and returns the wishlist items on offer right now
 async fn check(ctx: &Ctx) -> Res<Value> {
     let st = ctx.riot.state();
     let puuid = st.puuid.clone().unwrap_or_default();
@@ -45,7 +43,7 @@ async fn check(ctx: &Ctx) -> Res<Value> {
 
     let s = super::store::storefront(ctx).await?;
     let secs = |v: &Value| { let n = js::num(v); if n.is_finite() && n > 0.0 { n as i64 } else { 0 } };
-    // (item id, where it is, seconds until that part of the store changes)
+    // 
     let mut offers: Vec<(String, &str, i64)> = Vec::new();
     let sp = &s["SkinsPanelLayout"];
     let daily_left = secs(&sp["SingleItemOffersRemainingDurationInSeconds"]);
@@ -75,7 +73,7 @@ async fn check(ctx: &Ctx) -> Res<Value> {
         for (oid, place, left) in &offers {
             if *oid != id { continue; }
             hits.push(json!({ "id": id, "name": w["name"], "where": place, "secondsLeft": left }));
-            // One alert per account, item and rotation: the rotation is named by the hour it ends.
+            // one alert per account, item and rotation: the rotation is named by the hour it ends
             let key = format!("{puuid}:{id}:{place}:{}", (now_s + left + 1800) / 3600);
             if !notified.contains(&key) {
                 notified.push(key);
@@ -96,7 +94,7 @@ async fn check(ctx: &Ctx) -> Res<Value> {
         }
         ctx.emit("wishlist:hit", json!({ "names": fresh }));
     }
-    // Look again just after the daily offers change, or in six hours at the latest.
+    // look again just after the daily offers change, or in six hours at the latest
     let wait = if daily_left > 0 { (daily_left + 90).min(6 * 3600) } else { 6 * 3600 };
     NEXT_CHECK.store(now_ms() + wait * 1000, Ordering::SeqCst);
     Ok(json!({ "hits": hits }))
@@ -105,7 +103,7 @@ async fn check(ctx: &Ctx) -> Res<Value> {
 pub fn register(reg: &mut Registry, ctx: &Ctx) {
     reg.add("wishlist:list", |ctx, _| async move { Ok(Value::Array(js::arr(&load(&ctx)["items"]))) });
 
-    // Adds the skin, or removes it if it is already on the list. Argument: { id, name }.
+    // adds the skin, or removes it if it is already on the list
     reg.add("wishlist:toggle", |ctx, a: Args| async move {
         let arg = a.0.first().cloned().unwrap_or(Value::Null);
         let id = id_of(&arg["id"]);

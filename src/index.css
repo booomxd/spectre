@@ -1,5 +1,4 @@
-/* Inter is bundled (no Google Fonts call). It is registered as "Inter" so the font stack below stays exactly as before:
-   SF Pro when installed, then -apple-system, then Inter, then Segoe UI. Latin + Latin Ext cover every UI string. */
+/* inter is bundled (no Google Fonts call) */
 @font-face {
   font-family: 'Inter'; font-style: normal; font-display: swap; font-weight: 100 900;
   src: url('@fontsource-variable/inter/files/inter-latin-wght-normal.woff2') format('woff2-variations');
@@ -14,11 +13,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Theme tokens. Colors are "r g b" triplets so Tailwind can apply opacity (bg-accent/20).
-   Glass: surfaces are translucent (--surface-a / --surface-2-a) over the app backdrop, borders are hairlines
-   (--line at --line-a), --panel is the opaque fill for menus and popovers, --orb-* tint the backdrop.
-   The first block is the shared dark base (and Midnight). :where() keeps it below each theme's own rule, and it also
-   applies to any element with data-theme, so theme previews inside a light app still get the dark base. */
+/* theme tokens */
 :root, :where([data-theme]:not([data-theme='pearl']):not([data-theme='aero'])) {
   --bg: 9 9 14;
   --panel: 22 21 30;
@@ -60,7 +55,7 @@
   --hi-a: 0.7;
   --shadow-a: 0.18;
   --text: 22 24 36;
-  /* Text tokens are tuned for WCAG AA (4.5:1) on the backdrop and on tinted pills, not only on white cards. */
+  /* text tokens are tuned for WCAG AA (4.5:1) on the backdrop and on tinted pills, not only on white cards */
   --muted: 90 94 116;
   --accent: 84 72 240;
   --accent-2: 214 92 255;
@@ -75,11 +70,7 @@
   color-scheme: light;
 }
 
-/* ---- Aesthetic themes ----
-   Frutiger Aero: glossy mid-2000s sky, aqua and grass, with bubbles drifting up (light).
-   Vaporwave: hot pink and cyan over a violet dusk with a neon horizon grid.
-   Y2K Chrome: iridescent cyan, magenta and lime over brushed graphite.
-   Lo-fi: warm dusk lamp light, peach and lilac. */
+/* ---- Aesthetic themes ---- Frutiger Aero: glossy mid-2000s sky, aqua and grass, with bubbles drifting up */
 [data-theme='aero'] {
   --bg: 206 233 248;
   --panel: 246 252 255;
@@ -116,8 +107,7 @@
 [data-theme='y2k'] .glass, [data-theme='y2k'] .glass-strong { background-image: linear-gradient(135deg, rgb(255 255 255 / 0.07), rgb(255 255 255 / 0.015) 40%, rgb(255 255 255 / 0.06)); }
 [data-theme='lofi'] { --bg: 20 14 16; --panel: 40 30 32; --accent: 255 170 120; --accent-2: 200 160 255; --orb-1: 255 150 110; --orb-2: 190 150 255;  --orb-3: 120 80 110; --orb-a: 0.38; --muted: 186 166 160; --orb-v: 1.3; }
 
-/* Minty Jamun: deep jamun purple with cool mint, frosted like a chilled glass. A cluster of glossy berries sits in
-   the bottom corner of the backdrop (static, drawn with gradients). */
+/* minty Jamun: deep jamun purple with cool mint, frosted like a chilled glass */
 [data-theme='jamun'] { --bg: 13 7 22; --panel: 30 18 46; --accent: 168 96 255; --accent-2: 110 240 190; --orb-1: 132 58 224; --orb-2: 84 226 176; --orb-3: 92 18 112; --orb-a: 0.4; --muted: 180 162 204; --hi-a: 0.14; --good: 110 240 190; }
 [data-theme='jamun'] .backdrop-fields::after {
   content: ""; position: absolute; right: -20px; bottom: -30px; width: 440px; height: 440px; opacity: 0.4; pointer-events: none;
@@ -133,7 +123,7 @@
   -webkit-mask-image: linear-gradient(90deg, transparent 12%, #000 52%); mask-image: linear-gradient(90deg, transparent 12%, #000 52%);
 }
 
-/* Frutiger Aero bubbles: small glossy spheres drifting up, only in that theme. Transform-only, like the orbs. */
+/* frutiger Aero bubbles: small glossy spheres drifting up, only in that theme */
 .bubble {
   display: none; position: absolute; bottom: -12vmax; border-radius: 50%;
   background: radial-gradient(circle at 32% 28%, rgb(255 255 255 / 0.95), rgb(255 255 255 / 0.35) 18%, rgb(120 210 255 / 0.18) 46%, rgb(80 180 240 / 0.28) 70%, rgb(255 255 255 / 0.6) 100%);
@@ -188,8 +178,7 @@ button:focus-visible, a:focus-visible, [role='tab']:focus-visible, [role='button
 .orb {
   position: absolute; width: 72vmax; height: 72vmax; border-radius: 50%;
   will-change: transform; backface-visibility: hidden; transform: translate3d(0, 0, 0);
-  /* The fields drift slowly, so they move in small steps about 15 times a second instead of on every screen
-     refresh. It looks the same, but the window is redrawn 15 times a second, not 144 or 240. */
+  /* the fields drift slowly */
   animation: var(--orb-anim) steps(180, end) infinite alternate;
   --v: var(--orb-v, 1.55);   /* vibrance: how strong the drifting color fields are */
 }
@@ -218,13 +207,7 @@ html[data-reduce-motion] .orb { animation: none !important; }
 }
 [data-theme='pearl'] .backdrop::before, [data-theme='aero'] .backdrop::before { filter: invert(1); }
 
-/* Surfaces.
-   .glass         card / tile: translucent fill, hairline border, 1px inner top highlight, layered soft shadow. No blur
-                  (the backdrop is already soft), so lists of cards stay cheap.
-   .glass-strong  floating chrome (dock, modals, palette, menus, toasts): denser fill + backdrop blur. Never nest it.
-   .glass-blur    opt-in blur for a single hero card that sits over busy art.
-   .glass-field   form controls
-   .glass-inset   recessed well inside a card (stat strips, code, empty slots) */
+/* Surfaces. .glass card / tile: translucent fill, hairline border, 1px inner top highlight, layered soft shadow */
 .glass {
   background: linear-gradient(180deg, rgb(var(--surface) / calc(var(--surface-a) * 1.7)), rgb(var(--surface) / calc(var(--surface-a) * 0.6)));
   border: 1px solid rgb(var(--line) / var(--line-a));
@@ -251,7 +234,7 @@ html[data-reduce-motion] .orb { animation: none !important; }
 }
 .glass-field:focus, .glass-field:focus-within { border-color: rgb(var(--accent) / 0.6); box-shadow: 0 0 0 4px rgb(var(--accent) / 0.14); }
 .glass-inset { background: rgb(var(--line) / calc(var(--line-a) * 0.35)); border: 1px solid rgb(var(--line) / calc(var(--line-a) * 0.7)); box-shadow: inset 0 1px 3px rgb(0 0 0 / calc(var(--shadow-a) * 0.18)); }
-/* Musashi drops the glass: flat solid black surfaces, a thin white hairline, no blur, highlight or shadow. */
+/* musashi drops the glass: flat solid black surfaces, a thin white hairline, no blur, highlight or shadow */
 [data-theme='musashi'] :is(.glass, .glass-strong, .glass-field) {
   background: #000; border-color: rgb(255 255 255 / 0.14); box-shadow: none;
   -webkit-backdrop-filter: none; backdrop-filter: none;
@@ -259,11 +242,10 @@ html[data-reduce-motion] .orb { animation: none !important; }
 [data-theme='musashi'] .glass-blur { -webkit-backdrop-filter: none; backdrop-filter: none; }
 [data-theme='musashi'] .glass-inset { background: #0b0b0b; border-color: rgb(255 255 255 / 0.1); box-shadow: none; }
 [data-theme='musashi'] .glass-field:focus, [data-theme='musashi'] .glass-field:focus-within { border-color: rgb(255 255 255 / 0.5); box-shadow: none; }
-/* Hairline divider that fades at both ends. */
+/* hairline divider that fades at both ends */
 .hairline { height: 1px; background: linear-gradient(90deg, transparent, rgb(var(--line) / calc(var(--line-a) * 1.6)), transparent); }
 
-/* Accent. Glows instead of filled blocks: .accent-soft is the default "selected" look, .accent-fill is kept for the one
-   primary action per view. */
+/* accent */
 .accent-fill {
   background: linear-gradient(135deg, rgb(var(--accent)), rgb(var(--accent-2)));
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35), 0 0 0 1px rgb(var(--accent) / 0.25), 0 10px 30px -10px rgb(var(--accent) / var(--glow-a));
@@ -273,21 +255,20 @@ html[data-reduce-motion] .orb { animation: none !important; }
   box-shadow: inset 0 0 0 1px rgb(var(--accent) / 0.3), inset 0 1px 0 rgb(255 255 255 / 0.08), 0 0 22px -8px rgb(var(--accent) / var(--glow-a));
 }
 .accent-glow { box-shadow: 0 0 0 1px rgb(var(--accent) / 0.35), 0 10px 40px -10px rgb(var(--accent) / var(--glow-a)); }
-/* Soft accent halo behind an element (absolute, put inside a relative parent). */
+/* soft accent halo behind an element */
 .halo { position: absolute; pointer-events: none; border-radius: 9999px; background: radial-gradient(closest-side, rgb(var(--accent) / calc(var(--glow-a) * 0.6)), transparent); }
-/* White single-color game icons (currencies) turn dark on light themes. */
+/* white single-color game icons (currencies) turn dark on light themes */
 [data-theme='pearl'] .mono-icon, [data-theme='aero'] .mono-icon { filter: invert(1) brightness(0.35); }
-/* Game-defined colors used as text (rank tiers, content tiers): pass the hex as --tier. They are tuned for dark surfaces,
-   so the light theme caps their lightness (same hue and chroma) to keep AA contrast on light glass. */
+/* Game-defined colors used as text (rank tiers, content tiers): pass the hex as --tier */
 .tier-text { color: var(--tier, rgb(var(--text))); }
 [data-theme='pearl'] .tier-text, [data-theme='aero'] .tier-text { color: oklch(from var(--tier, rgb(var(--text))) min(l, 0.5) c h); }
-/* Light theme: tone down card art behind text and give the Home hero stats a solid panel. */
+/* light theme: tone down card art behind text and give the Home hero stats a solid panel */
 [data-theme='pearl'] .hero-art, [data-theme='aero'] .hero-art { opacity: 0.32; }
 [data-theme='pearl'] .hero-strip, [data-theme='aero'] .hero-strip { background: rgb(var(--panel) / 0.82); }
 
 .kbd { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 6px; font-size: 11px; font-weight: 600; color: rgb(var(--muted)); background: rgb(var(--surface-2) / var(--surface-2-a)); border: 1px solid rgb(var(--line) / var(--line-a)); border-bottom-width: 2px; }
 
-/* Bento grid: 12 columns, dense packing. Children use col-span-* / row-span-*. */
+/* bento grid: 12 columns, dense packing */
 .bento { display: grid; gap: 16px; grid-template-columns: repeat(12, minmax(0, 1fr)); grid-auto-flow: dense; }
 
 ::-webkit-scrollbar { width: 10px; height: 10px; }
@@ -315,17 +296,15 @@ html[data-reduce-motion] .page-in { animation: none; }
 .anim-pop { animation: pop 0.22s var(--ease-out) both; }
 .anim-pulse { animation: pulse-dot 1.6s steps(8, end) infinite; }
 .anim-slide { animation: slide-in 0.28s var(--ease-out) both; }
-/* Stagger children: give each child style={{ '--i': index }}. Only the first 12 animate. */
+/* stagger children: give each child style={{ '--i': index }} */
 .stagger > * { animation: rise 0.34s var(--ease-out) both; animation-delay: calc(min(var(--i, 0), 12) * 32ms); }
 .stagger > *:nth-child(n+13) { animation: none; }
-/* Long lists: rows past the animated first twelve skip layout and paint until they scroll near the viewport.
-   The browser remembers each row's real size once drawn, so the scrollbar stays steady. */
+/* long lists: rows past the animated first twelve skip layout and paint until they scroll near the viewport */
 .cv-list > :nth-child(n+13) { content-visibility: auto; contain-intrinsic-size: auto var(--cv-h, 76px); }
-/* Shimmer runs on a pseudo-element by transform (no background-position repaint). */
+/* shimmer runs on a pseudo-element by transform */
 .skeleton { position: relative; overflow: hidden; border-radius: 12px; background: rgb(var(--line) / 0.06); }
 .skeleton::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgb(var(--line) / 0.08), transparent); animation: shimmer 1.3s steps(20, end) infinite; }
-/* Endless animations cost a full redraw of the window for every step, so they rest wherever nobody is looking:
-   on pages that are loaded but not shown, and while Spectre is hidden or another window (the game) has focus. */
+/* endless animations cost a full redraw of the window for every step */
 [inert] .skeleton::after, [inert] .anim-pulse,
 html[data-hidden] .skeleton::after, html[data-hidden] .anim-pulse,
 html[data-idle] .skeleton::after, html[data-idle] .anim-pulse { animation-play-state: paused; }
@@ -334,7 +313,7 @@ html[data-idle] .skeleton::after, html[data-idle] .anim-pulse { animation-play-s
   transform: translateY(-2px); border-color: rgb(var(--accent) / 0.35);
   box-shadow: inset 0 1px 0 rgb(255 255 255 / var(--hi-a)), 0 0 0 1px rgb(var(--accent) / 0.12), 0 18px 44px -18px rgb(var(--accent) / calc(var(--glow-a) * 0.8));
 }
-/* Pointer spotlight (cards with .spot): the shell sets --mx / --my on hover. */
+/* pointer spotlight (cards with .spot): the shell sets --mx / --my on hover */
 .spot { position: relative; }
 .spot::before {
   content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity 0.3s ease;
@@ -349,7 +328,7 @@ html[data-reduce-motion] *, html[data-reduce-motion] *::before, html[data-reduce
   animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; animation-delay: 0ms !important; transition-duration: 0.01ms !important;
 }
 
-/* Announcement popup: an accent glow around the card and two pulses from the icon when it opens. */
+/* announcement popup: an accent glow around the card and two pulses from the icon when it opens */
 .announce-card { box-shadow: 0 0 0 1px rgb(var(--accent) / 0.35), 0 0 60px -10px rgb(var(--accent) / 0.45), 0 30px 80px -20px rgb(0 0 0 / 0.7); }
 .announce-card.is-warn { box-shadow: 0 0 0 1px rgb(var(--warn) / 0.4), 0 0 60px -10px rgb(var(--warn) / 0.4), 0 30px 80px -20px rgb(0 0 0 / 0.7); }
 .announce-icon::after { content: ''; position: absolute; inset: 0; border-radius: inherit; box-shadow: 0 0 0 0 currentColor; animation: announce-ping 1.1s ease-out 0.35s 2; }

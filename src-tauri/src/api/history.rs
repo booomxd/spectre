@@ -1,6 +1,4 @@
-// Match history, match details, player search/profile and recent-activity channels.
-// Any player can be looked up by puuid (like any tracker). Hidden players are protected at the source:
-// puuids of streamer-mode players and of unnamed strangers in match data are never handed to the UI.
+// match history, match details, player search/profile and recent-activity channels
 use crate::api::known;
 use crate::core::error::{msg, Res};
 use crate::core::riot::now_ms;
@@ -13,12 +11,12 @@ use std::sync::Mutex;
 
 // ---- small JS helpers ----
 
-/// Object builder that mirrors a JS object literal's key order.
+/// object builder that mirrors a JS object literal's key order
 struct O(Map<String, Value>);
 impl O {
     fn new() -> Self { O(Map::new()) }
     fn v(mut self, k: &str, v: impl Into<Value>) -> Self { self.0.insert(k.to_string(), v.into()); self }
-    /// A field that may be undefined in JS (then it is left out of the JSON).
+    /// A field that may be undefined in JS
     fn u(mut self, k: &str, v: Option<&Value>) -> Self {
         if let Some(v) = v { self.0.insert(k.to_string(), v.clone()); }
         self
@@ -31,7 +29,7 @@ impl O {
     fn done(self) -> Value { Value::Object(self.0) }
 }
 
-/// JS template-literal / `String(v)` of a handler argument or field (undefined when missing).
+/// JS template-literal / `String(v)` of a handler argument or field
 fn tpl(v: Option<&Value>) -> String {
     match v {
         None => "undefined".into(),
@@ -43,7 +41,7 @@ fn tpl(v: Option<&Value>) -> String {
     }
 }
 
-/// JS `encodeURIComponent`.
+/// JS `encodeURIComponent`
 fn enc(s: &str) -> String {
     let mut out = String::new();
     for b in s.bytes() {
@@ -52,7 +50,7 @@ fn enc(s: &str) -> String {
     out
 }
 
-/// JS `Number(v)` for a field that may be undefined (then NaN, as in `x + undefined`).
+/// JS `Number(v)` for a field that may be undefined
 fn n(v: Option<&Value>) -> f64 {
     match v {
         None | Some(Value::Array(_)) | Some(Value::Object(_)) => f64::NAN,
@@ -61,7 +59,7 @@ fn n(v: Option<&Value>) -> f64 {
     }
 }
 
-/// JS `Number(key)` for an object key.
+/// JS `Number(key)` for an object key
 fn key_num(k: &str) -> f64 {
     let t = k.trim();
     if t.is_empty() { 0.0 } else { t.parse().unwrap_or(f64::NAN) }
@@ -87,14 +85,14 @@ fn id_of(ctx: &Ctx, a: &Args, i: usize) -> String {
 static LIMIT: Lazy<tokio::sync::Semaphore> = Lazy::new(|| tokio::sync::Semaphore::new(3));
 
 type MatchFut = Shared<BoxFuture<'static, Res<Value>>>;
-// matchId -> Promise<slim>, plus insertion order for eviction.
+// matchId -> Promise<slim>, plus insertion order for eviction
 static MATCHES: Lazy<Mutex<(HashMap<String, MatchFut>, Vec<String>)>> = Lazy::new(|| Mutex::new((HashMap::new(), Vec::new())));
 
 fn get_match(ctx: &Ctx, match_id: &str) -> MatchFut {
     let mut c = MATCHES.lock().unwrap();
     if let Some(f) = c.0.get(match_id) { return f.clone(); }
     let (ctx2, id) = (ctx.clone(), match_id.to_string());
-    // Started right away, like a JS promise; removed from the cache if it fails.
+    // started right away, like a JS promise
     let handle = tauri::async_runtime::spawn(async move {
         let res = async {
             let _permit = LIMIT.acquire().await.map_err(|e| msg(e.to_string()))?;
@@ -131,7 +129,7 @@ async fn resolve_names(ctx: &Ctx, puuids: &[String]) -> Map<String, Value> {
         }
     }
     for chunk in need.chunks(40) {
-        // On failure leave uncached so a later call can retry.
+        // on failure leave uncached so a later call can retry
         if let Ok(got) = ctx.riot.names(chunk).await {
             let mut c = NAMES.lock().unwrap();
             for p in chunk {
@@ -179,7 +177,7 @@ fn slim(m: &Value) -> Res<Value> {
         .v("teams", teams).v("players", players).v("rounds", rounds).done())
 }
 
-// Per-player derived stats.
+// Per-player derived stats
 fn player_stats(m: &Value, p: &Value) -> Map<String, Value> {
     let rounds = m["rounds"].as_array().cloned().unwrap_or_default();
     let n_rounds = if !rounds.is_empty() { rounds.len() as f64 } else { js::num(&js::or(&p["rounds"], json!(1))) };
@@ -237,8 +235,7 @@ fn summarize(m: &Value, puuid: &str) -> Option<Value> {
     let mut result = if mine.map(|t| truthy(&t["won"])).unwrap_or(false) { "win" } else { "loss" };
     if teams.len() == 2 && !teams.iter().any(|t| truthy(&t["won"])) { result = "draw"; }
     let ffa = teams.len() > 2;
-    // The game's own MVP rule: the top combat score on the winning team is Match MVP, the top score on the other
-    // team is Team MVP (both teams' tops in a draw). No MVP in free-for-all modes.
+    // the game's own MVP rule: the top combat score on the winning team is Match MVP, the top score on the other team is Team MVP
     let score_of = |p: &Value| js::num(&js::or(&p["stats"]["score"], json!(0)));
     let top = players.iter().filter(|p| p["team"] == me["team"]).map(|p| score_of(p)).fold(0.0_f64, f64::max);
     let mvp = if ffa || teams.len() != 2 || top <= 0.0 || score_of(me) < top { Value::Null }
@@ -294,8 +291,7 @@ pub fn register(reg: &mut Registry, _ctx: &Ctx) {
             };
             let list = js::arr(&res["Matches"]);
             for u in &list {
-                // Riot reports the RR change itself. After - before is wrong across a rank-up or derank (RR resets each
-                // tier, so a promotion showed as -82 and a derank as +79); only fall back to it, tier-corrected, if missing.
+                // Riot reports the RR change itself
                 let (tb, ta) = (n(u.get("TierBeforeUpdate")), n(u.get("TierAfterUpdate")));
                 let diff = n(u.get("RankedRatingAfterUpdate")) - n(u.get("RankedRatingBeforeUpdate"));
                 let earned = match u.get("RankedRatingEarned").and_then(Value::as_f64) {
@@ -324,14 +320,13 @@ pub fn register(reg: &mut Registry, _ctx: &Ctx) {
         let (ok, fr) = (ok?, fr?);
         let state = ctx.riot.state();
         let me = state.puuid.clone().unwrap_or_default();
-        // Everyone is named like on any tracker, except streamer-mode players in your current match. If the current
-        // match can't be read, only you, friends and party are named.
+        // everyone is named like on any tracker, except streamer-mode players in your current match
         let shown = |p: &str| p == me || match &live { Some(l) => !l.contains(p), None => ok.contains(p) };
         let mp = js::arr(&m["players"]);
         let want: Vec<String> = mp.iter().map(|p| js::s(&p["puuid"])).filter(|p| shown(p)).collect();
         let names = resolve_names(&ctx, &want).await;
         let my_party = mp.iter().find(|p| p["puuid"].as_str() == Some(me.as_str())).map(|p| p["party"].clone()).unwrap_or(Value::Null);
-        // Hidden players are agent-only, with no puuid.
+        // hidden players are agent-only, with no puuid
         let players: Vec<Value> = mp.iter().enumerate().map(|(i, p)| {
             let pid = js::s(&p["puuid"]);
             let is_known = ok.contains(&pid);
@@ -432,9 +427,9 @@ pub fn register(reg: &mut Registry, _ctx: &Ctx) {
             .v("cardId", Value::Null).v("titleId", Value::Null).v("current", Value::Null).v("peak", Value::Null)
             .v("leaderboardRank", Value::Null).v("notes", json!([])).0;
         let mut notes: Vec<Value> = Vec::new();
-        // Keys later assigned `undefined` (kept in place, left out of the JSON).
+        // keys later assigned `undefined`
         let mut undef: Vec<&str> = Vec::new();
-        // `puuid === riot.state.puuid` (state.puuid is null until connected).
+        // `puuid === riot.state.puuid`
         let is_self = match (&arg, &state.puuid) {
             (Some(Value::String(x)), Some(me)) => x == me,
             (Some(Value::Null), None) => true,
@@ -500,7 +495,7 @@ pub fn register(reg: &mut Registry, _ctx: &Ctx) {
         Ok(Value::Object(out.into_iter().filter(|(k, _)| !undef.contains(&k.as_str())).collect()))
     });
 
-    // Scout details, fetched only when a profile is opened: per-act history + recent competitive form.
+    // Scout details, fetched only when a profile is opened: per-act history + recent competitive form
     reg.add("search:scout", |ctx, a: Args| async move {
         let puuid = tpl(a.0.get(0));
         if let Some((at, v)) = SCOUT_CACHE.lock().unwrap().get(&puuid) {

@@ -18,7 +18,7 @@ const cx = (...c) => c.filter(Boolean).join(' ')
 const title = s => (s || '').toLowerCase().replace(/(^|\s)\S/g, c => c.toUpperCase())
 const SkinsIcon = () => <GunIcon size={14} />
 
-// Average current rank of the ranked players in a list (0 when nobody is ranked or visible).
+// average current rank of the ranked players in a list
 const avgRank = players => {
   const r = players.filter(p => p.ranked && p.rank > 0)
   return r.length ? Math.round(r.reduce((a, p) => a + p.rank, 0) / r.length) : 0
@@ -43,7 +43,7 @@ function TeamAvg({ label, tier, tone }) {
   )
 }
 
-// Match hero: map art bleeding in from the right, a faint grid, the map name as display type, and team average ranks.
+// match hero: map art bleeding in from the right, a faint grid, the map name as display type, and team average ranks
 function Banner({ m, onChangeSkins }) {
   const live = m.state === 'ingame'
   const ffa = live && m.queueId === 'deathmatch'
@@ -84,7 +84,7 @@ function Banner({ m, onChangeSkins }) {
 function Team({ title: name, tone, players, memos, onScout, onSkins }) {
   const avg = avgRank(players)
   const tiers = useTiers()
-  // Allies read green and opponents red in every theme (the game's own convention); free-for-all uses the accent.
+  // allies read green and opponents red in every theme
   const dot = { bad: 'bg-bad shadow-[0_0_10px_rgb(var(--bad))]', good: 'bg-good shadow-[0_0_10px_rgb(var(--good))]' }[tone] || 'bg-accent shadow-[0_0_10px_rgb(var(--accent))]'
   const line = { bad: 'from-bad/50', good: 'from-good/45' }[tone] || 'from-accent/50'
   return (
@@ -110,7 +110,7 @@ function Idle({ active }) {
     <div className='grid gap-5 lg:grid-cols-[1fr_360px] items-start'>
       <Card className='relative overflow-hidden p-10 rounded-[28px] min-h-[320px] flex items-center justify-center'>
         <div className='absolute inset-0 pointer-events-none' style={{ ...GRID, WebkitMaskImage: 'radial-gradient(circle at 50% 45%, #000, transparent 65%)', maskImage: 'radial-gradient(circle at 50% 45%, #000, transparent 65%)' }} />
-        {/* Radar rings: static, only the inner dot pulses (opacity). */}
+        {/* radar rings: static, only the inner dot pulses */}
         <div className='absolute left-1/2 top-[45%] -translate-x-1/2 -translate-y-1/2 pointer-events-none'>
           {[260, 190, 120].map(s => <span key={s} className='absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-accent/15' style={{ width: s, height: s }} />)}
         </div>
@@ -141,17 +141,17 @@ function LiveBody({ active }) {
   const [overlay, setOverlay] = useState(false)
   useEffect(() => { invoke('overlay:state').then(s => setOverlay(s.open)).catch(() => { }) }, [])
   useEvent('overlay:state', s => setOverlay(s.open))
-  // Poll fast while visible; slowly only if the overlay window needs the data.
+  // poll fast while visible
   const poll = active ? 4000 : overlay ? 12000 : undefined
   const live = useInvoke('live:state', [], { poll })
   const d = live.data
   const memos = useMemos((d?.players || []).map(p => p.puuid))
   const rescout = () => live.reload(true)
-  // Side panel: { kind: 'scout' | 'skins' | 'loadout', player }. Closed whenever the match changes.
+  // side panel: { kind: 'scout' | 'skins' | 'loadout', player }
   const [panel, setPanel] = useState(null)
   const closePanel = () => setPanel(null)
   useEffect(closePanel, [d?.matchId])
-  // Dev demo only (?demo&scout): open Scout on a sample player for screenshots.
+  // dev demo only (?demo&scout): open Scout on a sample player for screenshots
   const demoScout = useRef(false)
   useEffect(() => {
     if (!import.meta.env.DEV || demoScout.current || !d?.players?.length) return
@@ -160,7 +160,7 @@ function LiveBody({ active }) {
     demoScout.current = true
     setPanel({ kind: 'scout', player: d.players.find(p => p.name && !p.hidden && !p.self) || d.players[1] || d.players[0] })
   }, [d?.players])
-  // Keep the last panel's content on screen while the drawer animates out.
+  // keep the last panel's content on screen while the drawer animates out
   const last = useRef(null)
   if (panel) last.current = panel
   const shown = panel || last.current
@@ -168,7 +168,7 @@ function LiveBody({ active }) {
 
   const toggle = () => withToast(invoke('overlay:toggle').then(s => setOverlay(s.open)))
 
-  // Lobby & Party / Live Match tabs: follows the game (lobby in menus, live once agent select starts) until picked.
+  // Lobby & Party / Live Match tabs: follows the game (lobby in menus, live once agent select starts) until picked
   const inMatch = d && d.state !== 'menus'
   const [picked, setPicked] = useState(null)
   useEffect(() => setPicked(null), [inMatch])
@@ -194,7 +194,7 @@ function LiveBody({ active }) {
   else {
     const mine = d.players.filter(p => !p.enemy)
     const theirs = d.players.filter(p => p.enemy)
-    // Deathmatch is free-for-all (everyone shares one team), so split the roster evenly across both columns.
+    // Deathmatch is free-for-all
     const ffa = d.state === 'ingame' && d.queueId === 'deathmatch'
     const half = Math.ceil(d.players.length / 2)
     body = (
@@ -222,7 +222,7 @@ function LiveBody({ active }) {
       <Swap id={tab}>{body}</Swap>
       <Drawer open={!!panel} onClose={closePanel} width={shown?.kind === 'loadout' ? 'min(1120px, 82vw)' : undefined}>
         {shown?.kind === 'loadout' && (
-          // Your own loadout during agent select: same editor as the Loadout page, applied in game right away.
+          // your own loadout during agent select: same editor as the Loadout page, applied in game right away
           <div className='relative flex-1 overflow-y-auto'>
             <button className='glass absolute right-5 top-5 z-10 w-9 h-9 rounded-full text-muted hover:text-text hover:border-accent/40 transition-colors flex items-center justify-center' onClick={closePanel} title='Close'><FiX /></button>
             <Loadout active />

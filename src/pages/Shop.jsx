@@ -9,7 +9,7 @@ import { Price, ItemArt } from './dashboard/bits'
 const pct = d => Math.round((d || 0) * 100)
 const tierHex = item => item?.tier?.highlightColor ? '#' + item.tier.highlightColor.slice(0, 6) : null
 
-// Segmented live countdown: 5d 06h 59m 12s. `onArt` = white text over imagery.
+// segmented live countdown: 5d 06h 59m 12s
 function BigCountdown({ seconds, label, onArt, className }) {
   const left = useCountdown(seconds)
   if (left == null) return null
@@ -42,7 +42,7 @@ function Wallet({ wallet, cat }) {
   )
 }
 
-// Large skin card: tier-tinted art stage, name, tier and price.
+// large skin card: tier-tinted art stage, name, tier and price
 function OfferCard({ item, price, base, discount, cat, onOpen, index, currencyId, size = 'lg', hidden }) {
   const color = tierHex(item)
   const clickable = !!item?.skin
@@ -106,7 +106,7 @@ function SkinModal({ item, onClose }) {
   )
 }
 
-// Featured bundle: full-bleed art hero with a live countdown, items in a strip below.
+// featured bundle: full-bleed art hero with a live countdown, items in a strip below
 function Bundle({ b, cat, onOpen }) {
   const meta = cat?.bundles[b.id]
   const art = meta?.displayIcon2 || meta?.displayIcon
@@ -169,7 +169,7 @@ function Section({ title, hint, seconds, countdownLabel = 'Resets in', children 
 
 const WHERE = { daily: 'In your daily offers', night: 'In your Night Market', bundle: 'In a featured bundle' }
 
-// Skins you are waiting for. Spectre checks the store in the background and sends a Windows notification on a match.
+// skins you are waiting for
 function Wishlist({ cat }) {
   const { items, toggle } = useWishlist()
   const check = useInvoke('wishlist:check', [], { deps: [items.length] })

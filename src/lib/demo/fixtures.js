@@ -1,5 +1,4 @@
-// Sample world for demo mode (screenshots / UI work in a plain browser). Every name here is made up; asset ids are
-// real public valorant-api.com ids so images render. Shapes mirror what the Rust handlers in src-tauri/src/api return.
+// sample world for demo mode
 import { BUDDIES, CARDS, SKINS, SPRAYS, WEAPON_ORDER } from './assets'
 
 // ---- deterministic randomness ----
@@ -56,7 +55,7 @@ export const MAP = {
 const mapSplash = m => `https://media.valorant-api.com/maps/${m.uuid}/splash.png`
 const mapList = m => `https://media.valorant-api.com/maps/${m.uuid}/listviewicon.png`
 
-// Acts (valorant-api seasons): current first.
+// acts (valorant-api seasons): current first
 export const ACTS = ['d816f426-48ea-f052-117f-9697a155b319', '8102cd81-43a0-d0d7-bd59-47b8fe9bed1b', '4f0864e2-40af-28a4-de2c-0e9e64e75f23', 'ce2783e8-44fc-dd48-3da3-33b5ba6c4a22']
 export const CURRENT_ACT = { id: ACTS[0], name: 'ACT VI' }
 
@@ -80,18 +79,18 @@ export const STRANGERS = [
   P(28, 'Rook', 'mid', { tier: 18 }), P(29, 'Cinder', 'ace', { tier: 20 }), P(30, 'Wren', 'zzz', { tier: 19 }), P(31, 'Juniper', 'EU1', { tier: 17 }),
   P(32, 'Atlas', '404', { tier: 18 }), P(33, 'mossy', 'frog', { tier: 19 }), P(34, 'Zephyr', 'air', { tier: 21 }), P(35, 'Fable', 'tale', { tier: 16 }),
 ]
-// A streamer-mode (incognito) player: the app never knows or shows their name, level or card.
+// A streamer-mode (incognito) player: the app never knows or shows their name, level or card
 export const INCOGNITO = P(40, '', '', { tier: 20, incognito: true })
 export const EVERYONE = [ME, ...FRIENDS, ...STRANGERS, INCOGNITO]
 export const BY_PUUID = Object.fromEntries(EVERYONE.map(p => [p.puuid, p]))
 const by = name => EVERYONE.find(p => p.gameName === name)
-// Players the user has met in a live match or searched for, so match details may name them.
+// players the user has met in a live match or searched for
 export const KNOWN = new Set([...FRIENDS, ...STRANGERS.slice(0, 6)].map(p => p.puuid))
 export const FRIEND_SET = new Set(FRIENDS.map(p => p.puuid))
 export const nameOf = p => p && !p.incognito ? { gameName: p.gameName, tagLine: p.tagLine } : null
 
 // ---- scouting ----
-// Full scout (live:scout): rank fields plus recent form, top agents and recent competitive matches.
+// full scout (live:scout): rank fields plus recent form, top agents and recent competitive matches
 export function scoutFor(key, tier = 18) {
   const r = rng('scout' + key)
   const maps = Object.values(MAP)
@@ -194,7 +193,7 @@ export function liveLoadout(ref) {
     title: l.p.incognito ? null : pickOne(rng('title' + ref), ['Lurker', 'Ace', 'Clutch', null]),
   }
 }
-// Pre-scout two players so the roster shows mini stats right away.
+// Pre-scout two players so the roster shows mini stats right away
 liveScout(LIVE[1].ref); liveScout(LIVE[6].ref)
 
 // ---- match history ----
@@ -217,7 +216,7 @@ export const MATCHES = HIST_PLAN.map(([queue, mapKey, myAgent, result], i) => {
   if (result === 'draw') { us = 12; them = 12 } else if (result === 'win') { us = target; them = int(r, Math.floor(target * 0.3), target - 2) } else { them = target; us = int(r, Math.floor(target * 0.3), target - 2) }
   const rounds = us + them
   const start = NOW - (i * 9 + int(r, 2, 6)) * HOUR - int(r, 0, 50) * MIN
-  // Teammates: a friend or two most games, the rest strangers. One incognito enemy now and then.
+  // teammates: a friend or two most games, the rest strangers
   const mates = [FRIENDS[i % 4], ...(i % 3 === 0 ? [FRIENDS[(i + 5) % 12]] : [])]
   const strangers = [...STRANGERS].sort(() => r() - 0.5)
   const allies = [...mates, ...strangers.slice(0, 4 - mates.length)]
@@ -268,7 +267,7 @@ function playerStats(m, p) {
   }
 }
 
-// history:summary for any player of a sample match (the user by default).
+// history:summary for any player of a sample match
 export function summary(matchId, puuid = ME.puuid) {
   const m = matchById[matchId]
   if (!m) throw new Error('Match not found')
@@ -289,7 +288,7 @@ export function historyList(puuid, opts = {}) {
   return { puuid: puuid || ME.puuid, total: list.length, matches: list.slice(start, end).map(m => ({ matchId: m.id, start: m.start, queue: m.queue })) }
 }
 
-// Names only for the user and players they know (live-match roster or search), as the backend does.
+// names only for the user and players they know (live-match roster or search), as the backend does
 export function detail(matchId) {
   const m = matchById[matchId]
   if (!m) throw new Error('Match not found')
@@ -309,7 +308,7 @@ export function detail(matchId) {
   }
 }
 
-// RR chain, newest first, ending at the user's current rank.
+// RR chain, newest first, ending at the user's current rank
 const COMP = MATCHES.filter(m => m.queue === 'competitive')
 export const RR = (() => {
   const out = {}
@@ -337,7 +336,7 @@ export function rrHistory(count = 20) {
   }).reverse()
 }
 
-// activity:recent: who you played with and against.
+// activity:recent: who you played with and against
 export function encounters(count = 20) {
   const people = {}
   const matches = MATCHES.slice(0, Math.min(count, 25)).map(m => {
@@ -520,7 +519,7 @@ export const RELEASES = [
   installer: { name: `Spectre_${v}_x64-setup.exe`, url: `https://github.com/booomxd/spectre/releases/download/v${v}/Spectre_${v}_x64-setup.exe`, size: 9_400_000, digest: null },
 }))
 
-// Discord preview scenarios, already formatted like the backend's format() with default settings.
+// Discord preview scenarios, already formatted like the backend's format() with default settings
 export function discordPreview(name = 'live') {
   const rank = { large_image: 'https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/19/largeicon.png', large_text: 'Diamond 2' }
   const map = (m) => ({ large_image: mapList(MAP[m]), large_text: MAP[m].name, small_image: rank.large_image, small_text: rank.large_text })
@@ -537,7 +536,7 @@ export function discordPreview(name = 'live') {
   return { activity: A[name] ?? null }
 }
 
-// Your own presence as tools:state reads it (decoded private JSON).
+// your own presence as tools:state reads it
 export const PRESENCE = {
   isValid: true, sessionLoopState: 'INGAME', partyOwnerSessionLoopState: 'INGAME', isIdle: false,
   partyOwnerMatchScoreAllyTeam: 7, partyOwnerMatchScoreEnemyTeam: 5,

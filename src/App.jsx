@@ -10,8 +10,7 @@ import { SETTINGS_TABS } from './pages/Settings'
 import Overlay from './pages/Overlay'
 import Announcements from './lib/announcements'
 
-// New-release prompt: a dialog once per version, then an Update button that stays in the title bar.
-// Installed copies update in place; dev builds and loose exes open the release page to download.
+// New-release prompt: a dialog once per version, then an Update button that stays in the title bar
 function UpdateButton() {
   const [s, setS] = useState(null)
   const [pct, setPct] = useState(null)
@@ -61,7 +60,7 @@ function WindowControls() {
   )
 }
 
-// Floating glass dock: the six sections, with a spring pill under the active one.
+// floating glass dock: the six sections, with a spring pill under the active one
 function Dock({ section, onSection }) {
   return (
     <nav className='glass-strong flex items-center gap-0.5 p-1 rounded-full'>
@@ -96,7 +95,7 @@ function Brand() {
   )
 }
 
-// Right side of the second row: palette trigger + utility pages.
+// right side of the second row: palette trigger + utility pages
 function Utilities({ page, onOpen, onPalette }) {
   return (
     <div className='flex items-center gap-2'>
@@ -120,27 +119,26 @@ function Utilities({ page, onOpen, onPalette }) {
   )
 }
 
-// Page context per section (stable objects so pages do not re-render on every shell render).
+// page context per section
 const CONTEXTS = Object.fromEntries(Object.values(PAGES).map(p => {
   const s = p.section && SECTIONS.find(x => x.id === p.section)
   return [p.id, { section: s ? s.label : 'Spectre', embedded: false }]
 }))
 
-// One kept-alive page. Memoized so shell-only state (the palette, the update prompt) does not re-render every visited
-// page; NO_PARAMS keeps the params prop stable for pages that were never given any.
+// one kept-alive page
 const NO_PARAMS = Object.freeze({})
 const PageSlot = memo(function PageSlot({ page: P, params, active }) {
   return <P params={params} active={active} />
 })
 
-// Experimental tool ids open Settings > Experimental focused on that tool; unknown ids fall back to Home.
+// experimental tool ids open Settings > Experimental focused on that tool
 function resolve(page, params) {
   if (EXPERIMENTAL_IDS.has(page)) return ['settings', { tab: 'experimental', tool: page }]
   if (!PAGES[page]) return ['dashboard', {}]
   return [page, params || {}]
 }
 
-// Frutiger Aero bubbles (CSS hides them in every other theme): size, start, speed, delay, sway.
+// frutiger Aero bubbles (CSS hides them in every other theme): size, start, speed, delay, sway
 const BUBBLES = [[5, 8, 24, 0, 3], [9, 22, 31, -9, -4], [3.5, 37, 21, -4, 5], [7, 55, 28, -15, -3], [4.5, 68, 23, -7, 4], [11, 80, 36, -20, -5], [3, 91, 19, -2, 3]]
   .map(([w, l, d, dl, sw]) => ({ width: w + 'vmax', height: w + 'vmax', left: l + '%', '--d': d + 's', '--dl': dl + 's', '--sway': sw + 'vmax' }))
 
@@ -152,8 +150,7 @@ function Shell() {
   const [, bump] = useState(0)
   const lastInSection = useRef({})
   visited.add(page)
-  // Pre-draw every page in the background, one at a time while the app is idle, so the first visit to a page is
-  // as instant as switching back to it. Experimental tools are left out: they only open from Settings.
+  // Pre-draw every page in the background, one at a time while the app is idle
   useEffect(() => {
     const queue = Object.values(PAGES).map(p => p.id).filter(id => !EXPERIMENTAL_IDS.has(id))
     let cancelled = false, timer = 0, idleId = 0
@@ -181,7 +178,7 @@ function Shell() {
   useEffect(() => {
     invoke('settings:get').then(s => {
       if (!s?.startPage) return
-      // "Where I left off": the page that was open when Spectre last closed.
+      // "Where I left off": the page that was open when Spectre last closed
       let to = s.startPage
       if (to === 'last') { try { to = localStorage.getItem('spectre:last-page') || 'dashboard' } catch { to = 'dashboard' } }
       go(to)
@@ -221,7 +218,7 @@ function Shell() {
     <div className='h-full flex flex-col relative'>
       <div className='backdrop' aria-hidden='true'><div className='backdrop-fields'><span className='orb orb-1' /><span className='orb orb-2' /><span className='orb orb-3' /><span className='orb orb-4' />{BUBBLES.map((b, i) => <span key={i} className='bubble' style={b} />)}</div></div>
 
-      {/* Row 1: brand, dock, update + window controls. The bar itself is the window drag region. */}
+      {/* row 1: brand, dock, update + window controls */}
       <header data-tauri-drag-region className='drag relative z-20 h-16 shrink-0 flex items-center justify-between pl-5 pr-2'>
         <Brand />
         <div className='absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2'>
@@ -233,7 +230,7 @@ function Shell() {
         </div>
       </header>
 
-      {/* Row 2: section sub-tabs (centered), search + utility pages (right). */}
+      {/* row 2: section sub-tabs (centered), search + utility pages */}
       <div data-tauri-drag-region className='drag relative z-20 h-12 shrink-0 flex items-center justify-end px-5'>
         <div className='absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2'>
           <AnimatePresence mode='popLayout' initial={false}>
@@ -269,7 +266,7 @@ function Shell() {
 
 export default function App() {
   useEffect(applySavedTheme, [])
-  // The overlay window loads the same bundle.
+  // the overlay window loads the same bundle
   const isOverlay = isOverlayWindow()
   return (
     <MotionProvider>

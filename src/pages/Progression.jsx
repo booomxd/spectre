@@ -12,7 +12,7 @@ import { CareerBar, StatCell, StatStrip } from './history/career'
 const bar = (v, max) => Math.min(100, Math.max(0, max ? v / max * 100 : 0))
 const signed = n => (n > 0 ? '+' : '') + n
 
-// Progress bar that fills by transform (scaleX), not width.
+// progress bar that fills by transform (scaleX), not width
 function Progress({ value, className = '' }) {
   return (
     <div className={'h-2 rounded-full glass-inset overflow-hidden ' + className}>

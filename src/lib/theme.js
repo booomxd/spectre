@@ -1,5 +1,4 @@
-// App themes. The id is applied as <html data-theme>; tokens live in index.css.
-// `swatch` is the accent, `glow` the second backdrop color, used by the theme picker.
+// app themes
 export const THEMES = [
   { id: 'midnight', name: 'Midnight', swatch: '#ff4655', glow: '#ff8c78' },
   { id: 'onyx', name: 'Onyx', swatch: '#ebebf0', glow: '#a0a0aa' },
@@ -13,7 +12,7 @@ export const THEMES = [
   { id: 'abyss', name: 'Abyss', swatch: '#5c84ff', glow: '#78dcff' },
   { id: 'sunset', name: 'Sunset', swatch: '#ff5e8c', glow: '#ffb05c' },
   { id: 'pearl', name: 'Pearl', swatch: '#635bff', glow: '#d65cff', light: true },
-  // Aesthetic themes
+  // aesthetic themes
   { id: 'aero', name: 'Frutiger Aero', swatch: '#1ea0e6', glow: '#8be36a', light: true },
   { id: 'vaporwave', name: 'Vaporwave', swatch: '#ff71ce', glow: '#01cdfe' },
   { id: 'y2k', name: 'Y2K Chrome', swatch: '#78e6ff', glow: '#d68cff' },
@@ -34,8 +33,7 @@ export function setTheme(id) {
   try { localStorage.setItem(KEY, id) } catch (e) { }
 }
 
-// Reduce motion (Settings > Appearance). Stored per device like the theme. The OS setting
-// (prefers-reduced-motion) is honored on top of this; see MotionProvider in src/ui/motion.jsx.
+// reduce motion (Settings > Appearance)
 const MOTION_KEY = 'spectre.reduceMotion'
 const MOTION_EVENT = 'spectre:reduce-motion'
 export function getReduceMotion() {
@@ -47,7 +45,7 @@ export function setReduceMotion(on) {
   try { localStorage.setItem(MOTION_KEY, on ? '1' : '0') } catch (e) { }
   window.dispatchEvent(new CustomEvent(MOTION_EVENT, { detail: on }))
 }
-// Effective reduced motion right now (the setting or the OS), for code outside React render (scroll behavior, rAF loops).
+// effective reduced motion right now (the setting or the OS), for code outside React render
 export function prefersReducedMotion() {
   if (getReduceMotion()) return true
   try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches } catch (e) { return false }
@@ -60,10 +58,10 @@ export function onReduceMotion(fn) {
 export function applySavedTheme() {
   document.documentElement.dataset.theme = getTheme()
   if (getReduceMotion()) document.documentElement.dataset.reduceMotion = ''
-  // Pause background motion while the window is hidden or minimized.
+  // pause background motion while the window is hidden or minimized
   const vis = () => { if (document.hidden) document.documentElement.dataset.hidden = ''; else delete document.documentElement.dataset.hidden }
   document.addEventListener('visibilitychange', vis); vis()
-  // Also rest while another window has focus (usually the game), so Spectre isn't redrawing behind it.
+  // also rest while another window has focus
   const idle = on => { if (on) document.documentElement.dataset.idle = ''; else delete document.documentElement.dataset.idle }
   window.addEventListener('blur', () => idle(true))
   window.addEventListener('focus', () => idle(false))

@@ -1,7 +1,4 @@
-// App navigation. The top dock shows SECTIONS in order; a section with more than one page gets sub-tabs.
-// UTILITY pages sit on the right of the dock. Page ids never change, so navigate('<id>') and deep links keep working.
-// The experimental (LARP) tools live in Settings > Experimental: navigate('rank' | 'customize' | 'premier' | 'status')
-// opens Settings focused on that tool (see EXPERIMENTAL and the shell's redirect in App.jsx).
+// app navigation
 import { FiActivity, FiAward, FiClock, FiCompass, FiEdit3, FiFileText, FiGrid, FiHome, FiLayers, FiMessageSquare, FiRadio, FiSearch, FiSettings, FiShoppingBag, FiTrendingUp, FiUserCheck, FiUsers } from 'react-icons/fi'
 import { FaDiscord } from 'react-icons/fa'
 import { GunIcon } from './pages/live/parts'
@@ -25,7 +22,7 @@ import Suggestions from './pages/Suggestions'
 import Settings from './pages/Settings'
 import Strategies from './pages/Strategies'
 
-// `full`: the page manages its own full-bleed layout (no Page header), e.g. the Playbook board.
+// `full`: the page manages its own full-bleed layout (no Page header), e.g. the Playbook board
 export const SECTIONS = [
   { id: 'home', label: 'Home', icon: FiHome, pages: [
     { id: 'dashboard', label: 'Home', icon: FiGrid, component: Dashboard },
@@ -55,7 +52,7 @@ export const SECTIONS = [
   ] },
 ]
 
-// Right side of the dock (icon buttons).
+// right side of the dock (icon buttons)
 export const UTILITY = [
   { id: 'discord', label: 'Discord', icon: FaDiscord, component: Discord },
   { id: 'patchnotes', label: "What's new", icon: FiFileText, component: PatchNotes },
@@ -63,18 +60,18 @@ export const UTILITY = [
   { id: 'settings', label: 'Settings', icon: FiSettings, component: Settings },
 ]
 
-// Settings > Experimental tools (ids kept for navigate()).
+// Settings > Experimental tools (ids kept for navigate())
 export { EXPERIMENTAL, EXPERIMENTAL_IDS } from './pages/settings/tools'
 
-// Every page the shell renders, by id.
+// every page the shell renders, by id
 export const PAGES = Object.fromEntries([...SECTIONS.flatMap(s => s.pages.map(p => ({ ...p, section: s.id }))), ...UTILITY.map(p => ({ ...p, section: null }))].map(p => [p.id, p]))
 export const sectionOf = id => SECTIONS.find(s => s.pages.some(p => p.id === id)) || null
 
-// v2 exports kept for anything still importing them.
+// v2 exports kept for anything still importing them
 export const GROUPS = SECTIONS.map(s => ({ label: s.label, pages: s.pages }))
 export const STRATEGIES = PAGES.strategies
 
-// Pages can navigate with: window.dispatchEvent(new CustomEvent('spectre:navigate', { detail: { page: 'history', params: {...} } }))
+// pages can navigate with: window.dispatchEvent(new CustomEvent('spectre:navigate', { detail: { page: 'history', params: {...} } }))
 export function navigate(page, params) {
   window.dispatchEvent(new CustomEvent('spectre:navigate', { detail: { page, params } }))
 }

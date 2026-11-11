@@ -6,7 +6,6 @@ import { TrendTile, FormTile, SessionTile, WalletCard, PassCard } from './dashbo
 import { HomeHero, ShopCard, FriendsPanel } from './dashboard/HomeLayout'
 
 // Home: a hero with your overview and session, today's shop beside your online friends, then the smaller tiles
-// (ranked trend, this session, recent form, battle pass, wallet).
 function DashboardBody({ active }) {
   const riot = useRiot()
   const cat = useCatalog()
@@ -24,7 +23,7 @@ function DashboardBody({ active }) {
   const tiles = [
     ['', <HomeHero riot={riot} identity={identity.data} account={account.data} rank={rank.data} rr={rr} party={party} />],
     ['lg:col-span-8', <ShopCard store={store.data} cat={cat} />],
-    // The friends list takes the shop's height and scrolls inside it.
+    // the friends list takes the shop's height and scrolls inside it
     ['lg:col-span-4 relative min-h-[440px]', <FriendsPanel friends={friends} />],
     ['xl:col-span-5', <TrendTile rr={rr} />],
     ['md:col-span-6 xl:col-span-3', <SessionTile rr={rr} />],
@@ -34,7 +33,7 @@ function DashboardBody({ active }) {
   ]
 
   return (
-    // No page header: the hero tile is the header here (name, date, quick stats).
+    // no page header: the hero tile is the header here
     <Page bodyClassName='pt-7'>
       <Stagger className='bento' step={0.045}>
         {tiles.map(([span, el], i) => <Item key={i} index={i} className={'col-span-12 ' + span}>{el}</Item>)}

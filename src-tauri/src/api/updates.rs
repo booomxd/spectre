@@ -1,6 +1,4 @@
-// Spectre's own releases on GitHub: patch notes, update checks and one-click updates.
-// Installed copies download the new installer, verify it and run it (it closes Spectre, installs and relaunches).
-// Dev builds and loose exes (no uninstaller next to them) just link to the release page.
+// Spectre's own releases on GitHub: patch notes, update checks and one-click updates
 use crate::core::error::{msg, Res};
 use crate::core::riot::{now_ms, send};
 use crate::core::{js, truthy, Ctx, Registry};
@@ -14,7 +12,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
 use std::time::Duration;
 
-// SPECTRE_UPDATE_REPO=owner/name points update checks at another repo (testing an update without a public release).
+// SPECTRE_UPDATE_REPO=owner/name points update checks at another repo
 static REPO: Lazy<String> = Lazy::new(|| {
     let ok = Regex::new(r"^[\w.-]+/[\w.-]+$").unwrap();
     std::env::var("SPECTRE_UPDATE_REPO").ok().filter(|r| ok.is_match(r)).unwrap_or_else(|| "booomxd/spectre".to_string())
@@ -23,7 +21,7 @@ const CHECK_EVERY: Duration = Duration::from_millis(6 * 60 * 60 * 1000);
 
 /// "2.10.0" > "2.9.1"
 fn newer(a: &str, b: &str) -> bool {
-    // String(x).split('.').map(Number), with `|| 0` turning NaN / missing into 0.
+    // String(x).split('.').map(Number), with `|| 0` turning NaN / missing into 0
     let parts = |s: &str| -> Vec<f64> {
         s.split('.').map(|p| { let t = p.trim(); if t.is_empty() { 0.0 } else { t.parse::<f64>().unwrap_or(f64::NAN) } }).collect()
     };
@@ -35,8 +33,7 @@ fn newer(a: &str, b: &str) -> bool {
     false
 }
 
-/// Installed by the installer (has an uninstaller next to the exe), as opposed to a dev build or a loose exe.
-/// Electron's NSIS build left "Uninstall Spectre.exe"; Tauri's NSIS installer leaves "uninstall.exe".
+/// installed by the installer (has an uninstaller next to the exe), as opposed to a dev build or a loose exe
 fn installed(ctx: &Ctx) -> bool {
     if ctx.is_dev { return false; }
     let Some(dir) = std::env::current_exe().ok().and_then(|p| p.parent().map(|d| d.to_path_buf())) else { return false };
@@ -74,8 +71,7 @@ async fn releases(ctx: &Ctx, force: bool) -> Res<Vec<Value>> {
     Ok(list)
 }
 
-/// The newest release by version number. GitHub lists releases by creation date, not version, so the first row can be
-/// an older version (a re-published or back-filled release), which made the app offer a downgrade.
+/// the newest release by version number
 fn newest(list: Vec<Value>) -> Option<Value> {
     list.into_iter().reduce(|best, r| if newer(&js::s(&r["version"]), &js::s(&best["version"])) { r } else { best })
 }
@@ -132,15 +128,14 @@ async fn download_and_run(ctx: &Ctx, inst: &Value) -> Res<Value> {
     }
     out.flush()?;
     drop(out);
-    // GitHub publishes a sha256 for release assets; refuse a download that doesn't match it.
+    // GitHub publishes a sha256 for release assets
     let want = js::s(&inst["digest"]);
     let want = want.strip_prefix("sha256:").unwrap_or(&want);
     if !want.is_empty() && hex::encode(hash.finalize()) != want {
         let _ = std::fs::remove_file(&file);
         return Err(msg("Download was corrupted, please try again"));
     }
-    // Tauri's NSIS flags: /UPDATE skips the "an older version is installed" page and keeps shortcuts as they are,
-    // /P (passive) shows only a progress bar with no wizard clicks, and /R starts Spectre again when it finishes.
+    // Tauri's NSIS flags: /UPDATE skips the "an older version is installed" page and keeps shortcuts as they are, /P (passive) shows only a progress bar with no wizard clicks, and /R starts Spectre again when it finishes
     std::process::Command::new(&file).args(["/P", "/UPDATE", "/R"]).spawn()?;
     if let Some(app) = ctx.app.clone() {
         crate::core::spawn(async move {

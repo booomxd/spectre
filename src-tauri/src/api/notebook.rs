@@ -1,5 +1,4 @@
-// Notes page notebook: sections, each with free notes, crosshair codes, links and chat snippets.
-// Stored in userData/notebook.json as { sections: [...] }. The page saves the whole notebook (it's small).
+// notes page notebook: sections, each with free notes, crosshair codes, links and chat snippets
 use crate::api::memo::slice16;
 use crate::api::tools::js_string;
 use crate::core::error::{msg, Res};
@@ -19,7 +18,7 @@ const SNIPPET: usize = 300;
 const COLORS: [&str; 9] = ["accent", "red", "orange", "yellow", "green", "teal", "blue", "purple", "pink"];
 const ICONS: [&str; 8] = ["note", "target", "map", "star", "flag", "book", "zap", "users"];
 
-/// `String(v ?? '').slice(0, max)`
+/// `String(v ??
 fn str_(v: &Value, max: usize) -> String { slice16(&js_string(&js::nullish(v, json!(""))), max) }
 
 /// `Math.random().toString(36).slice(2, 10)`
@@ -31,20 +30,20 @@ fn random_id() -> String {
 
 fn id(v: &Value) -> String { let s = str_(v, 40); if s.is_empty() { random_id() } else { s } }
 
-/// JS `x.id` on null throws.
+/// JS `x.id` on null throws
 fn not_null(v: &Value) -> Res<()> { if v.is_null() { Err(msg("Cannot read properties of null (reading 'id')")) } else { Ok(()) } }
 
 fn list(v: &Value, f: impl Fn(&Value) -> Value) -> Res<Vec<Value>> {
     js::arr(v).iter().take(ITEMS).map(|x| { not_null(x)?; Ok(f(x)) }).collect()
 }
 
-/// JS `String.prototype.trim` (whitespace + line terminators; includes U+FEFF, excludes U+0085).
+/// JS `String.prototype.trim` (whitespace + line terminators
 fn js_trim(s: &str) -> &str {
     s.trim_matches(|c: char| matches!(c, '\t' | '\n' | '\u{b}' | '\u{c}' | '\r' | ' ' | '\u{a0}' | '\u{1680}' | '\u{2000}'..='\u{200a}'
         | '\u{2028}' | '\u{2029}' | '\u{202f}' | '\u{205f}' | '\u{3000}' | '\u{feff}'))
 }
 
-/// JS `Number(v)` (NaN for anything non-numeric).
+/// JS `Number(v)` (NaN for anything non-numeric)
 fn js_number(v: &Value) -> f64 {
     match v {
         Value::Null => 0.0,
