@@ -1,6 +1,6 @@
 # 📜 Changelog
 
-## Unreleased
+## 4.0.2
 
 ### 🗑️ Removed
 - **Experimental tools:** Rank Editor, Profile, Premier and Status are gone, along with the Settings → Experimental tab. They rewrote your Riot presence, which goes against Riot's terms and can put your account at risk
