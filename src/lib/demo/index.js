@@ -25,8 +25,7 @@ const settingsDefaults = {
     enabled: false, showMode: true, showMap: true, showAgent: false, agentImage: false, showRank: true, showPeak: false,
     showLevel: false, showParty: true, showScore: true, showElapsed: true, showLobby: true,
   },
-  startPage: params.get('page') || 'dashboard', spectrePresence: true,
-  experimental: params.get('experimental') === '1',
+  startPage: params.get('page') || 'dashboard',
 }
 const db = {
   settings: settingsDefaults,
@@ -50,7 +49,6 @@ const db = {
     Identity: { PlayerCardID: F.ME.card, PlayerTitleID: F.TITLE.lurker, AccountLevel: F.ME.level, PreferredLevelBorderID: '9c4afb15-40d7-3557-062a-4bb198cb9958', HideAccountLevel: false },
     Incognito: false,
   },
-  overrides: {}, keep: false,
 }
 
 // strip "_private" helper keys used to build fixtures
@@ -106,12 +104,6 @@ const setSettings = patch => {
   db.settings = { ...cur, ...patch, overlay: { ...cur.overlay, ...patch?.overlay }, discord: { ...cur.discord, ...patch?.discord } }
   emit('settings:changed', db.settings)
   return db.settings
-}
-const presenceOut = () => ({ overrides: { ...db.overrides } })
-const applyTool = obj => {
-  for (const [k, v] of Object.entries(obj || {})) if (v !== undefined) db.overrides[k] = v
-  emit('tools:applied', { overrides: db.overrides, at: Date.now() })
-  return presenceOut()
 }
 const riotStatus = { connected: true, puuid: F.ME.puuid, gameName: F.ME.gameName, tagLine: F.ME.tagLine, shard: 'eu', region: 'eu', clientVersion: 'release-11.10-shipping-14-3456789' }
 const overlayState = { open: params.has('overlay'), locked: false }
@@ -278,13 +270,6 @@ const H = {
   'overlay:hotkeys': () => ({ toggle: { key: db.settings.overlay.hotkey, ok: true }, lock: { key: db.settings.overlay.lockHotkey, ok: true } }),
   'overlay:pauseHotkeys': ok(true),
 
-  'tools:state': () => ({ overrides: { ...db.overrides }, keep: db.keep, current: F.PRESENCE, error: null }),
-  'tools:keep': on => { db.keep = !!on; if (!on) db.overrides = {}; return { keep: db.keep } },
-  'tools:reset': () => { db.overrides = {}; emit('tools:applied', { overrides: {}, at: Date.now() }); return presenceOut() },
-  'tools:rank': p => applyTool({ 'playerPresenceData.competitiveTier': p?.tier ?? 0, 'playerPresenceData.leaderboardPosition': p?.leaderboard }),
-  'tools:profile': p => applyTool({ 'playerPresenceData.accountLevel': p?.accountLevel, 'playerPresenceData.playerCardId': p?.playerCardId, 'playerPresenceData.playerTitleId': p?.playerTitleId }),
-  'tools:premier': p => applyTool(Object.fromEntries(Object.entries(p || {}).map(([k, v]) => [`premierPresenceData.${k}`, v]))),
-  'tools:status': s => applyTool({ 'matchPresenceData.sessionLoopState': s?.state || 'MENUS', 'matchPresenceData.queueId': s?.queue, 'matchPresenceData.matchMap': s?.map }),
 
   'spectre:releases': ok(F.RELEASES),
   'update:status': ok({ current: '2.4.0', latest: '2.4.0', available: false, url: F.RELEASES[0].url, canInstall: false }),
@@ -304,16 +289,13 @@ export async function invoke(channel, ...args) {
 
 export const isOverlay = () => params.has('overlay')
 
-// runs once when demo mode loads: theme, experimental flag, starting page, and a guard on outgoing form posts
+// runs once when demo mode loads: theme, starting page, and a guard on outgoing form posts
 let booted = false
 export function demoBoot() {
   if (booted) return
   booted = true
   const theme = params.get('theme')
   if (theme && THEMES.some(t => t.id === theme)) setTheme(theme)
-  if (params.get('experimental') === '1') {
-    try { localStorage.setItem('spectre.experimental', '1') } catch (e) { /* storage unavailable */ }
-  }
   // the feedback page posts to a form service
   const realFetch = window.fetch.bind(window)
   window.fetch = (url, opts) => (String(url).includes('api.web3forms.com')

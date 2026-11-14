@@ -1,4 +1,4 @@
-// compact frame shared by the Experimental tools
+// compact frame shared by the tool-style pages
 import { FadeIn, cx } from '../../ui'
 
 export function ToolLayout({ aside, children }) {

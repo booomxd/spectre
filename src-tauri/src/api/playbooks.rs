@@ -86,7 +86,7 @@ pub fn register(reg: &mut Registry, _ctx: &Ctx) {
         let p = a.val(0);
         let data_url = js::s(&js::or(&p["dataUrl"], json!("")));
         let b64 = DATA_URL.captures(&data_url).and_then(|c| c.get(1)).map(|m| m.as_str().to_string()).ok_or_else(|| msg("Invalid image data"))?;
-        let name = crate::api::tools::js_string(&js::or(&p["name"], json!("strategy")));
+        let name = crate::core::js::js_string(&js::or(&p["name"], json!("strategy")));
         let safe = slice16(&UNSAFE.replace_all(&name, "-"), 80);
         let app = ctx.app()?.clone();
         let picked = tokio::task::spawn_blocking(move || {
@@ -108,7 +108,7 @@ pub fn register(reg: &mut Registry, _ctx: &Ctx) {
     reg.add("playbooks:imageData", |ctx, a: Args| async move {
         let mut urls: Vec<String> = Vec::new();
         for u in js::arr(&a.val(0)) {
-            let u = crate::api::tools::js_string(&u);
+            let u = crate::core::js::js_string(&u);
             if !urls.contains(&u) && MEDIA.is_match(&u) { urls.push(u); }
         }
         // keys land in completion order, like the JS `out[u] = ...` inside Promise.all

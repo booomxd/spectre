@@ -1,5 +1,12 @@
 # 📜 Changelog
 
+## Unreleased
+
+### 🗑️ Removed
+- **Experimental tools:** Rank Editor, Profile, Premier and Status are gone, along with the Settings → Experimental tab. They rewrote your Riot presence, which goes against Riot's terms and can put your account at risk
+- **"Show that I use Spectre":** Spectre no longer adds its marker to your Riot presence. It now never changes your presence at all; other players running older versions can still show the Spectre badge
+- The Loadout page's **Profile** button, which opened the removed Profile editor
+
 ## 4.0.1
 
 ### 🛠️ Fixes

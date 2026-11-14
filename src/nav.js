@@ -60,8 +60,6 @@ export const UTILITY = [
   { id: 'settings', label: 'Settings', icon: FiSettings, component: Settings },
 ]
 
-// Settings > Experimental tools (ids kept for navigate())
-export { EXPERIMENTAL, EXPERIMENTAL_IDS } from './pages/settings/tools'
 
 // every page the shell renders, by id
 export const PAGES = Object.fromEntries([...SECTIONS.flatMap(s => s.pages.map(p => ({ ...p, section: s.id }))), ...UTILITY.map(p => ({ ...p, section: null }))].map(p => [p.id, p]))

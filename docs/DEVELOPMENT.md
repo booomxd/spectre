@@ -74,7 +74,7 @@ Adding a channel needs no Tauri command or capability change: add it with `reg.a
 import { invoke, useInvoke, useEvent } from '../lib/ipc'
 
 const rank = useInvoke('store:rank', [], { poll: 30000 })  // { data, error, loading, reload }
-await invoke('tools:keep', true)                            // throws on error
+await invoke('settings:set', { startPage: 'live' })          // throws on error
 useEvent('settings:changed', s => setSettings(s))
 ```
 

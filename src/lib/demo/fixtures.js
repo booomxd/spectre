@@ -536,12 +536,3 @@ export function discordPreview(name = 'live') {
   return { activity: A[name] ?? null }
 }
 
-// your own presence as tools:state reads it
-export const PRESENCE = {
-  isValid: true, sessionLoopState: 'INGAME', partyOwnerSessionLoopState: 'INGAME', isIdle: false,
-  partyOwnerMatchScoreAllyTeam: 7, partyOwnerMatchScoreEnemyTeam: 5,
-  playerPresenceData: { playerCardId: ME.card, playerTitleId: TITLE.lurker, preferredLevelBorderId: '', accountLevel: ME.level, competitiveTier: ME.tier, leaderboardPosition: 0 },
-  matchPresenceData: { sessionLoopState: 'INGAME', provisioningFlow: 'Matchmaking', matchMap: MAP.ascent.url, queueId: 'competitive' },
-  partyPresenceData: { partyId: 'party-live', isPartyOwner: true, partyState: 'DEFAULT', partyAccessibility: 'CLOSED', partySize: 2, maxPartySize: 5, queueEntryTime: '0001.01.01-00.00.00' },
-  premierPresenceData: { rosterId: '', rosterName: '', rosterTag: '', division: 0, score: 0, showAura: false, showTag: false, showPlating: false },
-}

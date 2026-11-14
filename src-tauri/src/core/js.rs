@@ -61,3 +61,15 @@ pub fn parse_date(v: &Value) -> Option<i64> {
     chrono::DateTime::parse_from_rfc3339(t).ok().map(|d| d.timestamp_millis())
         .or_else(|| chrono::NaiveDateTime::parse_from_str(t, "%Y-%m-%dT%H:%M:%S%.f").ok().map(|d| d.and_utc().timestamp_millis()))
 }
+
+/// JS `String(v)`
+pub fn js_string(v: &Value) -> String {
+    match v {
+        Value::Null => "null".into(),
+        Value::String(s) => s.clone(),
+        Value::Bool(b) => b.to_string(),
+        Value::Number(n) => match n.as_f64() { Some(f) if n.is_f64() && f.fract() == 0.0 && f.abs() < 1e21 => format!("{}", f as i128), _ => n.to_string() },
+        Value::Array(a) => a.iter().map(|x| if x.is_null() { String::new() } else { js_string(x) }).collect::<Vec<_>>().join(","),
+        Value::Object(_) => "[object Object]".into(),
+    }
+}

@@ -1,6 +1,6 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { FiDownload, FiMinus, FiSearch, FiSquare, FiX, FiDroplet, FiFeather } from 'react-icons/fi'
-import { EXPERIMENTAL_IDS, PAGES, SECTIONS, UTILITY, navigate, sectionOf } from './nav'
+import { PAGES, SECTIONS, UTILITY, navigate, sectionOf } from './nav'
 import { invoke, isOverlayWindow, openExternal, useEvent } from './lib/ipc'
 import { RiotProvider, useRiot } from './lib/riot'
 import { THEMES, applySavedTheme, getReduceMotion, setReduceMotion, setTheme } from './lib/theme'
@@ -122,7 +122,7 @@ function Utilities({ page, onOpen, onPalette }) {
 // page context per section
 const CONTEXTS = Object.fromEntries(Object.values(PAGES).map(p => {
   const s = p.section && SECTIONS.find(x => x.id === p.section)
-  return [p.id, { section: s ? s.label : 'Spectre', embedded: false }]
+  return [p.id, { section: s ? s.label : 'Spectre' }]
 }))
 
 // one kept-alive page
@@ -131,9 +131,7 @@ const PageSlot = memo(function PageSlot({ page: P, params, active }) {
   return <P params={params} active={active} />
 })
 
-// experimental tool ids open Settings > Experimental focused on that tool
 function resolve(page, params) {
-  if (EXPERIMENTAL_IDS.has(page)) return ['settings', { tab: 'experimental', tool: page }]
   if (!PAGES[page]) return ['dashboard', {}]
   return [page, params || {}]
 }
@@ -152,7 +150,7 @@ function Shell() {
   visited.add(page)
   // Pre-draw every page in the background, one at a time while the app is idle
   useEffect(() => {
-    const queue = Object.values(PAGES).map(p => p.id).filter(id => !EXPERIMENTAL_IDS.has(id))
+    const queue = Object.values(PAGES).map(p => p.id)
     let cancelled = false, timer = 0, idleId = 0
     const idle = window.requestIdleCallback || (fn => setTimeout(fn, 60))
     const unidle = window.cancelIdleCallback || clearTimeout
@@ -208,7 +206,7 @@ function Shell() {
   const items = useMemo(() => [
     ...SECTIONS.flatMap(s => s.pages.map(p => ({ id: 'p:' + p.id, label: p.label === s.label ? s.label : p.label, hint: s.pages.length > 1 ? s.label : '', group: 'Go to', icon: p.icon, keywords: s.label, run: () => go(p.id) }))),
     ...UTILITY.map(u => ({ id: 'p:' + u.id, label: u.label, group: 'App', icon: u.icon, run: () => go(u.id) })),
-    ...SETTINGS_TABS.filter(t => t.value !== 'experimental').map(t => ({ id: 's:' + t.value, label: `Settings: ${t.label}`, group: 'Settings', icon: t.icon, keywords: 'preferences', run: () => go('settings', { tab: t.value }) })),
+    ...SETTINGS_TABS.map(t => ({ id: 's:' + t.value, label: `Settings: ${t.label}`, group: 'Settings', icon: t.icon, keywords: 'preferences', run: () => go('settings', { tab: t.value }) })),
     { id: 'a:motion', label: 'Toggle reduce motion', group: 'Actions', icon: FiFeather, keywords: 'animation accessibility', run: () => { const v = !getReduceMotion(); setReduceMotion(v); toast(v ? 'Reduced motion on' : 'Reduced motion off') } },
     ...THEMES.map(t => ({ id: 't:' + t.id, label: `Theme: ${t.name}`, group: 'Themes', icon: FiDroplet, keywords: 'color appearance', run: () => setTheme(t.id) })),
   ], [go])

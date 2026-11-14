@@ -84,7 +84,7 @@ Grab the latest version from **[Releases](https://github.com/booomxd/spectre/rel
 | 👥 **Squad** | Friends & chat · Feed · Notes · Lookup |
 | 🎒 **Arsenal** | Loadout · Store & Night Market · Weapons |
 | 🗺️ **Playbook** | Strategy board with maps, agents, abilities and saved playbooks |
-| ⚙️ **Dock** | Discord · What's new · Feedback · Settings (with an opt-in **Experimental** tab) · Ctrl+K quick search |
+| ⚙️ **Dock** | Discord · What's new · Feedback · Settings · Ctrl+K quick search |
 
 Every page is explained in **[docs/FEATURES.md](docs/FEATURES.md)**.
 
@@ -131,12 +131,6 @@ Open the Riot Client and sign in. Spectre connects on its own within a few secon
 <summary><b>Live Match is empty</b></summary>
 
 It fills in once agent select starts. Before that, the Lobby & Party tab in Live shows your party.
-</details>
-
-<details>
-<summary><b>My Experimental profile edits disappeared</b></summary>
-
-VALORANT resets your presence when your party, queue or match changes. Turn on <b>Keep applied</b> and Spectre re-sends your edits automatically.
 </details>
 
 <details>

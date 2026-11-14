@@ -21,7 +21,6 @@ pub fn defaults() -> Value {
             "showLevel": false, "showParty": true, "showScore": true, "showElapsed": true, "showLobby": true,
         },
         "startPage": "dashboard",
-        "spectrePresence": true,
     })
 }
 

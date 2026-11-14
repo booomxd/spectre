@@ -10,9 +10,8 @@ export { default as CommandPalette } from './CommandPalette'
 
 export const cx = (...c) => c.filter(Boolean).join(' ')
 
-// Set by the shell / Settings: `section` is the dock section a page belongs to (shown as the eyebrow over the title);
-// `embedded` renders a page inside another page (Settings > Experimental) without its own scroller or outer padding.
-export const PageContext = createContext({ section: null, embedded: false })
+// set by the shell: `section` is the dock section a page belongs to (shown as the eyebrow over the title)
+export const PageContext = createContext({ section: null })
 
 // true while the page a component lives in is the one on screen
 export const PageActiveContext = createContext(true)
@@ -40,24 +39,8 @@ export function useNow(interval = 1000) {
 
 // page frame: eyebrow + display title + subtitle + actions, then a scrolling body
 export function Page({ title, subtitle, actions, eyebrow, children, className, bodyClassName }) {
-  const { section, embedded } = useContext(PageContext)
+  const { section } = useContext(PageContext)
   const kicker = eyebrow ?? section
-  if (embedded) {
-    return (
-      <div className={className}>
-        {(title || actions) && (
-          <header className='flex items-end justify-between gap-4 pb-5'>
-            <div className='min-w-0'>
-              {title && <h2 className='display text-[26px] text-text'>{title}</h2>}
-              {subtitle && <p className='mt-2 text-[13px] text-muted'>{subtitle}</p>}
-            </div>
-            {actions && <div className='flex items-center gap-2 shrink-0'>{actions}</div>}
-          </header>
-        )}
-        <div className={bodyClassName}>{children}</div>
-      </div>
-    )
-  }
   return (
     <div className={cx('h-full flex flex-col', className)}>
       {(title || actions) && (

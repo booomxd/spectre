@@ -1,10 +1,9 @@
 import { useMemo, useState } from 'react'
-import { FiCheck, FiEdit3, FiPlus, FiRotateCcw, FiTrash2 } from 'react-icons/fi'
+import { FiCheck, FiPlus, FiRotateCcw, FiTrash2 } from 'react-icons/fi'
 import { Badge, Button, Card, Empty, ErrorState, Heading, Input, Item, Modal, Page, RequireRiot, SectionTitle, SegmentedTabs, Skeleton, Stagger, Swap, cx, toast, withToast } from '../ui'
 import { useRiot } from '../lib/riot'
 import { invoke, useInvoke } from '../lib/ipc'
 import { useContent } from '../lib/content'
-import { navigate } from '../nav'
 import SkinPicker, { selectionImage } from './tools/SkinPicker'
 import BuddyPicker from './tools/BuddyPicker'
 import { CATEGORIES, NO_TITLE, catKey, isStandard, lc, skinImage, useContentTiers, tierColor, useOwned, useWeapons } from './tools/gear'
@@ -169,7 +168,6 @@ function LoadoutView({ active }) {
                     </div>
                   </>
                 )}
-                <Button size='sm' variant='subtle' icon={FiEdit3} className='absolute top-5 right-5' onClick={() => navigate('customize')}>Profile</Button>
               </div>
             </Card>
 

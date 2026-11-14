@@ -162,7 +162,6 @@ Enemies|敌人|Противники|दुश्मन|敵|적|Ennemis|Enemigos|
 Enemy|敌方|Противник|दुश्मन|敵|적|Ennemi|Enemigo|Gegner|Inimigo
 Enter invite code|输入邀请码|Введите код приглашения|इनवाइट कोड डालें|招待コードを入力|초대 코드 입력|Saisir le code d'invitation|Introduce el código|Einladungscode eingeben|Digite o código de convite
 Everything|全部|Всё|सब कुछ|すべて|전체|Tout|Todo|Alles|Tudo
-Experimental|实验功能|Экспериментальное|प्रायोगिक|試験機能|실험실|Expérimental|Experimental|Experimentell|Experimental
 Filter|筛选|Фильтр|फ़िल्टर|フィルター|필터|Filtrer|Filtrar|Filter|Filtrar
 Final rank|最终段位|Итоговый ранг|अंतिम रैंक|最終ランク|최종 랭크|Rang final|Rango final|Endrang|Rank final
 Find a player|查找玩家|Найти игрока|खिलाड़ी खोजें|プレイヤーを探す|플레이어 찾기|Trouver un joueur|Buscar jugador|Spieler finden|Encontrar jogador

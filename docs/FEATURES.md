@@ -97,14 +97,3 @@ Spectre checks for new releases on launch and every few hours. When one is out, 
 
 ### 🎨 Settings
 Eighteen glass themes (Midnight, Onyx, Ember, Glacier, Verdant, Amethyst, Gilded, Aurora, Sakura, Abyss, Sunset, the light Pearl, Frutiger Aero, Vaporwave, Y2K Chrome, Lo-fi, Minty Jamun and Musashi), reduce motion, the start page, launch at login (on by default, starts in the tray), close to tray (on by default), minimize to tray, and overlay hotkeys, click-through, auto-show, opacity and size.
-
-## 🧪 Experimental
-
-A separate tab in **Settings**, off until you turn on **Enable experimental features**. These change how your profile appears **to your friends** in the Riot Client. They don't change your real rank, level or inventory.
-
-- **Rank Editor:** pick the rank and leaderboard position shown on your friend-list presence.
-- **Profile:** account level, idle state, player card and title shown to friends. Any card or title can be picked, since they're presence-only. Borders are equipped for real and may need a game restart.
-- **Premier:** the Premier team details shown on your presence.
-- **Status:** your presence status text.
-
-VALORANT rewrites your presence whenever your party, queue or match changes. With **Keep applied** on, Spectre re-sends your edits each time. **Reset** puts your real profile back.

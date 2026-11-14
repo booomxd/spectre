@@ -1,6 +1,6 @@
 // notes page notebook: sections, each with free notes, crosshair codes, links and chat snippets
 use crate::api::memo::slice16;
-use crate::api::tools::js_string;
+use crate::core::js::js_string;
 use crate::core::error::{msg, Res};
 use crate::core::riot::now_ms;
 use crate::core::{js, truthy, Args, Ctx, Registry};

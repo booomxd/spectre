@@ -1,5 +1,5 @@
 // friend activity: snapshots your friends list and records who was added, removed or renamed since the last look
-use crate::api::tools::js_string;
+use crate::core::js::js_string;
 use crate::core::error::{msg, Res};
 use crate::core::riot::now_ms;
 use crate::core::{js, truthy, Ctx, Registry};
