@@ -7,7 +7,7 @@ use reqwest::{Client, Method};
 use serde_json::{json, Map, Value};
 use std::collections::HashMap;
 use std::path::PathBuf;
-use std::sync::{Mutex, RwLock};
+use std::sync::{Arc, Mutex, RwLock};
 use std::time::Duration;
 
 const CLIENT_PLATFORM: &str = "ew0KCSJwbGF0Zm9ybVR5cGUiOiAiUEMiLA0KCSJwbGF0Zm9ybU9TIjogIldpbmRvd3MiLA0KCSJwbGF0Zm9ybU9TVmVyc2lvbiI6ICIxMC4wLjE5MDQyLjEuNzY4LjY0Yml0IiwNCgkicGxhdGZvcm1DaGlwc2V0IjogIlVua25vd24iDQp9";
@@ -37,7 +37,9 @@ pub struct Riot {
     /// the Riot Client's local API uses a self-signed certificate on 127.0.0.1 only
     local_http: Client,
     refresh: tokio::sync::Mutex<()>,
-    api_cache: Mutex<HashMap<String, Value>>,
+    /// valorant-api content, shared (not copied) with every caller; requests for the same path share one download
+    api_cache: Mutex<HashMap<String, Arc<Value>>>,
+    api_inflight: tokio::sync::Mutex<HashMap<String, Arc<tokio::sync::OnceCell<Arc<Value>>>>>,
     store_dir: RwLock<Option<PathBuf>>,
 }
 
@@ -57,11 +59,25 @@ static RE_VERSION: Lazy<Regex> = Lazy::new(|| Regex::new(r"CI server version: (\
 static RE_PD: Lazy<Regex> = Lazy::new(|| Regex::new(r"https://pd\.(\w+)\.a\.pvp\.net").unwrap());
 static RE_GLZ: Lazy<Regex> = Lazy::new(|| Regex::new(r"https://glz-(\w+)-1\.\w+\.a\.pvp\.net").unwrap());
 
-/// sends a request and returns the parsed JSON body
+/// sends a request and returns the parsed JSON body. A body that fails to arrive reads as empty, so an action Riot
+/// accepted still succeeds and an error keeps its HTTP status
 pub async fn send(req: reqwest::RequestBuilder) -> Res<Value> {
+    send_inner(req, false).await
+}
+
+/// like `send`, but a body that fails to arrive is an error: for content that gets cached
+pub async fn send_strict(req: reqwest::RequestBuilder) -> Res<Value> {
+    send_inner(req, true).await
+}
+
+async fn send_inner(req: reqwest::RequestBuilder, strict: bool) -> Res<Value> {
     let res = req.send().await?;
     let status = res.status();
-    let text = res.text().await.unwrap_or_default();
+    let text = match res.text().await {
+        Ok(t) => t,
+        Err(e) if strict && status.is_success() => return Err(e.into()),
+        Err(_) => String::new(),
+    };
     let body = if text.trim().is_empty() { Value::Null } else { serde_json::from_str(&text).unwrap_or(Value::String(text)) };
     if status.is_success() { Ok(body) } else { Err(Error::Http { status: status.as_u16(), body }) }
 }
@@ -76,6 +92,7 @@ impl Riot {
             local_http: Client::builder().danger_accept_invalid_certs(true).timeout(Duration::from_secs(8)).build().expect("local client"),
             refresh: tokio::sync::Mutex::new(()),
             api_cache: Mutex::new(HashMap::new()),
+            api_inflight: tokio::sync::Mutex::new(HashMap::new()),
             store_dir: RwLock::new(None),
         }
     }
@@ -225,13 +242,33 @@ impl Riot {
         self.remote(format!("https://shared.{}.a.pvp.net", self.shard()), m, path, body).await
     }
 
-    /// valorant-api.com content (agents, maps, weapons, tiers...): the `data` field, cached for the session
-    pub async fn val_api(&self, path: &str) -> Res<Value> {
+    /// valorant-api.com content (agents, maps, weapons, tiers...): the `data` field, cached for the session.
+    /// Returns a shared handle, so hot paths (live match every few seconds) never copy the multi-MB lists.
+    pub async fn val_api(&self, path: &str) -> Res<Arc<Value>> {
         let key = path.trim_start_matches('/').to_string();
         if let Some(v) = self.api_cache.lock().unwrap().get(&key) { return Ok(v.clone()); }
-        let v = send(self.http.get(format!("https://valorant-api.com/v1/{key}"))).await?["data"].take();
-        self.api_cache.lock().unwrap().insert(key, v.clone());
-        Ok(v)
+        // pages that open together ask for the same list at once: download it once
+        let cell = {
+            let mut inflight = self.api_inflight.lock().await;
+            // another caller may have finished this download while we waited for the lock
+            if let Some(v) = self.api_cache.lock().unwrap().get(&key) { return Ok(v.clone()); }
+            inflight.entry(key.clone()).or_default().clone()
+        };
+        let got = cell.get_or_try_init(|| async {
+            let mut body = send_strict(self.http.get(format!("https://valorant-api.com/v1/{key}")).timeout(Duration::from_secs(20))).await?;
+            // a non-JSON 200 (captive portal, proxy page) is an error, never a cached Null
+            let v = body.as_object_mut().and_then(|o| o.remove("data"))
+                .ok_or_else(|| msg("valorant-api.com returned an unexpected response"))?;
+            Ok::<_, Error>(Arc::new(v))
+        }).await;
+        if let Ok(v) = &got { self.api_cache.lock().unwrap().insert(key.clone(), Arc::clone(v)); }
+        {
+            // drop this path's slot once nobody can still be (re)trying through it
+            let mut inflight = self.api_inflight.lock().await;
+            let ours = inflight.get(&key).is_some_and(|c| Arc::ptr_eq(c, &cell));
+            if ours && (cell.initialized() || Arc::strong_count(&cell) <= 2) { inflight.remove(&key); }
+        }
+        Ok(got?.clone())
     }
     pub fn clear_api_cache(&self) { self.api_cache.lock().unwrap().clear(); }
 

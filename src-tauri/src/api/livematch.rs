@@ -83,39 +83,49 @@ const WEAPON_ORDER: [&str; 19] = ["Vandal", "Phantom", "Melee", "Operator", "She
 /// `(x || '').toLowerCase()`
 fn lc(x: &Value) -> String { if truthy(x) { js::s(x).to_lowercase() } else { String::new() } }
 
-// weapon, skin, chroma, buddy and spray lookups by uuid, built once from valorant-api content
+// weapon, skin, chroma, buddy and spray lookups by uuid, built once from valorant-api content.
+// Each skin, buddy and spray is stored once and shared by every uuid that points at it (its chromas and levels).
 #[derive(Default)]
 struct Index {
-    weapon: HashMap<String, Value>,
-    skin: HashMap<String, Value>,
-    chroma: HashMap<String, (Value, Value)>,
-    level: HashMap<String, Value>,
-    buddy: HashMap<String, Value>,
-    spray: HashMap<String, Value>,
+    weapon: HashMap<String, Arc<Value>>,
+    skin: HashMap<String, Arc<Value>>,
+    chroma: HashMap<String, (Value, Arc<Value>)>,
+    level: HashMap<String, Arc<Value>>,
+    buddy: HashMap<String, Arc<Value>>,
+    spray: HashMap<String, Arc<Value>>,
 }
 static CONTENT: Lazy<Mutex<Option<Arc<Index>>>> = Lazy::new(|| Mutex::new(None));
+
+/// `v` without its `key` field (the weapon's skin list is indexed on its own)
+fn without(v: &Value, key: &str) -> Value {
+    match v.as_object() {
+        Some(o) => Value::Object(o.iter().filter(|(k, _)| k.as_str() != key).map(|(k, v)| (k.clone(), v.clone())).collect()),
+        None => v.clone(),
+    }
+}
 
 async fn content(ctx: &Ctx) -> Res<Arc<Index>> {
     if let Some(ix) = CONTENT.lock().unwrap().clone() { return Ok(ix); }
     let (weapons, buddies, sprays) = tokio::join!(ctx.riot.val_api("weapons"), ctx.riot.val_api("buddies"), ctx.riot.val_api("sprays"));
     let weapons = weapons?;
-    let (buddies, sprays) = (buddies.unwrap_or(json!([])), sprays.unwrap_or(json!([])));
+    let (buddies, sprays) = (buddies.unwrap_or_default(), sprays.unwrap_or_default());
     let mut ix = Index::default();
-    for w in js::arr(&weapons) {
-        ix.weapon.insert(lc(&w["uuid"]), w.clone());
-        for s in js::arr(&w["skins"]) {
-            ix.skin.insert(lc(&s["uuid"]), s.clone());
-            for c in js::arr(&s["chromas"]) { ix.chroma.insert(lc(&c["uuid"]), (c.clone(), s.clone())); }
-            for l in js::arr(&s["levels"]) { ix.level.insert(lc(&l["uuid"]), s.clone()); }
+    for w in js::items(&weapons) {
+        ix.weapon.insert(lc(&w["uuid"]), Arc::new(without(w, "skins")));
+        for s in js::items(&w["skins"]) {
+            let skin = Arc::new(s.clone());
+            ix.skin.insert(lc(&s["uuid"]), skin.clone());
+            for c in js::items(&s["chromas"]) { ix.chroma.insert(lc(&c["uuid"]), (c.clone(), skin.clone())); }
+            for l in js::items(&s["levels"]) { ix.level.insert(lc(&l["uuid"]), skin.clone()); }
         }
     }
-    for b in js::arr(&buddies) {
-        ix.buddy.insert(lc(&b["uuid"]), b.clone());
-        for l in js::arr(&b["levels"]) { ix.buddy.insert(lc(&l["uuid"]), b.clone()); }
-    }
-    for s in js::arr(&sprays) {
-        ix.spray.insert(lc(&s["uuid"]), s.clone());
-        for l in js::arr(&s["levels"]) { ix.spray.insert(lc(&l["uuid"]), s.clone()); }
+    for list in [(&buddies, &mut ix.buddy), (&sprays, &mut ix.spray)] {
+        let (items, map) = list;
+        for b in js::items(items) {
+            let item = Arc::new(b.clone());
+            map.insert(lc(&b["uuid"]), item.clone());
+            for l in js::items(&b["levels"]) { map.insert(lc(&l["uuid"]), item.clone()); }
+        }
     }
     let ix = Arc::new(ix);
     *CONTENT.lock().unwrap() = Some(ix.clone());
@@ -252,7 +262,8 @@ async fn resolve(ctx: &Ctx, kind: &str, id: &str) -> Res<Value> {
         ctx.riot.val_api("maps"),
         async { if kind == "ingame" { match_loadouts(ctx, id).await } else { Arc::new(HashMap::new()) } },
     );
-    let (agents, maps) = (js::arr(&agents.unwrap_or(json!([]))), js::arr(&maps.unwrap_or(json!([]))));
+    let (agents, maps) = (agents.unwrap_or_default(), maps.unwrap_or_default());
+    let (agents, maps) = (js::items(&agents), js::items(&maps));
     let agent_of = |cid: &Value| -> Value {
         if !truthy(cid) { return Value::Null; }
         let cid = js::s(cid).to_lowercase();
@@ -436,7 +447,7 @@ pub fn register(reg: &mut Registry, _ctx: &Ctx) {
             async { if truthy(&title_id) { ctx.riot.val_api(&title_path).await.ok() } else { None } },
         );
         let mut out = l.as_object().cloned().unwrap_or_default();
-        out.insert("card".into(), match card.filter(truthy) { Some(c) => obj(vec![("name", g(&c, &["displayName"])), ("art", g(&c, &["wideArt"]))]), None => Value::Null });
+        out.insert("card".into(), match card.filter(|c| truthy(c)) { Some(c) => obj(vec![("name", g(&c, &["displayName"])), ("art", g(&c, &["wideArt"]))]), None => Value::Null });
         out.insert("title".into(), title.map(|t| js::or(&t["titleText"], Value::Null)).unwrap_or(Value::Null));
         Ok(Value::Object(out))
     });

@@ -80,16 +80,100 @@ impl Registry {
         v
     }
 
-    /// runs a channel
+    /// runs a channel. Read-only channels that several pages (and the overlay window) poll on their own timers are
+    /// merged: callers asking at the same moment share one request, and an answer is reused for a moment.
     pub async fn call(&self, ctx: Ctx, channel: &str, args: Vec<Value>) -> Result<Value, String> {
         let Some(h) = self.0.get(channel).cloned() else { return Err(format!("No handler registered for '{channel}'")) };
-        match h(ctx, Args(args)).await {
-            Ok(v) => Ok(v),
-            Err(e) => {
-                eprintln!("[{channel}] {e}");
-                Err(e.to_string())
+        let channel = channel.to_string();
+        let key = format!("{channel}{}", Value::Array(args.clone()));
+        let shared_channel = SHARED.contains(&channel.as_str());
+        let area = channel.split(':').next().unwrap_or_default().to_string();
+        let run = move || async move {
+            match h(ctx, Args(args)).await {
+                Ok(v) => Ok(v),
+                Err(e) => {
+                    eprintln!("[{channel}] {e}");
+                    Err(e.to_string())
+                }
             }
+        };
+        if !shared_channel {
+            // other channels in the same areas may change those answers (joining a party, equipping a skin...): start fresh
+            let touches = SHARED.iter().any(|c| c.split(':').next() == Some(area.as_str()));
+            if touches { shared::forget(); }
+            let out = run().await;
+            // and again once it's done (it may have changed things part-way, even if it failed), so a read that ran
+            // meanwhile isn't reused
+            if touches { shared::forget(); }
+            return out;
         }
+        shared::run(key, run).await
+    }
+}
+
+/// polled, read-only channels whose answers are merged (see `Registry::call`)
+const SHARED: &[&str] = &[
+    "live:state", "social:party", "social:friends", "social:requests", "chat:conversations", "chat:messages",
+    "store:wallet", "loadout:get", "discord:status", "riot:status",
+];
+
+mod shared {
+    use futures::future::{BoxFuture, FutureExt, Shared};
+    use once_cell::sync::Lazy;
+    use serde_json::Value;
+    use std::collections::HashMap;
+    use std::future::Future;
+    use std::sync::Mutex;
+    use std::time::{Duration, Instant};
+
+    type Answer = Result<Value, String>;
+    /// how long an answer is reused: well under the fastest poll (4 s), so nothing looks stale
+    const FRESH: Duration = Duration::from_millis(1500);
+
+    #[derive(Default)]
+    struct State {
+        /// key -> (flight id, generation, the shared request)
+        running: HashMap<String, (u64, u64, Shared<BoxFuture<'static, Answer>>)>,
+        recent: HashMap<String, (Instant, Value)>,
+        generation: u64,
+        next_flight: u64,
+    }
+    static STATE: Lazy<Mutex<State>> = Lazy::new(|| Mutex::new(State::default()));
+
+    pub fn forget() {
+        let mut s = STATE.lock().unwrap();
+        s.running.clear();
+        s.recent.clear();
+        s.generation += 1;
+    }
+
+    pub async fn run<F, Fut>(key: String, f: F) -> Answer
+    where F: FnOnce() -> Fut, Fut: Future<Output = Answer> + Send + 'static {
+        let (fut, gen, id) = {
+            let mut s = STATE.lock().unwrap();
+            if let Some((at, v)) = s.recent.get(&key) { if at.elapsed() < FRESH { return Ok(v.clone()); } }
+            let gen = s.generation;
+            let (id, fut) = match s.running.get(&key) {
+                Some((id, _, fut)) => (*id, fut.clone()),
+                None => {
+                    s.next_flight += 1;
+                    let (id, fut) = (s.next_flight, f().boxed().shared());
+                    s.running.insert(key.clone(), (id, gen, fut.clone()));
+                    (id, fut)
+                }
+            };
+            (fut, gen, id)
+        };
+        let out = fut.await;
+        let mut s = STATE.lock().unwrap();
+        // only the flight still registered for this key publishes, and only if nothing changed while it ran
+        let current = s.running.get(&key).is_some_and(|(i, g, _)| *i == id && *g == gen);
+        if current && s.generation == gen {
+            s.running.remove(&key);
+            if let Ok(v) = &out { s.recent.insert(key, (Instant::now(), v.clone())); } else { s.recent.remove(&key); }
+            s.recent.retain(|_, (at, _)| at.elapsed() < FRESH);
+        }
+        out
     }
 }
 
