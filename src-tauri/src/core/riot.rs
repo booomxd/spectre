@@ -53,6 +53,9 @@ pub struct Riot {
 /// milliseconds since the epoch, like JS `Date.now()`
 pub fn now_ms() -> i64 { chrono::Utc::now().timestamp_millis() }
 
+/// wakes the connection loop early when the connection is marked lost
+pub static RECONNECT: Lazy<tokio::sync::Notify> = Lazy::new(tokio::sync::Notify::new);
+
 fn local_app_data() -> PathBuf { PathBuf::from(std::env::var("LOCALAPPDATA").unwrap_or_default()) }
 
 /// What connect() needs from the game log: the client version and the pd / glz hosts
@@ -129,6 +132,12 @@ impl Riot {
     pub fn puuid(&self) -> String { self.state.read().unwrap().puuid.clone().unwrap_or_default() }
     /// HTTP client for anything that isn't the Riot Client's local API
     pub fn http(&self) -> &Client { &self.http }
+
+    /// port and password of the Riot Client's local API (from its lockfile), if known
+    pub fn local_auth(&self) -> Option<(String, String)> {
+        let s = self.state.read().unwrap();
+        if s.port.is_empty() { None } else { Some((s.port.clone(), s.password.clone())) }
+    }
 
     /// the Riot Client's local API
     pub async fn local(&self, m: &str, path: &str, body: Option<Value>) -> Res<Value> {
@@ -217,8 +226,8 @@ impl Riot {
         Ok(self.status())
     }
 
-    /// marks the connection lost
-    pub fn disconnect(&self) { self.state.write().unwrap().connected = false; }
+    /// marks the connection lost, and wakes the connection loop so it reconnects now
+    pub fn disconnect(&self) { self.state.write().unwrap().connected = false; RECONNECT.notify_one(); }
 
     pub fn status(&self) -> Value {
         let s = self.state.read().unwrap();

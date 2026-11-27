@@ -31,6 +31,22 @@ export function useEvent(channel, fn) {
   onCleanup(listenEvent(channel, p => fn(p)))
 }
 
+// Riot Client push: while the backend is listening to the Riot Client's events, these channels refresh the moment
+// their data changes, and their polling only runs as a slow safety net
+const PUSHED = {
+  'social:friends': ['friends', 'presences'],
+  'social:party': ['party'],
+  'social:requests': ['requests'],
+  'chat:conversations': ['chat'],
+  'chat:messages': ['chat'],
+}
+const SAFETY_POLL = 30000
+const [pushLive, setPushLive] = createSignal(false)
+if (!DEMO && typeof window !== 'undefined' && window.__TAURI_INTERNALS__) {
+  listenEvent('riot:push', p => setPushLive(!!p?.live))
+  invoke('push:status').then(s => setPushLive(!!s?.live)).catch(() => {})
+}
+
 const val = v => (typeof v === 'function' ? v() : v)
 const json = v => { try { return JSON.stringify(v) } catch { return null } }
 
@@ -39,12 +55,13 @@ const json = v => { try { return JSON.stringify(v) } catch { return null } }
 // Data is reconciled into a store (array items matched by `opts.key`, default 'id'), so a poll that changes one field only updates the DOM that reads that field.
 export function useInvoke(channel, args = [], opts = {}) {
   const [state, setState] = createStore({ data: null, error: null, loading: !val(opts.skip) })
-  let loadedFor = null, seq = 0, inflight = 0
+  let loadedFor = null, seq = 0, inflight = 0, pushed = false
   const key = () => json([channel, val(args), val(opts.deps)])
   const reload = async (quiet, forKey, background) => {
-    // a background refresh (poll, refocus) never supersedes a request that is still running, so a handler
+    // a background refresh (poll, refocus, push) never supersedes a request that is still running, so a handler
     // slower than the poll interval still lands; request changes (forKey) and explicit reloads always win
     if (background && inflight) return
+    pushed = false
     const a = untrack(() => val(args)) || []
     const mine = ++seq
     inflight = mine
@@ -61,14 +78,33 @@ export function useInvoke(channel, args = [], opts = {}) {
       if (mine !== seq) return
       if (forKey !== undefined) loadedFor = forKey
       setState({ error: e.message, loading: false })
+    } finally {
+      // a push that arrived while this request ran: refresh once more now that it has landed
+      if (pushed && !inflight) {
+        pushed = false
+        if (!val(opts.skip) && val(opts.poll)) reload(true, undefined, true)
+      }
     }
   }
   // fetch when the request (or skip) changes
   createEffect(on([key, () => val(opts.skip)], ([k, skip]) => {
     if (!skip) reload(k !== null && loadedFor === k, k)
   }))
+  const kinds = PUSHED[channel]
+  // pushed channels: refresh as soon as the Riot Client says their data changed (only while this hook is polling,
+  // so pages in the background stay quiet)
+  if (kinds) useEvent('riot:push', p => {
+    if (!p?.kinds?.some(k => kinds.includes(k))) return
+    if (val(opts.skip) || !val(opts.poll)) return
+    if (inflight) pushed = true
+    else reload(true, undefined, true)
+  })
+  const pollEvery = () => {
+    const poll = val(opts.poll)
+    return poll && kinds && pushLive() ? Math.max(poll, SAFETY_POLL) : poll
+  }
   // polling: starts/stops with `poll`; resuming (e.g. the page becomes active again) refreshes quietly, pausing never fetches
-  createEffect(on([() => val(opts.poll), () => val(opts.skip)], ([poll, skip], prev) => {
+  createEffect(on([pollEvery, () => val(opts.skip)], ([poll, skip], prev) => {
     if (skip || !poll) return
     if (prev && !prev[0] && !prev[1]) reload(true, undefined, true)
     // no refreshing while the window is hidden

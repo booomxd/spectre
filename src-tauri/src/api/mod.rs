@@ -18,6 +18,7 @@ pub mod overlay;
 pub mod patchnotes;
 pub mod playbooks;
 pub mod progression;
+pub mod push;
 pub mod session;
 pub mod settings;
 pub mod social;
@@ -40,6 +41,7 @@ pub fn register_all(reg: &mut Registry, ctx: &Ctx) {
     patchnotes::register(reg, ctx);
     playbooks::register(reg, ctx);
     progression::register(reg, ctx);
+    push::register(reg, ctx);
     session::register(reg, ctx);
     settings::register(reg, ctx);
     social::register(reg, ctx);
