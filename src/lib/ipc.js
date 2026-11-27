@@ -55,12 +55,13 @@ const json = v => { try { return JSON.stringify(v) } catch { return null } }
 // Data is reconciled into a store (array items matched by `opts.key`, default 'id'), so a poll that changes one field only updates the DOM that reads that field.
 export function useInvoke(channel, args = [], opts = {}) {
   const [state, setState] = createStore({ data: null, error: null, loading: !val(opts.skip) })
-  let loadedFor = null, seq = 0, inflight = 0
+  let loadedFor = null, seq = 0, inflight = 0, pushed = false
   const key = () => json([channel, val(args), val(opts.deps)])
   const reload = async (quiet, forKey, background) => {
-    // a background refresh (poll, refocus) never supersedes a request that is still running, so a handler
+    // a background refresh (poll, refocus, push) never supersedes a request that is still running, so a handler
     // slower than the poll interval still lands; request changes (forKey) and explicit reloads always win
     if (background && inflight) return
+    pushed = false
     const a = untrack(() => val(args)) || []
     const mine = ++seq
     inflight = mine
@@ -77,6 +78,9 @@ export function useInvoke(channel, args = [], opts = {}) {
       if (mine !== seq) return
       if (forKey !== undefined) loadedFor = forKey
       setState({ error: e.message, loading: false })
+    } finally {
+      // a push that arrived while this request ran: refresh once more now that it has landed
+      if (pushed && !inflight) reload(true, undefined, true)
     }
   }
   // fetch when the request (or skip) changes
@@ -89,7 +93,8 @@ export function useInvoke(channel, args = [], opts = {}) {
   if (kinds) useEvent('riot:push', p => {
     if (!p?.kinds?.some(k => kinds.includes(k))) return
     if (val(opts.skip) || !val(opts.poll)) return
-    reload(true)
+    if (inflight) pushed = true
+    else reload(true, undefined, true)
   })
   const pollEvery = () => {
     const poll = val(opts.poll)

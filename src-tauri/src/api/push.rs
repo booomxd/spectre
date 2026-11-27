@@ -38,11 +38,13 @@ fn set_live(ctx: &Ctx, live: bool) {
     }
 }
 
-/// the Riot Client's current port from its lockfile: the password is only sent while that client is still the one listening
-async fn lockfile_port() -> Option<String> {
+/// the Riot Client's current port and password from its lockfile: the password is only sent while that client is still the one listening
+async fn lockfile_auth() -> Option<(String, String)> {
     let path = std::path::PathBuf::from(std::env::var("LOCALAPPDATA").unwrap_or_default())
         .join("Riot Games").join("Riot Client").join("Config").join("lockfile");
-    tokio::fs::read_to_string(path).await.ok()?.split(':').nth(2).map(str::to_string)
+    let lock = tokio::fs::read_to_string(path).await.ok()?;
+    let parts: Vec<&str> = lock.split(':').collect();
+    Some((parts.get(2)?.to_string(), parts.get(3)?.to_string()))
 }
 
 pub fn register(reg: &mut Registry, ctx: &Ctx) {
@@ -66,10 +68,10 @@ pub fn register(reg: &mut Registry, ctx: &Ctx) {
 async fn listen(ctx: &Ctx) -> Res<()> {
     let Some((port, password)) = ctx.riot.local_auth() else { return Err(msg("Not connected to the Riot Client")) };
     // a stale port (the Riot Client exited) could now belong to another program: don't connect to it
-    if lockfile_port().await.as_deref() != Some(port.as_str()) {
-        // the Riot Client restarted on a new port, or exited: reload its lockfile so the next try uses the new one
-        let status = match ctx.riot.connect().await { Ok(s) => s, Err(_) => { ctx.riot.disconnect(); ctx.riot.status() } };
-        ctx.emit("riot:status", status);
+    if lockfile_auth().await.as_ref() != Some(&(port.clone(), password.clone())) {
+        // the Riot Client restarted (new port or password) or exited: mark it disconnected so the connection loop reloads the lockfile
+        ctx.riot.disconnect();
+        ctx.emit("riot:status", ctx.riot.status());
         return Err(msg("The Riot Client restarted"));
     }
     let port: u16 = port.parse().map_err(|_| msg("Bad Riot Client port"))?;
