@@ -60,18 +60,18 @@ export default function FriendActivity() {
     const counts = createMemo(() => events().reduce((c, e) => ({ ...c, [e.type]: (c[e.type] || 0) + 1 }), {}))
     const shown = () => (events().filter(e => (filterS() === 'all' || e.type === filterS())
     && (!qS() || `${e.name} ${e.from || ''}`.toLowerCase().includes(qS().toLowerCase()))))
-    // day groups keyed by their label string, so <For> keeps a day (and its rows) across feed updates
+    // day groups keyed by calendar date (labels drop the year for older days), so <For> keeps a day and its rows across feed updates
     const days = createMemo(() => {
     const out = new Map()
     let n = 0
     for (const e of shown()) {
-      const label = dayLabel(e.at)
-      if (!out.has(label)) out.set(label, { items: [], start: n })
-      out.get(label).items.push(e); n++
+      const key = new Date(e.at).toDateString()
+      if (!out.has(key)) out.set(key, { label: dayLabel(e.at), items: [], start: n })
+      out.get(key).items.push(e); n++
     }
     return out
   })
-    const dayLabels = createMemo(() => [...days().keys()])
+    const dayKeys = createMemo(() => [...days().keys()], undefined, { equals: (a, b) => a.length === b.length && a.every((x, i) => x === b[i]) })
     const scan = async () => {
     setScanning(true)
     const before = events().length
@@ -134,10 +134,10 @@ export default function FriendActivity() {
             ) : !shown().length ? <Empty icon={FiSearch} title='Nothing matches' hint='Try another filter or search.' class='h-full' />
               : (
                 <Stagger class='flex flex-col gap-2'>
-                  <For each={dayLabels()}>{label => (
+                  <For each={dayKeys()}>{key => (
                     <div class='flex flex-col gap-2'>
-                      <div class='eyebrow px-1 pt-3 first:pt-0'>{label}</div>
-                      <For each={days().get(label)?.items || []}>{(e, i) => <EventRow e={e} index={(days().get(label)?.start || 0) + i()} />}</For>
+                      <div class='eyebrow px-1 pt-3 first:pt-0'>{days().get(key)?.label}</div>
+                      <For each={days().get(key)?.items || []}>{(e, i) => <EventRow e={e} index={(days().get(key)?.start || 0) + i()} />}</For>
                     </div>
                   )}</For>
                 </Stagger>

@@ -65,7 +65,7 @@ export const FadeIn = Plain
 // such as a half-typed form never carries over to the next section or tab.
 export function Swap(props) {
   const k = () => `#${props.id ?? ''}`
-  return <Show when={k()} keyed>{() => <div class={props.class}>{props.children}</div>}</Show>
+  return <Show when={k()} keyed>{_id => <div class={props.class}>{props.children}</div>}</Show>
 }
 
 export { cx }

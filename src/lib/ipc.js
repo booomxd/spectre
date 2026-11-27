@@ -41,10 +41,10 @@ export function useInvoke(channel, args = [], opts = {}) {
   const [state, setState] = createStore({ data: null, error: null, loading: !val(opts.skip) })
   let loadedFor = null, seq = 0, inflight = 0
   const key = () => json([channel, val(args), val(opts.deps)])
-  const reload = async (quiet, forKey) => {
+  const reload = async (quiet, forKey, background) => {
     // a background refresh (poll, refocus) never supersedes a request that is still running, so a handler
     // slower than the poll interval still lands; request changes (forKey) and explicit reloads always win
-    if (quiet && forKey === undefined && inflight) return
+    if (background && inflight) return
     const a = untrack(() => val(args)) || []
     const mine = ++seq
     inflight = mine
@@ -70,10 +70,10 @@ export function useInvoke(channel, args = [], opts = {}) {
   // polling: starts/stops with `poll`; resuming (e.g. the page becomes active again) refreshes quietly, pausing never fetches
   createEffect(on([() => val(opts.poll), () => val(opts.skip)], ([poll, skip], prev) => {
     if (skip || !poll) return
-    if (prev && !prev[0] && !prev[1]) reload(true)
+    if (prev && !prev[0] && !prev[1]) reload(true, undefined, true)
     // no refreshing while the window is hidden
-    const t = setInterval(() => { if (!document.hidden) reload(true) }, poll)
-    const onShow = () => { if (!document.hidden) reload(true) }
+    const t = setInterval(() => { if (!document.hidden) reload(true, undefined, true) }, poll)
+    const onShow = () => { if (!document.hidden) reload(true, undefined, true) }
     document.addEventListener('visibilitychange', onShow)
     onCleanup(() => { clearInterval(t); document.removeEventListener('visibilitychange', onShow) })
   }))

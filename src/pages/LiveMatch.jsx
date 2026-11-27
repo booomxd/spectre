@@ -141,7 +141,7 @@ function LiveBody(props) {
   const [overlayS, setOverlay] = createSignal(false)
   onMount(() => { invoke('overlay:state').then(s => setOverlay(s.open)).catch(() => { }) })
   useEvent('overlay:state', s => setOverlay(s.open))
-  const live = useInvoke('live:state', [], { poll: () => (props.active ? 4000 : overlayS() ? 12000 : undefined) })
+  const live = useInvoke('live:state', [], { key: 'ref', poll: () => (props.active ? 4000 : overlayS() ? 12000 : undefined) })
   const d = () => live.data
   const memosA = useMemos(() => (d()?.players || []).map(p => p.puuid))
   const [panelS, setPanel] = createSignal(null)
@@ -229,8 +229,8 @@ function LiveBody(props) {
           </div>
         </Show>
         {/* keyed by the player's ref, so a panel never shows one player's data under another's header */}
-        <Show when={shown()?.kind === 'scout' && (shown().player?.ref || shown().player)} keyed>{() => <ScoutPanel player={shown().player} onLoaded={rescout} onClose={closePanel} />}</Show>
-        <Show when={shown()?.kind === 'skins' && (shown().player?.ref || shown().player)} keyed>{() => <SkinsPanel player={shown().player} onClose={closePanel} />}</Show>
+        <Show when={shown()?.kind === 'scout' && (shown().player?.ref || shown().player)} keyed>{_ref => <ScoutPanel player={shown().player} onLoaded={rescout} onClose={closePanel} />}</Show>
+        <Show when={shown()?.kind === 'skins' && (shown().player?.ref || shown().player)} keyed>{_ref => <SkinsPanel player={shown().player} onClose={closePanel} />}</Show>
       </Drawer>
     </Page>
   )
