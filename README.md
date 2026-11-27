@@ -12,7 +12,7 @@ Live match ranks, scouting, skins, your party, Discord presence and more, all th
 [![Downloads](https://img.shields.io/github/downloads/booomxd/spectre/total?style=for-the-badge&color=6d28d9)](https://github.com/booomxd/spectre/releases)
 ![Windows](https://img.shields.io/badge/Windows-10%20%7C%2011-2a1458?style=for-the-badge&logo=windows&logoColor=white)
 ![Tauri](https://img.shields.io/badge/Tauri-2-2a1458?style=for-the-badge&logo=tauri&logoColor=white)
-![React](https://img.shields.io/badge/React-18-2a1458?style=for-the-badge&logo=react&logoColor=white)
+![SolidJS](https://img.shields.io/badge/SolidJS-1.9-2a1458?style=for-the-badge&logo=solid&logoColor=white)
 
 **[🌐 Website](https://spectreclient.pages.dev/)** · **[⬇️ Download](https://github.com/booomxd/spectre/releases/latest)** · **[✨ Features](docs/FEATURES.md)** · **[🔒 Privacy](docs/PRIVACY.md)** · **[🛠️ Development](docs/DEVELOPMENT.md)** · **[📜 Changelog](CHANGELOG.md)**
 
@@ -33,6 +33,7 @@ Live match ranks, scouting, skins, your party, Discord presence and more, all th
 | 🎮 **Discord presence** | "Playing Spectre" with your mode, map art, score, rank and party, all fully customizable. |
 | 🕶️ **Streamer-safe** | Players who hide their name in your match stay hidden everywhere in Spectre (except you and friends in your party). No names, IDs or cards. |
 | 🖥️ **In-game overlay** | Both teams' ranks over the game, toggled with a hotkey, with optional click-through and auto-show. |
+| ⚡ **Small and fast** | A ~3.4 MB installer. Pages update only what changed, so live data streams in without stutter or losing your scroll. |
 | ⬆️ **Auto updates** | New versions show up in the app and install in one click. |
 | 🪟 **Stays out of the way** | Starts with Windows in the tray, and closing keeps it running in the hidden icons. |
 | 🎨 **Eighteen glass themes** | Midnight, Onyx, Ember, Glacier, Verdant, Amethyst, Gilded, Aurora, Sakura, Abyss, Sunset, the light Pearl, plus Frutiger Aero, Vaporwave, Y2K Chrome, Lo-fi, Minty Jamun and Musashi. |
