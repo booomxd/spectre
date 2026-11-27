@@ -141,7 +141,9 @@ const BUBBLES = [[5, 8, 24, 0, 3], [9, 22, 31, -9, -4], [3.5, 37, 21, -4, 5], [7
 // smaller element would make it a backdrop root and its glass cards would lose their blur mid-fade.
 // Falls back to an instant switch where the API is missing, with reduced motion on, or while the window is hidden.
 function withPageTransition(update) {
-  if (typeof document.startViewTransition !== 'function' || document.hidden || prefersReducedMotion()) return update()
+  // data-reduce-motion is set even when saving the setting failed, so check it as well as the stored/OS preference
+  const reduce = prefersReducedMotion() || document.documentElement.hasAttribute('data-reduce-motion')
+  if (typeof document.startViewTransition !== 'function' || document.hidden || reduce) return update()
   document.startViewTransition(update)
 }
 
@@ -174,9 +176,12 @@ function Shell() {
   const section = createMemo(() => sectionOf(page()))
   createEffect(() => { const s = section(); if (s) lastInSection[s.id] = page() })
 
+  // a transition runs its update a frame later; a newer navigation in between wins
+  let navGen = 0
   const go = (id, p, instant) => {
     const [to, prm] = resolve(id, p)
-    const update = () => { setParams(x => ({ ...x, [to]: prm })); setPage(to) }
+    const gen = ++navGen
+    const update = () => { if (gen !== navGen) return; setParams(x => ({ ...x, [to]: prm })); setPage(to) }
     if (instant || to === page()) update()
     else withPageTransition(update)
   }
