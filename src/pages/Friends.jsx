@@ -1,4 +1,4 @@
-import { For, createSignal, splitProps, Show, createMemo } from 'solid-js'
+import { For, Index, createSignal, splitProps, Show, createMemo } from 'solid-js'
 import { FiClock, FiEdit3, FiLogOut, FiMessageSquare, FiUserPlus, FiUsers, FiX, FiCheck, FiUserX, FiSearch, FiPlus } from 'solid-icons/fi'
 import { Page, Card, Heading, Button, Input, Toggle, Badge, Skeleton, Empty, ErrorState, RequireRiot, withToast, cx, Stagger, Item, FadeIn } from '../ui'
 import { invoke, useInvoke } from '../lib/ipc'
@@ -103,16 +103,8 @@ function PartyPanel(props) {
         </div>
       </div>
       <Stagger class='relative grid grid-cols-5 gap-3'>
-        {Array.from({ length: slots() }, (_, i) => {
-          const mem = props.party.members[i]
-          if (!mem) return (
-            <Item index={i} class='glass-inset rounded-2xl h-[148px] flex flex-col items-center justify-center gap-2 text-muted'>
-              <span class='w-10 h-10 rounded-full border border-dashed border-line flex items-center justify-center'><FiPlus size={14} /></span>
-              <span class='text-[11px] font-medium'>Open slot</span>
-            </Item>
-          )
-          return (
-            <Item index={i} class={cx('group relative rounded-2xl h-[148px] px-3 pt-4 pb-3 flex flex-col items-center text-center', mem.self ? 'accent-soft' : 'glass')}>
+        <For each={props.party.members}>{(mem, i) => (
+            <Item index={i()} class={cx('group relative rounded-2xl h-[148px] px-3 pt-4 pb-3 flex flex-col items-center text-center', mem.self ? 'accent-soft' : 'glass')}>
               <PlayerCard id={mem.card} name={mem.hidden ? null : mem.gameName} size={46} />
               <div class='mt-2.5 w-full text-[12.5px] font-semibold tracking-tight text-text truncate'>{mem.hidden ? 'Hidden player' : mem.gameName || '...'}</div>
               <div class='text-[10.5px] text-muted truncate w-full'>{mem.owner ? 'Leader' : 'Member'}{mem.level != null && ` · Lv ${mem.level}`}</div>
@@ -122,8 +114,13 @@ function PartyPanel(props) {
                   class='absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center text-muted opacity-0 group-hover:opacity-100 hover:text-bad hover:bg-bad/15 transition-[transform,opacity,background-color,border-color,color] duration-200'><FiUserX size={13} /></button>
               )}
             </Item>
-          )
-        })}
+        )}</For>
+        <Index each={Array.from({ length: slots() - props.party.members.length })}>{(_, i) => (
+            <Item index={props.party.members.length + i} class='glass-inset rounded-2xl h-[148px] flex flex-col items-center justify-center gap-2 text-muted'>
+              <span class='w-10 h-10 rounded-full border border-dashed border-line flex items-center justify-center'><FiPlus size={14} /></span>
+              <span class='text-[11px] font-medium'>Open slot</span>
+            </Item>
+        )}</Index>
       </Stagger>
       <div class='relative mt-6 pt-5 border-t border-line flex items-center justify-between gap-6'>
         <div class='w-60'>
@@ -193,10 +190,10 @@ function AddFriend(props) {
 }
 
 function FriendsBody(props) {
-  const friends = useInvoke('social:friends', [], { poll: () => poll() })
-  const party = useInvoke('social:party', [], { poll: () => poll() })
+  const friends = useInvoke('social:friends', [], { poll: () => poll(), key: 'puuid' })
+  const party = useInvoke('social:party', [], { poll: () => poll(), key: 'puuid' })
   const requests = useInvoke('social:requests', [], { poll: () => poll() })
-  const convs = useInvoke('chat:conversations', [], { poll: () => (props.active ? 4000 : undefined) })
+  const convs = useInvoke('chat:conversations', [], { poll: () => (props.active ? 4000 : undefined), key: 'cid' })
   const [qS, setQ] = createSignal('')
   const [chatS, setChat] = createSignal(null)
   

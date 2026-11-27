@@ -36,22 +36,28 @@ const json = v => { try { return JSON.stringify(v) } catch { return null } }
 
 // Loads data from a handler. `args`, `poll` and `skip` may be accessors, so the call reloads when they change.
 // The result is a reactive object: res.data / res.error / res.loading, plus res.reload(quiet?).
-// Data is reconciled into a store, so a poll that changes one field only updates the DOM that reads that field.
+// Data is reconciled into a store (array items matched by `opts.key`, default 'id'), so a poll that changes one field only updates the DOM that reads that field.
 export function useInvoke(channel, args = [], opts = {}) {
   const [state, setState] = createStore({ data: null, error: null, loading: !val(opts.skip) })
-  let loadedFor = null, seq = 0
+  let loadedFor = null, seq = 0, inflight = 0
   const key = () => json([channel, val(args), val(opts.deps)])
   const reload = async (quiet, forKey) => {
+    // a background refresh (poll, refocus) never supersedes a request that is still running, so a handler
+    // slower than the poll interval still lands; request changes (forKey) and explicit reloads always win
+    if (quiet && forKey === undefined && inflight) return
     const a = untrack(() => val(args)) || []
     const mine = ++seq
+    inflight = mine
     if (!quiet) setState('loading', true)
     try {
       const data = await invoke(channel, ...a)
+      if (inflight === mine) inflight = 0
       if (mine !== seq) return
       if (forKey !== undefined) loadedFor = forKey
-      setState('data', reconcile(data ?? null, { merge: true }))
+      setState('data', reconcile(data ?? null, { merge: true, key: opts.key || 'id' }))
       setState({ error: null, loading: false })
     } catch (e) {
+      if (inflight === mine) inflight = 0
       if (mine !== seq) return
       if (forKey !== undefined) loadedFor = forKey
       setState({ error: e.message, loading: false })

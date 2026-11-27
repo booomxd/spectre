@@ -58,7 +58,7 @@ function MatchCard(props) {
         </div>
       </div>
       <div class='flex-1 p-4 grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-2 content-start'>
-        <For each={props.m.players}>{p => <Chip p={p} people={props.people} memo={p.puuid ? props.memoMap[p.puuid] : null} agents={props.agents} onMemo={props.onMemo} />}</For>
+        <For each={props.m.players.filter(props.visible)}>{p => <Chip p={p} people={props.people} memo={p.puuid ? props.memoMap[p.puuid] : null} agents={props.agents} onMemo={props.onMemo} />}</For>
       </div>
     </Card>)
   
@@ -78,10 +78,9 @@ function Content() {
     const repeat = createMemo(() => named().filter(p => p.with + p.against > 1).sort((a, b) => (b.with + b.against) - (a.with + a.against)))
     const frequent = () => (repeat().slice(0, 8))
     const openMemo = p => setTarget({ puuid: p.puuid, name: p.name ? `${p.name.gameName}#${p.name.tagLine}` : '' })
-    const groups = () => ((__invoke.data?.matches || []).map(m => ({
-    ...m,
-    players: m.players.filter(p => (filterS() === 'all' || (filterS() === 'memo' ? p.puuid && __memos.map[p.puuid] : p.rel === filterS()))),
-  })).filter(m => m.players.length))
+    // the For items stay the store's own match objects; each card filters its players itself
+    const visible = p => (filterS() === 'all' || (filterS() === 'memo' ? p.puuid && __memos.map[p.puuid] : p.rel === filterS()))
+    const groups = createMemo(() => (__invoke.data?.matches || []).filter(m => m.players.some(visible)))
     const noted = () => (named().filter(p => __memos.map[p.puuid]).length)
     
     
@@ -133,7 +132,7 @@ function Content() {
           <div class='stagger flex flex-col gap-3'>
             <For each={groups()}>{(m, i) => (
               <div style={st({ '--i': Math.min(i(), 12) })}>
-                <MatchCard m={m} people={__invoke.data.people} memoMap={__memos.map} agents={agentsA()} maps={mapsA()} onMemo={openMemo} />
+                <MatchCard m={m} visible={visible} people={__invoke.data.people} memoMap={__memos.map} agents={agentsA()} maps={mapsA()} onMemo={openMemo} />
               </div>
             )}</For>
           </div>

@@ -17,7 +17,7 @@ function DashboardBody(props) {
   const wallet = useInvoke('store:wallet', [], { poll: () => (props.active ? 60000 : undefined) })
   const store = useInvoke('store:storefront')
   const contracts = useInvoke('progression:contracts')
-  const friends = useInvoke('social:friends', [], { poll: () => (props.active ? 30000 : undefined) })
+  const friends = useInvoke('social:friends', [], { poll: () => (props.active ? 30000 : undefined), key: 'puuid' })
   const party = useInvoke('social:party', [], { poll: () => (props.active ? 15000 : undefined) })
   
   const tiles = [

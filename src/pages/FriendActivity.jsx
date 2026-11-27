@@ -60,15 +60,18 @@ export default function FriendActivity() {
     const counts = createMemo(() => events().reduce((c, e) => ({ ...c, [e.type]: (c[e.type] || 0) + 1 }), {}))
     const shown = () => (events().filter(e => (filterS() === 'all' || e.type === filterS())
     && (!qS() || `${e.name} ${e.from || ''}`.toLowerCase().includes(qS().toLowerCase()))))
+    // day groups keyed by their label string, so <For> keeps a day (and its rows) across feed updates
     const days = createMemo(() => {
-    const out = []
+    const out = new Map()
+    let n = 0
     for (const e of shown()) {
       const label = dayLabel(e.at)
-      if (out[out.length - 1]?.label !== label) out.push({ label, items: [] })
-      out[out.length - 1].items.push(e)
+      if (!out.has(label)) out.set(label, { items: [], start: n })
+      out.get(label).items.push(e); n++
     }
     return out
   })
+    const dayLabels = createMemo(() => [...days().keys()])
     const scan = async () => {
     setScanning(true)
     const before = events().length
@@ -85,10 +88,12 @@ export default function FriendActivity() {
   }
     const title = () => ('Feed'), subtitle = () => ('New friends, removals and name changes, as they happen')
     
-    const filters = () => ([
-    { value: 'all', label: 'Everything', icon: FiActivity, tone: 'text-accent', soft: 'bg-accent/12 border-accent/30', count: events().length },
-    ...Object.entries(KIND).map(([value, k]) => ({ value, label: k.label, icon: k.icon, tone: k.tone, soft: k.soft, count: counts()[value] || 0 })),
-  ])
+    // created once; counts are read per row so a count change keeps the buttons (and focus)
+    const filters = [
+    { value: 'all', label: 'Everything', icon: FiActivity, tone: 'text-accent', soft: 'bg-accent/12 border-accent/30' },
+    ...Object.entries(KIND).map(([value, k]) => ({ value, label: k.label, icon: k.icon, tone: k.tone, soft: k.soft })),
+  ]
+    const countOf = v => (v === 'all' ? events().length : counts()[v] || 0)
     const list = (
     (<Pane title='Filter' header={<SearchField value={qS()} onChange={setQ} placeholder='Search by name' />}
       footer={<div class='flex items-center gap-2'>
@@ -96,11 +101,11 @@ export default function FriendActivity() {
         <Button variant='ghost' size='icon' icon={FiTrash2} title='Clear feed' disabled={!events().length} onClick={() => setConfirm(true)} />
       </div>}>
       <div class='flex flex-col gap-0.5'>
-        <For each={filters()}>{f => (
+        <For each={filters}>{f => (
           <ListRow as='button' selected={filterS() === f.value} layoutId='squad-feed' onClick={() => setFilter(f.value)}>
             <span class={cx('relative w-9 h-9 shrink-0 rounded-xl border flex items-center justify-center', f.soft, f.tone)}><f.icon size={15} /></span>
             <span class='relative flex-1 text-[13.5px] font-semibold text-text'>{f.label}</span>
-            <span class='relative font-display text-[17px] font-bold tabular-nums text-text'>{f.count}</span>
+            <span class='relative font-display text-[17px] font-bold tabular-nums text-text'>{countOf(f.value)}</span>
           </ListRow>
         )}</For>
       </div>
@@ -129,15 +134,12 @@ export default function FriendActivity() {
             ) : !shown().length ? <Empty icon={FiSearch} title='Nothing matches' hint='Try another filter or search.' class='h-full' />
               : (
                 <Stagger class='flex flex-col gap-2'>
-                  {(() => {
-                    let n = 0
-                    return days().map(d => (
-                      <div class='flex flex-col gap-2'>
-                        <div class='eyebrow px-1 pt-3 first:pt-0'>{d.label}</div>
-                        <For each={d.items}>{e => <EventRow e={e} index={n++} />}</For>
-                      </div>
-                    ))
-                  })()}
+                  <For each={dayLabels()}>{label => (
+                    <div class='flex flex-col gap-2'>
+                      <div class='eyebrow px-1 pt-3 first:pt-0'>{label}</div>
+                      <For each={days().get(label)?.items || []}>{(e, i) => <EventRow e={e} index={(days().get(label)?.start || 0) + i()} />}</For>
+                    </div>
+                  )}</For>
                 </Stagger>
               )}
       </SplitView>

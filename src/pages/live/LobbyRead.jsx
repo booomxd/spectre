@@ -1,4 +1,4 @@
-import { Show } from 'solid-js'
+import { For, Show, createMemo } from 'solid-js'
 import { FiAlertTriangle, FiAward, FiBarChart2, FiUsers } from 'solid-icons/fi'
 import { FadeIn } from '../../ui'
 import { useTiers } from '../../lib/content'
@@ -64,7 +64,9 @@ export default function LobbyRead(props) {
     const sm = () => (stacks(mine())), st = () => (stacks(theirs()))
     const stackText = s => (s.length ? s.map(partyLabel).join(' + ') : 'All solo')
     const tm = () => (top(mine())), tt = () => (top(theirs()))
-    const flags = () => ([...lowLevel(mine()).map(p => ({ p, tone: 'good' })), ...lowLevel(theirs()).map(p => ({ p, tone: 'bad' }))])
+    // player references (not fresh wrappers) so <For> keeps rows; the side decides the tone
+    const flags = createMemo(() => [...lowLevel(mine()), ...lowLevel(theirs())])
+    const toneOf = p => (lowLevel(mine()).includes(p) ? 'good' : 'bad')
     
     return (<Show when={!(!ranked(props.players).length && !sm().length && !st().length)} fallback={null}><FadeIn class='glass rounded-[22px] mb-8 grid sm:grid-cols-2 xl:grid-cols-4 divide-line max-xl:divide-y xl:divide-x overflow-hidden'>
       <Cell icon={FiBarChart2} label='Lobby read'>
@@ -82,7 +84,7 @@ export default function LobbyRead(props) {
       </Cell>
       <Cell icon={FiAlertTriangle} label='Low-level accounts' tone={flags().length ? 'warn' : undefined}>
         {flags().length
-          ? flags().slice(0, 3).map(({ p, tone }) => <Side tone={tone}>{who(p)} · level {p.level} at {name(p.rank)}</Side>)
+          ? <For each={flags().slice(0, 3)}>{p => <Side tone={toneOf(p)}>{who(p)} · level {p.level} at {name(p.rank)}</Side>}</For>
           : <span class='text-muted'>None at Platinum or above</span>}
       </Cell>
     </FadeIn></Show>)

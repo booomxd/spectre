@@ -1,4 +1,4 @@
-import { For, createEffect, createSignal, on, Show } from 'solid-js'
+import { For, createEffect, createMemo, createSignal, on, Show } from 'solid-js'
 import { FiArrowRight, FiClock, FiSearch, FiUser, FiX } from 'solid-icons/fi'
 import { invoke, useInvoke } from '../lib/ipc'
 import { contentPath, useContent, useTiers } from '../lib/content'
@@ -158,7 +158,8 @@ export default function PlayerSearch(props) {
   const [busyS, setBusy] = createSignal(false)
   const [searchErrorS, setSearchError] = createSignal(null)
   const __invoke = useInvoke('search:recent')
-  createEffect(on(() => [props.params], () => { if (props.params?.puuid) { setPuuid(props.params.puuid); setSearchError(null) } }))
+  const navParams = createMemo(() => props.params)
+  createEffect(on(navParams, p => { if (p?.puuid) { setPuuid(p.puuid); setSearchError(null) } }))
   
     const find = async (value) => {
     if (!value.includes('#')) { setSearchError('Enter a Riot ID like Name#Tag'); return }

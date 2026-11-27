@@ -9,7 +9,7 @@ import { Show, createEffect, createMemo, createSignal, on, onCleanup } from 'sol
 import { Portal } from 'solid-js/web'
 import { FiAlertTriangle, FiArrowUpRight, FiBell, FiX } from 'solid-icons/fi'
 import { openExternal, useInvoke } from './ipc'
-import { cx } from '../ui'
+import { cx, useNow } from '../ui'
 
 const KEY = 'spectre:announce-seen'
 const readSeen = () => { try { return JSON.parse(localStorage.getItem(KEY)) || [] } catch { return [] } }
@@ -45,7 +45,9 @@ export function pending(items, version, seen, now = Date.now()) {
 export default function Announcements() {
   const res = useInvoke('announce:list', [], { poll: 3 * 60 * 60 * 1000 })
   const [seen, setSeen] = createSignal(readSeen())
-  const list = createMemo(() => pending(res.data?.items, res.data?.version, seen()))
+  // ticks every minute so an announcement appears when its window opens and leaves when it closes
+  const nowA = useNow(60000)
+  const list = createMemo(() => pending(res.data?.items, res.data?.version, seen(), nowA()))
   const a = () => list()[0]
   let panel
 

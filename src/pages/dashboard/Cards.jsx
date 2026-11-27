@@ -279,18 +279,18 @@ export function DailyCard(props) {
     <Card hover onClick={go('shop')} class='group h-full p-6'>
       <Heading hint='Your rotating store' right={<div class='flex items-center gap-3'>{props.store && <Countdown seconds={props.store.dailySecondsLeft} class='text-[12px] text-muted' />}<Arrow /></div>}>Daily offers</Heading>
       <div class='grid grid-cols-4 gap-3'>
-        {!props.store ? [0, 1, 2, 3].map(i => <Skeleton class='h-32 rounded-2xl' />) : props.store.daily.length ? props.store.daily.slice(0, 4).map(o => {
-          const item = props.cat?.items.get(o.itemId)
+        {!props.store ? [0, 1, 2, 3].map(i => <Skeleton class='h-32 rounded-2xl' />) : props.store.daily.length ? <For each={props.store.daily.slice(0, 4)}>{o => {
+          const item = () => props.cat?.items.get(o.itemId)
           return (
             <div class='rounded-2xl glass-inset overflow-hidden transition-[border-color,transform] duration-300 ease-out hover:border-accent/40 hover:-translate-y-0.5'>
-              <ItemArt item={item} class='h-[84px]' />
+              <ItemArt item={item()} class='h-[84px]' />
               <div class='px-3 pb-3'>
-                <div class='truncate text-[12px] font-semibold text-text'>{item?.name || '...'}</div>
+                <div class='truncate text-[12px] font-semibold text-text'>{item()?.name || '...'}</div>
                 <Price amount={o.price} cat={props.cat} size={11} class='mt-1 text-[11.5px] text-muted' />
               </div>
             </div>
           )
-        }) : <div class='col-span-4 text-[13px] text-muted py-6 text-center'>No daily offers</div>}
+        }}</For> : <div class='col-span-4 text-[13px] text-muted py-6 text-center'>No daily offers</div>}
       </div>
     </Card>
   )

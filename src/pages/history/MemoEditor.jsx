@@ -63,18 +63,21 @@ export function MemoForm(props) {
     setSaving(true)
     try {
       let puuid = props.target?.puuid, name = props.target?.name || props.memo?.name || ''
+      // snapshot the draft now: the controls stay editable while the Riot ID lookup runs
+      const draft = { tags: tagsS(), rating: ratingS(), text: textS() }
       if (!puuid) {
         const found = await invoke('search:lookup', riotIdS())
         puuid = found.puuid; name = `${found.gameName}#${found.tagLine}`
       }
-      const saved = await invoke('memo:save', { puuid, name, tags: tagsS(), rating: ratingS(), text: textS() })
+      const saved = await invoke('memo:save', { puuid, name, ...draft })
       toast.success('Note saved')
       props.onSaved?.(saved)
     } catch (e) { toast.error(e.message) }
     setSaving(false)
   }
     const remove = async () => {
-    try { await invoke('memo:delete', props.memo.puuid); toast.success('Note deleted'); props.onDeleted?.(props.memo.puuid) }
+    const puuid = props.memo.puuid // the modal may close (memo -> null) while the delete is pending
+    try { await invoke('memo:delete', puuid); toast.success('Note deleted'); props.onDeleted?.(puuid) }
     catch (e) { toast.error(e.message) }
   }
     const needsId = () => (!props.target?.puuid)

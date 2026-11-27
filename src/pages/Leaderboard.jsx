@@ -109,8 +109,8 @@ function Content() {
     if (t) list = list.filter(p => !p.anonymous && `${p.gameName}#${p.tagLine}`.toLowerCase().includes(t))
     return list
   })
-    const mine = () => (playersS().find(p => p.puuid === riotA().puuid))
-    const you = () => (mine() || (dataS()?.you && { ...dataS().you, puuid: riotA().puuid, cardId: null, gameName: riotA().gameName, tagLine: riotA().tagLine, anonymous: false }))
+    const mine = createMemo(() => playersS().find(p => p.puuid === riotA().puuid))
+    const you = createMemo(() => mine() || (dataS()?.you && { ...dataS().you, puuid: riotA().puuid, cardId: null, gameName: riotA().gameName, tagLine: riotA().tagLine, anonymous: false }) || null)
     const podium = () => (!qS().trim() && tabS() === 'all' && playersS().length >= 3)
     
     

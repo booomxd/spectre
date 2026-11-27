@@ -1,4 +1,4 @@
-import { For, createEffect, createSignal, on, onCleanup, Show } from 'solid-js'
+import { For, Index, createEffect, createSignal, on, onCleanup, Show } from 'solid-js'
 import { FiCheck, FiKey, FiLock, FiPlay, FiSquare, FiUnlock, FiUserPlus, FiUsers } from 'solid-icons/fi'
 import { FaSolidCrown as FaCrown } from 'solid-icons/fa'
 import { Badge, Button, Card, Empty, FadeIn, Input, Item, Pill, Skeleton, Stagger, toast, withToast } from '../../ui'
@@ -94,12 +94,12 @@ export default function Lobby(props) {
                   : <Badge tone={m.ready ? 'good' : 'neutral'}>{m.ready ? 'Ready' : 'Standby'}</Badge>}
               </div>
             )}</For>
-            {Array.from({ length: open() }, (_, i) => (
+            <Index each={Array.from({ length: open() })}>{() => (
               <button onClick={focusInvite}
                 class='h-[52px] rounded-2xl border border-dashed border-line flex items-center justify-center gap-2 text-[12px] font-semibold text-muted hover:text-text hover:border-accent/40 transition-colors'>
                 <FiUserPlus /> Open slot
               </button>
-            ))}
+            )}</Index>
           </div>
 
           <div class='hairline my-6' />

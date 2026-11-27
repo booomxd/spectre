@@ -168,8 +168,11 @@ export default function Strategies(props) {
     const doExport = async () => {
     setExporting(true)
     try {
-      const png = await renderPng({ map: map(), strat: strat(), step: step() })
-      const res = await invoke('playbooks:exportPng', { dataUrl: png, name: `${strat().name} - ${step().name}` })
+      // snapshot before awaiting: the selection can change (or the strategy be deleted) while images load
+      const sn = { map: map(), strat: strat(), step: step() }
+      const name = `${sn.strat.name} - ${sn.step.name}`
+      const png = await renderPng(sn)
+      const res = await invoke('playbooks:exportPng', { dataUrl: png, name })
       if (res.saved) toast.success('Image saved')
     } catch (e) { toast.error('Export failed: ' + e.message) }
     setExporting(false)

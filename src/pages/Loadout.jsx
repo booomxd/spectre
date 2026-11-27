@@ -101,7 +101,8 @@ function LoadoutView(props) {
     const identity = () => (__invoke.data?.Identity)
     const card = () => (cardsA()?.find(c => lc(c.uuid) === lc(identity()?.PlayerCardID)))
     const title = () => (titlesA()?.find(t => lc(t.uuid) === lc(identity()?.PlayerTitleID)))
-    const tile = (g, w, index) => {
+    // returns an accessor so a retained tile recomputes when its gun's SkinID/level/chroma, the pending edits or tiers change
+    const tile = (g, w, index) => () => {
     const x = eff(g)
     const skin = w.skins.find(s => lc(s.uuid) === lc(x.SkinID))
     const li = skin ? skin.levels.findIndex(l => lc(l.uuid) === lc(x.SkinLevelID)) : 0

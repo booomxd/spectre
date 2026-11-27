@@ -1,4 +1,4 @@
-import { For, createEffect, createSignal, on, onCleanup, onMount } from 'solid-js'
+import { For, createEffect, createSignal, onCleanup, onMount, untrack } from 'solid-js'
 import { st } from '../../lib/st.js'
 // SVG tactical board: map image, drawing tools, agent/ability tokens, zoom + pan, drop target
 import { FiArrowUpRight, FiEdit3, FiGrid, FiMapPin, FiMaximize, FiMinus, FiMousePointer, FiPlus, FiRotateCw, FiSquare, FiType } from 'solid-icons/fi'
@@ -23,10 +23,18 @@ const TOOLS = [
 const CURSOR = { select: 'default', pen: 'crosshair', line: 'crosshair', arrow: 'crosshair', rect: 'crosshair', text: 'text', eraser: 'cell' }
 const isTyping = (t) => t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)
 // React-style effect: no deps runs once on mount, deps re-run it; a returned function is its cleanup
+// Like React, it re-runs only when a dependency value actually changes (===), so a store update that
+// re-notifies an unchanged value (e.g. the map uuid during an edit) does not reset view or selection.
 const useFx = (fn, deps) => {
-  const run = () => { const c = fn(); if (typeof c === 'function') onCleanup(c) }
-  if (deps) createEffect(on(deps, run))
-  else onMount(run)
+  if (!deps) { onMount(() => { const c = fn(); if (typeof c === 'function') onCleanup(c) }); return }
+  let prev = null, cleanup = null
+  createEffect(() => {
+    const d = deps()
+    if (prev && d.length === prev.length && d.every((v, i) => v === prev[i])) return
+    prev = d
+    untrack(() => { cleanup?.(); const c = fn(); cleanup = typeof c === 'function' ? c : null })
+  })
+  onCleanup(() => cleanup?.())
 }
 const baseFit = (el) => Math.min(el?.clientWidth || 1, el?.clientHeight || 1) / SIZE * 0.94
 

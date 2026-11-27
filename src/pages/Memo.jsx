@@ -125,7 +125,8 @@ export default function Memo(props) {
   const [renamingS, setRenaming] = createSignal(false)
   const timer = { current: null }
   const [targetS, setTarget] = createSignal(null)
-  createEffect(on(() => [props.params], () => { if (props.params?.puuid) setTarget({ puuid: props.params.puuid, name: props.params.name || '' }) }))
+  const navParams = createMemo(() => props.params)
+  createEffect(on(navParams, p => { if (p?.puuid) setTarget({ puuid: p.puuid, name: p.name || '' }) }))
   const memos = useInvoke('memo:list', [], { skip: () => (!targetS()), deps: () => ([targetS()]) })
   createEffect(on(() => [nb.data, docS()], () => {
     if (nb.data && !docS()) { setDoc(nb.data); setCur(nb.data.sections[0]?.id) }

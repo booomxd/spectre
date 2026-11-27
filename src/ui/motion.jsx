@@ -1,5 +1,5 @@
 // motion helpers. Pages and lists appear instantly; only feedback motion (pills, presses, dialogs) animates, in CSS.
-import { createSignal, onCleanup, splitProps } from 'solid-js'
+import { Show, createSignal, onCleanup, splitProps } from 'solid-js'
 import { Dynamic } from 'solid-js/web'
 import { getReduceMotion, onReduceMotion, prefersReducedMotion } from '../lib/theme'
 
@@ -61,8 +61,11 @@ export const Item = Plain
 export const FadeIn = Plain
 
 // switches between keyed sub-views
+// Remounts its content when `id` changes (the React version keyed it by id), so per-view state
+// such as a half-typed form never carries over to the next section or tab.
 export function Swap(props) {
-  return <div class={props.class}>{props.children}</div>
+  const k = () => `#${props.id ?? ''}`
+  return <Show when={k()} keyed>{() => <div class={props.class}>{props.children}</div>}</Show>
 }
 
 export { cx }

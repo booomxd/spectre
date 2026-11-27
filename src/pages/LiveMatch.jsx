@@ -228,8 +228,9 @@ function LiveBody(props) {
             <Loadout active />
           </div>
         </Show>
-        <Show when={shown()?.kind === 'scout' && shown()} keyed>{sh => <ScoutPanel player={sh.player} onLoaded={rescout} onClose={closePanel} />}</Show>
-        <Show when={shown()?.kind === 'skins' && shown()} keyed>{sh => <SkinsPanel player={sh.player} onClose={closePanel} />}</Show>
+        {/* keyed by the player's ref, so a panel never shows one player's data under another's header */}
+        <Show when={shown()?.kind === 'scout' && (shown().player?.ref || shown().player)} keyed>{() => <ScoutPanel player={shown().player} onLoaded={rescout} onClose={closePanel} />}</Show>
+        <Show when={shown()?.kind === 'skins' && (shown().player?.ref || shown().player)} keyed>{() => <SkinsPanel player={shown().player} onClose={closePanel} />}</Show>
       </Drawer>
     </Page>
   )

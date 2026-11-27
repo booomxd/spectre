@@ -206,7 +206,14 @@ export default function HistoryPanel(props) {
     }
   }))
 
-  const matches = createMemo(() => listS().data?.matches || [])
+  // "Load more" refetches from the top, so reuse the match objects already shown (finished matches never change):
+  // <For> then keeps their rows, share state and focus, and only appends the new ones
+  const seen = new Map()
+  const matches = createMemo(() => (listS().data?.matches || []).map(m => {
+    const k = `${id()}|${m.matchId}`
+    if (!seen.has(k)) seen.set(k, m)
+    return seen.get(k)
+  }))
   const loaded = createMemo(() => matches().map(m => sums[`${id()}|${m.matchId}`]).filter(Boolean))
   const allTags = createMemo(() => [...new Set(memos.memos.flatMap(m => m.tags))])
   const goSearch = p => { setOpen(null); openPlayer(p) }

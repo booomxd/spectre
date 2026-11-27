@@ -1,4 +1,4 @@
-import { For, createEffect, createSignal, on } from 'solid-js'
+import { For, createEffect, createMemo, createSignal, on } from 'solid-js'
 import { FiInfo, FiLink, FiMonitor, FiSliders, FiDroplet } from 'solid-icons/fi'
 import { Page, ErrorState, SegmentedTabs, Skeleton, Swap } from '../ui'
 import { useSettings } from './settings/useSettings'
@@ -17,8 +17,9 @@ export const SETTINGS_TABS = [
 export default function Settings(props) {
   const __settings = useSettings()
   const [tabS, setTab] = createSignal('general')
-  createEffect(on(() => [props.params], () => {
-    if (props.params?.tab && SETTINGS_TABS.some(t => t.value === props.params.tab)) setTab(props.params.tab)
+  const navParams = createMemo(() => props.params)
+  createEffect(on(navParams, p => {
+    if (p?.tab && SETTINGS_TABS.some(t => t.value === p.tab)) setTab(p.tab)
   }))
   
     const body = () => {

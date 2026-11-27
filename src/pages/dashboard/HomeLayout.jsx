@@ -273,7 +273,7 @@ export function FriendsPanel(props) {
                           {Array.isArray(s().score) && s().score[0] != null && <span class='shrink-0 h-[18px] px-1.5 rounded-md glass-inset text-[10.5px] font-bold text-text tabular-nums inline-flex items-center'>{s().score[0]} - {s().score[1]}</span>}
                         </span>
                       </span>
-                      <button type='button' aria-label={`Message ${f.gameName}`} title='Message' onClick={go('friends', { puuid: f.puuid })}
+                      <button type='button' aria-label={`Message ${f.gameName}`} title='Message' onClick={() => go('friends', { puuid: f.puuid })()}
                         class='w-9 h-9 rounded-xl glass-inset grid place-items-center text-muted hover:text-accent hover:border-accent/40 transition-colors shrink-0'><FiMessageSquare size={14} /></button>
                     </div>
                   )
@@ -284,7 +284,7 @@ export function FriendsPanel(props) {
                   <div class='eyebrow !text-[10px] mt-5 mb-2' translate='yes'>Offline <span class='text-muted/70'>· {offline().length}</span></div>
                   <div class='space-y-0.5'>
                     <For each={offline().slice(0, OFFLINE_CAP)}>{f => (
-                      <button type='button' onClick={go('friends', { puuid: f.puuid })} title={`Open ${f.gameName}`}
+                      <button type='button' onClick={() => go('friends', { puuid: f.puuid })()} title={`Open ${f.gameName}`}
                         class='w-full flex items-center gap-3 rounded-2xl px-2 py-1.5 text-left hover:bg-surface-2 transition-colors group/off'>
                         <span class='w-8 h-8 rounded-full glass-inset grid place-items-center text-[12px] font-bold text-muted/80 shrink-0'>{(f.gameName || '?')[0].toUpperCase()}</span>
                         <span class='min-w-0 flex-1 truncate text-[13px] font-medium text-muted group-hover/off:text-text transition-colors'>
