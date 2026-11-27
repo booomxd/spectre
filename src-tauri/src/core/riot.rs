@@ -236,7 +236,10 @@ impl Riot {
         // pages that open together ask for the same list at once: download it once
         let cell = self.api_inflight.lock().await.entry(key.clone()).or_default().clone();
         let got = cell.get_or_try_init(|| async {
-            let v = send(self.http.get(format!("https://valorant-api.com/v1/{key}")).timeout(Duration::from_secs(20))).await?["data"].take();
+            let mut body = send(self.http.get(format!("https://valorant-api.com/v1/{key}")).timeout(Duration::from_secs(20))).await?;
+            // a non-JSON 200 (captive portal, proxy page) is an error, never a cached Null
+            let v = body.as_object_mut().and_then(|o| o.remove("data"))
+                .ok_or_else(|| msg("valorant-api.com returned an unexpected response"))?;
             Ok::<_, Error>(Arc::new(v))
         }).await;
         if let Ok(v) = &got { self.api_cache.lock().unwrap().insert(key.clone(), Arc::clone(v)); }
