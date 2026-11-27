@@ -5,7 +5,9 @@ use once_cell::sync::Lazy;
 use regex::Regex;
 use reqwest::{Client, Method};
 use serde_json::{json, Map, Value};
+use sha2::{Digest, Sha256};
 use std::collections::HashMap;
+use std::io::BufRead;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex, RwLock};
 use std::time::Duration;
@@ -40,6 +42,8 @@ pub struct Riot {
     /// valorant-api content, shared (not copied) with every caller; requests for the same path share one download
     api_cache: Mutex<HashMap<String, Arc<Value>>>,
     api_inflight: tokio::sync::Mutex<HashMap<String, Arc<tokio::sync::OnceCell<Arc<Value>>>>>,
+    /// valorant-api.com's content version, checked once per session (None when it can't be reached)
+    api_version: tokio::sync::OnceCell<Option<String>>,
     store_dir: RwLock<Option<PathBuf>>,
 }
 
@@ -48,10 +52,26 @@ pub fn now_ms() -> i64 { chrono::Utc::now().timestamp_millis() }
 
 fn local_app_data() -> PathBuf { PathBuf::from(std::env::var("LOCALAPPDATA").unwrap_or_default()) }
 
-fn read_log() -> String {
-    std::fs::read(local_app_data().join("VALORANT").join("Saved").join("Logs").join("ShooterGame.log"))
-        .map(|b| String::from_utf8_lossy(&b).into_owned())
-        .unwrap_or_default()
+/// What connect() needs from the game log: the client version and the pd / glz hosts
+#[derive(Default)]
+struct LogInfo { version: Option<String>, pd: Option<String>, glz: Option<String> }
+
+/// Scans ShooterGame.log line by line and stops as soon as all three values are found (they appear early in a
+/// session), instead of loading the whole log, which grows to many MB over a long session.
+fn read_log() -> LogInfo {
+    let mut info = LogInfo::default();
+    let Ok(file) = std::fs::File::open(local_app_data().join("VALORANT").join("Saved").join("Logs").join("ShooterGame.log")) else { return info };
+    let mut reader = std::io::BufReader::with_capacity(64 * 1024, file);
+    let mut buf = Vec::new();
+    while info.version.is_none() || info.pd.is_none() || info.glz.is_none() {
+        buf.clear();
+        match reader.read_until(b'\n', &mut buf) { Ok(0) | Err(_) => break, Ok(_) => {} }
+        let line = String::from_utf8_lossy(&buf);
+        if info.version.is_none() && line.contains("CI server version") { info.version = cap(&RE_VERSION, &line); }
+        if info.pd.is_none() && line.contains("https://pd.") { info.pd = cap(&RE_PD, &line); }
+        if info.glz.is_none() && line.contains("https://glz-") { info.glz = cap(&RE_GLZ, &line); }
+    }
+    info
 }
 
 fn cap(re: &Lazy<Regex>, text: &str) -> Option<String> { re.captures(text).and_then(|c| c.get(1)).map(|m| m.as_str().to_string()) }
@@ -79,6 +99,7 @@ impl Riot {
             refresh: tokio::sync::Mutex::new(()),
             api_cache: Mutex::new(HashMap::new()),
             api_inflight: tokio::sync::Mutex::new(HashMap::new()),
+            api_version: tokio::sync::OnceCell::new(),
             store_dir: RwLock::new(None),
         }
     }
@@ -141,8 +162,8 @@ impl Riot {
         self.refresh_tokens().await?;
 
         // valorant-api.com lags behind live patches
-        let log = read_log();
-        let mut client_version = cap(&RE_VERSION, &log);
+        let log = tokio::task::spawn_blocking(read_log).await.unwrap_or_default();
+        let mut client_version = log.version.clone();
         if client_version.is_none() {
             if let Ok(v) = send(self.http.get("https://valorant-api.com/v1/version")).await {
                 client_version = v["data"]["riotClientVersion"].as_str().map(str::to_string);
@@ -159,12 +180,12 @@ impl Riot {
         }
         // without the game running there is no -ares-deployment arg
         let session = self.local("get", "chat/v1/session", None).await?;
-        if shard.is_none() { shard = cap(&RE_PD, &log); }
+        if shard.is_none() { shard = log.pd.clone(); }
         let chat_region: String = session["region"].as_str().unwrap_or("").chars().filter(|c| !c.is_ascii_digit()).collect();
         if shard.is_none() {
             shard = Some(match chat_region.as_str() { "jp" => "ap".into(), "br" | "latam" => "na".into(), r => r.to_string() });
         }
-        let region = cap(&RE_GLZ, &log).or_else(|| if chat_region == "latam" || chat_region == "br" { Some(chat_region.clone()) } else { shard.clone() });
+        let region = log.glz.clone().or_else(|| if chat_region == "latam" || chat_region == "br" { Some(chat_region.clone()) } else { shard.clone() });
 
         {
             let mut s = self.state.write().unwrap();
@@ -235,15 +256,53 @@ impl Riot {
         if let Some(v) = self.api_cache.lock().unwrap().get(&key) { return Ok(v.clone()); }
         // pages that open together ask for the same list at once: download it once
         let cell = self.api_inflight.lock().await.entry(key.clone()).or_default().clone();
-        let got = cell.get_or_try_init(|| async {
-            let v = send(self.http.get(format!("https://valorant-api.com/v1/{key}")).timeout(Duration::from_secs(20))).await?["data"].take();
-            Ok::<_, Error>(Arc::new(v))
-        }).await;
+        let got = cell.get_or_try_init(|| self.load_val_api(&key)).await;
         if let Ok(v) = &got { self.api_cache.lock().unwrap().insert(key.clone(), Arc::clone(v)); }
         self.api_inflight.lock().await.remove(&key);
         Ok(got?.clone())
     }
-    pub fn clear_api_cache(&self) { self.api_cache.lock().unwrap().clear(); }
+
+    /// The disk copy (%LOCALAPPDATA%\Spectre\cache\valorant-api) is used while valorant-api.com's content version is
+    /// unchanged, or can't be checked (offline), so most launches download nothing; otherwise the list is downloaded
+    /// and the disk copy replaced.
+    async fn load_val_api(&self, key: &str) -> Res<Arc<Value>> {
+        let version = self.api_version().await;
+        let file = api_cache_dir().join(format!("{}.json", hex::encode(Sha256::digest(key.as_bytes()))));
+        let read = file.clone();
+        let disk = tokio::task::spawn_blocking(move || std::fs::read(read).ok().and_then(|b| serde_json::from_slice::<Value>(&b).ok()))
+            .await.ok().flatten();
+        if let Some(mut d) = disk {
+            let fresh = match &version { Some(v) => d["version"].as_str() == Some(v.as_str()), None => true };
+            if fresh && d.get("data").is_some() { return Ok(Arc::new(d["data"].take())); }
+        }
+        let v = send(self.http.get(format!("https://valorant-api.com/v1/{key}")).timeout(Duration::from_secs(20))).await?["data"].take();
+        let v = Arc::new(v);
+        if let Some(ver) = version {
+            let data = Arc::clone(&v);
+            tokio::task::spawn_blocking(move || {
+                let Ok(bytes) = serde_json::to_vec(&json!({ "version": ver, "data": &*data })) else { return };
+                if let Some(dir) = file.parent() { let _ = std::fs::create_dir_all(dir); }
+                let tmp = file.with_extension("tmp");
+                if std::fs::write(&tmp, bytes).is_ok() { let _ = std::fs::rename(&tmp, &file); }
+            });
+        }
+        Ok(v)
+    }
+
+    /// valorant-api.com's content version: its version and build date change with every content update
+    async fn api_version(&self) -> Option<String> {
+        self.api_version.get_or_init(|| async {
+            let v = send(self.http.get("https://valorant-api.com/v1/version").timeout(Duration::from_secs(5))).await.ok()?;
+            let d = &v["data"];
+            Some(format!("{}|{}", d["version"].as_str()?, d["buildDate"].as_str().unwrap_or_default()))
+        }).await.clone()
+    }
+
+    /// drops the in-memory and on-disk valorant-api.com copies
+    pub fn clear_api_cache(&self) {
+        self.api_cache.lock().unwrap().clear();
+        let _ = std::fs::remove_dir_all(api_cache_dir());
+    }
 
     /// puuid -> { gameName, tagLine }
     pub async fn names(&self, puuids: &[String]) -> Res<Map<String, Value>> {
@@ -274,10 +333,17 @@ impl Riot {
             .ok().and_then(|t| serde_json::from_str(&t).ok()).unwrap_or(fallback)
     }
     pub fn write_store(&self, name: &str, data: &Value) -> Res<()> {
-        std::fs::write(self.store_dir().join(format!("{name}.json")), serde_json::to_string_pretty(data)?)?;
+        // compact JSON, written to a temp file and renamed over the old one so a crash mid-write can't corrupt the store
+        let file = self.store_dir().join(format!("{name}.json"));
+        let tmp = file.with_extension("json.tmp");
+        std::fs::write(&tmp, serde_json::to_vec(data)?)?;
+        std::fs::rename(&tmp, &file)?;
         Ok(())
     }
 }
 
 /// %APPDATA%\Spectre: the same folder the Electron app used
 pub fn data_dir() -> PathBuf { PathBuf::from(std::env::var("APPDATA").unwrap_or_default()).join("Spectre") }
+
+/// downloaded game content: safe to delete, so it lives under %LOCALAPPDATA% rather than the roaming data folder
+fn api_cache_dir() -> PathBuf { local_app_data().join("Spectre").join("cache").join("valorant-api") }
