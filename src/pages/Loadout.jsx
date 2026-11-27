@@ -138,7 +138,7 @@ function LoadoutView(props) {
       </Item>
     )
   }
-    const cats = () => (CATEGORIES.map(cat => ({ ...cat, list: guns().map(g => ({ g, w: weaponById()[lc(g.ID)] })).filter(x => x.w && catKey(x.w) === cat.key) })).filter(c => c.list.length))
+    const cats = createMemo(() => (CATEGORIES.map(cat => ({ ...cat, list: guns().map(g => ({ g, w: weaponById()[lc(g.ID)] })).filter(x => x.w && catKey(x.w) === cat.key) })).filter(c => c.list.length)))
     const shownCats = () => (filterS() === 'all' ? cats() : cats().filter(c => c.key === filterS()))
     return (<Page title='Loadout' subtitle='Your equipped arsenal. Pick any weapon to change its skin, variant and buddy.'
       actions={pendingCount() > 0 && <>
@@ -228,7 +228,7 @@ function LoadoutView(props) {
                   <div>
                     {filterS() === 'all' && <SectionTitle right={<span class='text-[11px] text-muted tabular-nums'>{cat.list.length}</span>}>{cat.label}</SectionTitle>}
                     <Stagger class='grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4'>
-                      {cat.list.map(({ g, w }, i) => tile(g, w, i))}
+                      <For each={cat.list}>{(x, i) => tile(x.g, x.w, i())}</For>
                     </Stagger>
                   </div>
                 )}</For>

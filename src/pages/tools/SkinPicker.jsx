@@ -1,4 +1,4 @@
-import { For, createSignal, createMemo } from 'solid-js'
+import { For, Show, createSignal, createMemo } from 'solid-js'
 import { st } from '../../lib/st.js'
 import { FiCheck, FiSearch } from 'solid-icons/fi'
 import { Badge, Empty, Input, Label, cx } from '../../ui'
@@ -53,17 +53,17 @@ export default function SkinPicker(props) {
               <div>
                 <Label>Variant</Label>
                 <div class='flex flex-wrap gap-1.5'>
-                  {skin().chromas.map((c, i) => {
-                    const ok = chromaOwned(skin(), c, props.owned)
-                    if (!ok) return null
-                    const on = lc(c.uuid) === lc(props.value.chromaId)
+                  <For each={skin().chromas}>{(c, i) => {
+                    const on = () => lc(c.uuid) === lc(props.value.chromaId)
                     return (
+                      <Show when={chromaOwned(skin(), c, props.owned)}>
                       <button onClick={() => props.onChange({ ...props.value, chromaId: c.uuid, levelId: best(skin()).uuid })} title={c.displayName}
-                        class={cx('w-9 h-9 rounded-xl border flex items-center justify-center transition-[transform,opacity,background-color,border-color,color] duration-200 hover:-translate-y-0.5', on ? 'accent-soft border-transparent' : 'glass')}>
-                        {(c.swatch || c.fullRender) ? <img decoding='async' src={c.swatch || c.fullRender} class='w-6 h-6 object-contain' /> : <span class='text-[10px] text-muted'>{i + 1}</span>}
+                        class={cx('w-9 h-9 rounded-xl border flex items-center justify-center transition-[transform,opacity,background-color,border-color,color] duration-200 hover:-translate-y-0.5', on() ? 'accent-soft border-transparent' : 'glass')}>
+                        {(c.swatch || c.fullRender) ? <img decoding='async' src={c.swatch || c.fullRender} class='w-6 h-6 object-contain' /> : <span class='text-[10px] text-muted'>{i() + 1}</span>}
                       </button>
+                      </Show>
                     )
-                  })}
+                  }}</For>
                 </div>
               </div>
             )}

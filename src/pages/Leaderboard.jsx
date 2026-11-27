@@ -140,8 +140,7 @@ function Content() {
           <span>Rank</span><span>Player</span><span>Tier</span><span>RR</span><span>Wins</span>
         </div>
         <div class='stagger'>
-          {filtered().length ? filtered().map((p, i) => <Entry p={p} cards={cardsA()} me={riotA().puuid} index={Math.min(i, 12)} />)
-            : <Empty icon={FiAward} title='No players match' hint={tabS() === 'known' ? 'No friends or party members in the loaded range. Load more to widen it.' : 'Search only covers the players loaded so far. Load more to widen it.'} />}
+          <Show when={filtered().length} fallback={<Empty icon={FiAward} title='No players match' hint={tabS() === 'known' ? 'No friends or party members in the loaded range. Load more to widen it.' : 'Search only covers the players loaded so far. Load more to widen it.'} />}><For each={filtered()}>{(p, i) => <Entry p={p} cards={cardsA()} me={riotA().puuid} index={Math.min(i(), 12)} />}</For></Show>
         </div>
         {you() && (
           <div class='sticky bottom-0 z-10'>
