@@ -46,6 +46,9 @@ pub struct Riot {
 /// milliseconds since the epoch, like JS `Date.now()`
 pub fn now_ms() -> i64 { chrono::Utc::now().timestamp_millis() }
 
+/// wakes the connection loop early when the connection is marked lost
+pub static RECONNECT: Lazy<tokio::sync::Notify> = Lazy::new(tokio::sync::Notify::new);
+
 fn local_app_data() -> PathBuf { PathBuf::from(std::env::var("LOCALAPPDATA").unwrap_or_default()) }
 
 fn read_log() -> String {
@@ -198,8 +201,8 @@ impl Riot {
         Ok(self.status())
     }
 
-    /// marks the connection lost
-    pub fn disconnect(&self) { self.state.write().unwrap().connected = false; }
+    /// marks the connection lost, and wakes the connection loop so it reconnects now
+    pub fn disconnect(&self) { self.state.write().unwrap().connected = false; RECONNECT.notify_one(); }
 
     pub fn status(&self) -> Value {
         let s = self.state.read().unwrap();

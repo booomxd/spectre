@@ -90,7 +90,9 @@ fn connect_loop(ctx: Ctx) {
                 let status = match ctx.riot.connect().await { Ok(s) => s, Err(_) => ctx.riot.status() };
                 ctx.emit("riot:status", status);
             }
-            tokio::time::sleep(Duration::from_secs(if ctx.riot.connected() { 60 } else { 5 })).await;
+            let wait = Duration::from_secs(if ctx.riot.connected() { 60 } else { 5 });
+            // a lost connection (the Riot Client restarted) wakes this loop early
+            tokio::select! { _ = tokio::time::sleep(wait) => {}, _ = core::riot::RECONNECT.notified() => {} }
         }
     });
 }

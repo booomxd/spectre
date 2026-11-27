@@ -80,7 +80,10 @@ export function useInvoke(channel, args = [], opts = {}) {
       setState({ error: e.message, loading: false })
     } finally {
       // a push that arrived while this request ran: refresh once more now that it has landed
-      if (pushed && !inflight) reload(true, undefined, true)
+      if (pushed && !inflight) {
+        pushed = false
+        if (!val(opts.skip) && val(opts.poll)) reload(true, undefined, true)
+      }
     }
   }
   // fetch when the request (or skip) changes
