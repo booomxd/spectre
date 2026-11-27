@@ -39,10 +39,10 @@ fn set_live(ctx: &Ctx, live: bool) {
 }
 
 /// the Riot Client's current port from its lockfile: the password is only sent while that client is still the one listening
-fn lockfile_port() -> Option<String> {
+async fn lockfile_port() -> Option<String> {
     let path = std::path::PathBuf::from(std::env::var("LOCALAPPDATA").unwrap_or_default())
         .join("Riot Games").join("Riot Client").join("Config").join("lockfile");
-    std::fs::read_to_string(path).ok()?.split(':').nth(2).map(str::to_string)
+    tokio::fs::read_to_string(path).await.ok()?.split(':').nth(2).map(str::to_string)
 }
 
 pub fn register(reg: &mut Registry, ctx: &Ctx) {
@@ -66,16 +66,25 @@ pub fn register(reg: &mut Registry, ctx: &Ctx) {
 async fn listen(ctx: &Ctx) -> Res<()> {
     let Some((port, password)) = ctx.riot.local_auth() else { return Err(msg("Not connected to the Riot Client")) };
     // a stale port (the Riot Client exited) could now belong to another program: don't connect to it
-    if lockfile_port().as_deref() != Some(port.as_str()) { return Err(msg("The Riot Client isn't running")); }
+    if lockfile_port().await.as_deref() != Some(port.as_str()) {
+        // the Riot Client restarted on a new port, or exited: reload its lockfile so the next try uses the new one
+        let status = match ctx.riot.connect().await { Ok(s) => s, Err(_) => { ctx.riot.disconnect(); ctx.riot.status() } };
+        ctx.emit("riot:status", status);
+        return Err(msg("The Riot Client restarted"));
+    }
     let port: u16 = port.parse().map_err(|_| msg("Bad Riot Client port"))?;
-    let tcp = tokio::net::TcpStream::connect(("127.0.0.1", port)).await?;
-    let tls = tokio_rustls::TlsConnector::from(Arc::new(local_tls()?))
-        .connect(pki_types::ServerName::IpAddress(std::net::Ipv4Addr::LOCALHOST.into()), tcp).await?;
     let mut req = format!("wss://127.0.0.1:{port}/").into_client_request().map_err(|e| msg(e.to_string()))?;
     let auth = base64::engine::general_purpose::STANDARD.encode(format!("riot:{password}"));
     req.headers_mut().insert("Authorization", format!("Basic {auth}").parse().map_err(|_| msg("Bad Riot Client password"))?);
-    let (mut ws, _) = tokio::time::timeout(Duration::from_secs(8), tokio_tungstenite::client_async(req, tls)).await
-        .map_err(|_| msg("The Riot Client didn't answer"))?.map_err(|e| msg(e.to_string()))?;
+    // one deadline for TCP, TLS and the WebSocket handshake, so a peer that stalls can't hold up the retries
+    let setup = async {
+        let tcp = tokio::net::TcpStream::connect(("127.0.0.1", port)).await?;
+        let tls = tokio_rustls::TlsConnector::from(Arc::new(local_tls()?))
+            .connect(pki_types::ServerName::IpAddress(std::net::Ipv4Addr::LOCALHOST.into()), tcp).await?;
+        tokio_tungstenite::client_async(req, tls).await.map_err(|e| msg(e.to_string()))
+    };
+    let (mut ws, _) = tokio::time::timeout(Duration::from_secs(8), setup).await
+        .map_err(|_| msg("The Riot Client didn't answer"))??;
     for (event, _) in EVENTS {
         ws.send(Message::Text(json!([5, event]).to_string().into())).await.map_err(|e| msg(e.to_string()))?;
     }
