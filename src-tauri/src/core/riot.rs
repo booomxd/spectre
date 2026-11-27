@@ -91,6 +91,12 @@ impl Riot {
     /// HTTP client for anything that isn't the Riot Client's local API
     pub fn http(&self) -> &Client { &self.http }
 
+    /// port and password of the Riot Client's local API (from its lockfile), if known
+    pub fn local_auth(&self) -> Option<(String, String)> {
+        let s = self.state.read().unwrap();
+        if s.port.is_empty() { None } else { Some((s.port.clone(), s.password.clone())) }
+    }
+
     /// the Riot Client's local API
     pub async fn local(&self, m: &str, path: &str, body: Option<Value>) -> Res<Value> {
         let (port, password) = { let s = self.state.read().unwrap(); (s.port.clone(), s.password.clone()) };

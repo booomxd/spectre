@@ -31,6 +31,22 @@ export function useEvent(channel, fn) {
   onCleanup(listenEvent(channel, p => fn(p)))
 }
 
+// Riot Client push: while the backend is listening to the Riot Client's events, these channels refresh the moment
+// their data changes, and their polling only runs as a slow safety net
+const PUSHED = {
+  'social:friends': ['friends', 'presences'],
+  'social:party': ['party'],
+  'social:requests': ['requests'],
+  'chat:conversations': ['chat'],
+  'chat:messages': ['chat'],
+}
+const SAFETY_POLL = 30000
+const [pushLive, setPushLive] = createSignal(false)
+if (!DEMO && typeof window !== 'undefined' && window.__TAURI_INTERNALS__) {
+  listenEvent('riot:push', p => setPushLive(!!p?.live))
+  invoke('push:status').then(s => setPushLive(!!s?.live)).catch(() => {})
+}
+
 const val = v => (typeof v === 'function' ? v() : v)
 const json = v => { try { return JSON.stringify(v) } catch { return null } }
 
@@ -67,8 +83,20 @@ export function useInvoke(channel, args = [], opts = {}) {
   createEffect(on([key, () => val(opts.skip)], ([k, skip]) => {
     if (!skip) reload(k !== null && loadedFor === k, k)
   }))
+  const kinds = PUSHED[channel]
+  // pushed channels: refresh as soon as the Riot Client says their data changed (only while this hook is polling,
+  // so pages in the background stay quiet)
+  if (kinds) useEvent('riot:push', p => {
+    if (!p?.kinds?.some(k => kinds.includes(k))) return
+    if (val(opts.skip) || !val(opts.poll)) return
+    reload(true)
+  })
+  const pollEvery = () => {
+    const poll = val(opts.poll)
+    return poll && kinds && pushLive() ? Math.max(poll, SAFETY_POLL) : poll
+  }
   // polling: starts/stops with `poll`; resuming (e.g. the page becomes active again) refreshes quietly, pausing never fetches
-  createEffect(on([() => val(opts.poll), () => val(opts.skip)], ([poll, skip], prev) => {
+  createEffect(on([pollEvery, () => val(opts.skip)], ([poll, skip], prev) => {
     if (skip || !poll) return
     if (prev && !prev[0] && !prev[1]) reload(true, undefined, true)
     // no refreshing while the window is hidden

@@ -112,7 +112,7 @@ const SHARED: &[&str] = &[
     "store:wallet", "loadout:get", "discord:status", "riot:status",
 ];
 
-mod shared {
+pub(crate) mod shared {
     use futures::future::{BoxFuture, FutureExt, Shared};
     use once_cell::sync::Lazy;
     use serde_json::Value;
@@ -133,6 +133,7 @@ mod shared {
     }
     static STATE: Lazy<Mutex<State>> = Lazy::new(|| Mutex::new(State::default()));
 
+    /// drops merged answers so the next poll asks Riot again (also used when the Riot Client pushes a change)
     pub fn forget() {
         let mut s = STATE.lock().unwrap();
         s.running.clear();
