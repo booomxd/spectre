@@ -283,6 +283,12 @@ html[data-reduce-motion] .orb { animation: none !important; }
 .page-in { animation: page-in 0.14s ease-out both; }
 @media (prefers-reduced-motion: reduce) { .page-in { animation: none; } }
 html[data-reduce-motion] .page-in { animation: none; }
+/* page switches (App.jsx > withPageTransition): the new page fades in over a still snapshot of the old one.
+   The old snapshot stays opaque underneath, so there is no dip to the window color halfway through. */
+::view-transition { pointer-events: none; }
+::view-transition-old(root) { animation: none; mix-blend-mode: normal; }
+::view-transition-new(root) { animation: page-in 0.16s var(--ease-out) both; mix-blend-mode: normal; }
+@media (prefers-reduced-motion: reduce) { ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; } }
 @keyframes rise { from { opacity: 0; transform: translateY(8px) scale(0.985); } to { opacity: 1; transform: none; } }
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes shimmer { from { transform: translateX(-100%); } to { transform: translateX(100%); } }

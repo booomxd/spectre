@@ -4,7 +4,7 @@ import { FiDownload, FiMinus, FiSearch, FiSquare, FiX, FiDroplet, FiFeather } fr
 import { PAGES, SECTIONS, UTILITY, navigate, sectionOf } from './nav'
 import { invoke, isOverlayWindow, openExternal, useEvent } from './lib/ipc'
 import { RiotProvider, useRiot } from './lib/riot'
-import { THEMES, getReduceMotion, setReduceMotion, setTheme } from './lib/theme'
+import { THEMES, getReduceMotion, prefersReducedMotion, setReduceMotion, setTheme } from './lib/theme'
 import logo from './assets/spectre-logo.svg'
 import { Button, CommandPalette, Modal, MotionProvider, PageActiveContext, PageContext, PageTransition, Pill, SegmentedTabs, ToastHost, cx, toast } from './ui'
 import { SETTINGS_TABS } from './pages/Settings'
@@ -136,6 +136,15 @@ function resolve(page, params) {
 const BUBBLES = [[5, 8, 24, 0, 3], [9, 22, 31, -9, -4], [3.5, 37, 21, -4, 5], [7, 55, 28, -15, -3], [4.5, 68, 23, -7, 4], [11, 80, 36, -20, -5], [3, 91, 19, -2, 3]]
   .map(([w, l, d, dl, sw]) => ({ width: w + 'vmax', height: w + 'vmax', left: l + '%', '--d': d + 's', '--dl': dl + 's', '--sway': sw + 'vmax' }))
 
+// Page switches cross-fade with the View Transitions API: the browser snapshots the old frame and fades the new one
+// in over it on the compositor, so the switch costs no extra layout or paint. Only the root is captured: naming a
+// smaller element would make it a backdrop root and its glass cards would lose their blur mid-fade.
+// Falls back to an instant switch where the API is missing, with reduced motion on, or while the window is hidden.
+function withPageTransition(update) {
+  if (typeof document.startViewTransition !== 'function' || document.hidden || prefersReducedMotion()) return update()
+  document.startViewTransition(update)
+}
+
 function Shell() {
   const [page, setPage] = createSignal('dashboard')
   const [params, setParams] = createSignal({})
@@ -165,10 +174,11 @@ function Shell() {
   const section = createMemo(() => sectionOf(page()))
   createEffect(() => { const s = section(); if (s) lastInSection[s.id] = page() })
 
-  const go = (id, p) => {
+  const go = (id, p, instant) => {
     const [to, prm] = resolve(id, p)
-    setParams(x => ({ ...x, [to]: prm }))
-    setPage(to)
+    const update = () => { setParams(x => ({ ...x, [to]: prm })); setPage(to) }
+    if (instant || to === page()) update()
+    else withPageTransition(update)
   }
 
   invoke('settings:get').then(s => {
@@ -176,7 +186,7 @@ function Shell() {
     // "Where I left off": the page that was open when Spectre last closed
     let to = s.startPage
     if (to === 'last') { try { to = localStorage.getItem('spectre:last-page') || 'dashboard' } catch { to = 'dashboard' } }
-    go(to)
+    go(to, undefined, true)
   }).catch(() => { })
   createEffect(() => { const p = page(); try { localStorage.setItem('spectre:last-page', p) } catch { /* storage unavailable */ } })
 
