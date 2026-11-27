@@ -1,4 +1,5 @@
-// motion helpers. Pages and lists appear instantly; only feedback motion (pills, presses, dialogs) animates, in CSS.
+// motion helpers. Lists appear instantly; page switches cross-fade through the View Transitions API (App.jsx),
+// and feedback motion (pills, presses, dialogs) animates in CSS.
 import { Show, createSignal, onCleanup, splitProps } from 'solid-js'
 import { Dynamic } from 'solid-js/web'
 import { getReduceMotion, onReduceMotion, prefersReducedMotion } from '../lib/theme'
