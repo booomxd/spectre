@@ -21,13 +21,28 @@ const EVENTS: &[(&str, &str)] = &[
     ("OnJsonApiEvent_chat_v6_messages", "chat"),
     ("OnJsonApiEvent_chat_v6_conversations", "chat"),
 ];
-/// a burst of events (a friend's presence updates several times in a row) becomes one refresh
+/// a burst of events (a friend's presence updates several times in a row) becomes one refresh, at most this long after its first event
 const SETTLE: Duration = Duration::from_millis(250);
 
 static LIVE: AtomicBool = AtomicBool::new(false);
 
+/// every kind the pages listen for
+const ALL_KINDS: &[&str] = &["presences", "friends", "requests", "chat", "party"];
+
 fn set_live(ctx: &Ctx, live: bool) {
-    if LIVE.swap(live, Ordering::SeqCst) != live { ctx.emit("riot:push", json!({ "live": live, "kinds": [] })); }
+    if LIVE.swap(live, Ordering::SeqCst) != live {
+        // on going live, refresh everything once: changes from before the subscription (or a reconnect gap) weren't pushed
+        if live { shared::forget(); }
+        let kinds: &[&str] = if live { ALL_KINDS } else { &[] };
+        ctx.emit("riot:push", json!({ "live": live, "kinds": kinds }));
+    }
+}
+
+/// the Riot Client's current port from its lockfile: the password is only sent while that client is still the one listening
+fn lockfile_port() -> Option<String> {
+    let path = std::path::PathBuf::from(std::env::var("LOCALAPPDATA").unwrap_or_default())
+        .join("Riot Games").join("Riot Client").join("Config").join("lockfile");
+    std::fs::read_to_string(path).ok()?.split(':').nth(2).map(str::to_string)
 }
 
 pub fn register(reg: &mut Registry, ctx: &Ctx) {
@@ -50,6 +65,8 @@ pub fn register(reg: &mut Registry, ctx: &Ctx) {
 
 async fn listen(ctx: &Ctx) -> Res<()> {
     let Some((port, password)) = ctx.riot.local_auth() else { return Err(msg("Not connected to the Riot Client")) };
+    // a stale port (the Riot Client exited) could now belong to another program: don't connect to it
+    if lockfile_port().as_deref() != Some(port.as_str()) { return Err(msg("The Riot Client isn't running")); }
     let port: u16 = port.parse().map_err(|_| msg("Bad Riot Client port"))?;
     let tcp = tokio::net::TcpStream::connect(("127.0.0.1", port)).await?;
     let tls = tokio_rustls::TlsConnector::from(Arc::new(local_tls()?))
@@ -66,8 +83,9 @@ async fn listen(ctx: &Ctx) -> Res<()> {
 
     let me = ctx.riot.puuid();
     let mut pending: BTreeSet<&'static str> = BTreeSet::new();
+    // the batch flushes SETTLE after its first event, however busy the stream stays
+    let mut deadline: Option<tokio::time::Instant> = None;
     loop {
-        let next = if pending.is_empty() { None } else { Some(tokio::time::sleep(SETTLE)) };
         tokio::select! {
             frame = ws.next() => {
                 let text = match frame {
@@ -80,6 +98,7 @@ async fn listen(ctx: &Ctx) -> Res<()> {
                 if m.first().and_then(Value::as_i64) != Some(8) { continue; }
                 let Some(kind) = EVENTS.iter().find(|(e, _)| m.get(1).and_then(Value::as_str) == Some(*e)).map(|(_, k)| *k) else { continue };
                 pending.insert(kind);
+                deadline.get_or_insert_with(|| tokio::time::Instant::now() + SETTLE);
                 // your own presence carries your party: refresh it too
                 if kind == "presences" {
                     let mine = m.get(2).and_then(|p| p["data"]["presences"].as_array())
@@ -87,10 +106,11 @@ async fn listen(ctx: &Ctx) -> Res<()> {
                     if mine { pending.insert("party"); }
                 }
             }
-            _ = async { if let Some(s) = next { s.await } else { std::future::pending::<()>().await } } => {
+            _ = async { match deadline { Some(d) => tokio::time::sleep_until(d).await, None => std::future::pending::<()>().await } } => {
                 shared::forget();
                 ctx.emit("riot:push", json!({ "live": true, "kinds": pending.iter().collect::<Vec<_>>() }));
                 pending.clear();
+                deadline = None;
             }
         }
     }
