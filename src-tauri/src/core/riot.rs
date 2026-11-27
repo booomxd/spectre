@@ -287,8 +287,8 @@ impl Riot {
             tokio::task::spawn_blocking(move || {
                 let Ok(bytes) = serde_json::to_vec(&json!({ "version": ver, "data": &*data })) else { return };
                 if let Some(dir) = file.parent() { let _ = std::fs::create_dir_all(dir); }
-                let tmp = file.with_extension("tmp");
-                if std::fs::write(&tmp, bytes).is_ok() { let _ = std::fs::rename(&tmp, &file); }
+                let tmp = unique_tmp(&file);
+                if std::fs::write(&tmp, bytes).and_then(|_| std::fs::rename(&tmp, &file)).is_err() { let _ = std::fs::remove_file(&tmp); }
             });
         }
         Ok(v)
@@ -340,15 +340,27 @@ impl Riot {
     pub fn write_store(&self, name: &str, data: &Value) -> Res<()> {
         // compact JSON, written to a temp file and renamed over the old one so a crash mid-write can't corrupt the store
         let file = self.store_dir().join(format!("{name}.json"));
-        let tmp = file.with_extension("json.tmp");
-        std::fs::write(&tmp, serde_json::to_vec(data)?)?;
-        std::fs::rename(&tmp, &file)?;
+        let tmp = unique_tmp(&file);
+        let bytes = serde_json::to_vec(data)?;
+        if let Err(e) = std::fs::write(&tmp, bytes).and_then(|_| std::fs::rename(&tmp, &file)) {
+            let _ = std::fs::remove_file(&tmp);
+            return Err(e.into());
+        }
         Ok(())
     }
 }
 
 /// %APPDATA%\Spectre: the same folder the Electron app used
 pub fn data_dir() -> PathBuf { PathBuf::from(std::env::var("APPDATA").unwrap_or_default()).join("Spectre") }
+
+/// a temp path next to `file`, distinct for every call, so overlapping writes of the same file never share one
+fn unique_tmp(file: &std::path::Path) -> PathBuf {
+    static SEQ: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+    let n = SEQ.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+    let mut name = file.file_name().unwrap_or_default().to_os_string();
+    name.push(format!(".{}.{n}.tmp", std::process::id()));
+    file.with_file_name(name)
+}
 
 /// downloaded game content: safe to delete, so it lives under %LOCALAPPDATA% rather than the roaming data folder
 fn api_cache_dir() -> PathBuf { local_app_data().join("Spectre").join("cache").join("valorant-api") }
