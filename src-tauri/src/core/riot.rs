@@ -278,9 +278,12 @@ impl Riot {
             .await.ok().flatten();
         if let Some(mut d) = disk {
             let fresh = match &version { Some(v) => d["version"].as_str() == Some(v.as_str()), None => true };
-            if fresh && d.get("data").is_some() { return Ok(Arc::new(d["data"].take())); }
+            if fresh { if let Some(data) = d.as_object_mut().and_then(|o| o.remove("data")) { return Ok(Arc::new(data)); } }
         }
-        let v = send(self.http.get(format!("https://valorant-api.com/v1/{key}")).timeout(Duration::from_secs(20))).await?["data"].take();
+        let mut body = send(self.http.get(format!("https://valorant-api.com/v1/{key}")).timeout(Duration::from_secs(20))).await?;
+        // a non-JSON 200 (captive portal, proxy page) is an error, never a cached Null
+        let v = body.as_object_mut().and_then(|o| o.remove("data"))
+            .ok_or_else(|| msg("valorant-api.com returned an unexpected response"))?;
         let v = Arc::new(v);
         if let Some(ver) = version {
             let data = Arc::clone(&v);
