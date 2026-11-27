@@ -15,12 +15,12 @@ npm run app
 ```
 
 `npm run app` (`tauri dev`) starts Vite on `http://localhost:5173`, builds the Rust backend and opens the app pointed at
-Vite. React changes hot-reload; Rust changes rebuild and restart the app automatically.
+Vite. UI changes hot-reload; Rust changes rebuild and restart the app automatically.
 
 ## Architecture
 
 ```
-src/                 React UI
+src/                 SolidJS UI
   nav.js             Page registry: dock sections, sub-pages, ids and components
   lib/ipc.js         invoke(), useInvoke() and useEvent() for talking to the backend
   lib/theme.js       Theme list; tokens live in index.css
@@ -65,18 +65,24 @@ pub fn register(reg: &mut Registry, _ctx: &Ctx) {
 - `ctx.riot.read_store(name, fallback)` and `ctx.riot.write_store(name, &data)` persist JSON in `%APPDATA%\Spectre\store`.
 
 Adding a channel needs no Tauri command or capability change: add it with `reg.add` (a new module also goes into
-`api/mod.rs`), then call it from React. More detail (argument helpers, JSON semantics, Tauri plugins) is in
+`api/mod.rs`), then call it from the UI. More detail (argument helpers, JSON semantics, Tauri plugins) is in
 [`src-tauri/BACKEND.md`](../src-tauri/BACKEND.md).
 
-### Calling the backend from React
+### Calling the backend from the UI
 
 ```jsx
 import { invoke, useInvoke, useEvent } from '../lib/ipc'
 
-const rank = useInvoke('store:rank', [], { poll: 30000 })  // { data, error, loading, reload }
+const rank = useInvoke('store:rank', [], { poll: 30000 })  // reactive: rank.data, rank.error, rank.loading, rank.reload()
 await invoke('settings:set', { startPage: 'live' })          // throws on error
 useEvent('settings:changed', s => setSettings(s))
 ```
+
+The UI is SolidJS: components run once and only the DOM that reads a value updates. Polled data is reconciled into a
+store (list items matched by `opts.key`, default `id`), so rows keep their state across polls. Pass a `key` that every
+item has, that is unique, and that stays the same for a record across polls; without one, items are matched by position and row state stays with a position when the
+list reorders. Render lists with
+`<For>`, and read props inside JSX or accessors rather than destructuring them.
 
 ### Adding a page
 

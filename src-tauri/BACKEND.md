@@ -1,6 +1,6 @@
 # Spectre backend (Rust, Tauri 2)
 
-The React UI (`src/`) calls every backend channel through ONE Tauri command, `ipc(channel, args)`
+The SolidJS UI (`src/`) calls every backend channel through ONE Tauri command, `ipc(channel, args)`
 (`src/lib/ipc.js` > `invoke('memo:get', puuid)`), and listens for backend events by name (`useEvent('settings:changed', fn)`).
 Channel names, argument order and JSON shapes are the same ones the Electron app (2.4.x) used, so the UI did not change.
 
