@@ -95,7 +95,7 @@ pub fn register(reg: &mut Registry, _ctx: &Ctx) {
 
     // clears the in-memory content caches
     reg.add("app:clearCache", |ctx, _| async move {
-        ctx.riot.clear_api_cache();
+        ctx.riot.clear_api_cache().await;
         Ok(json!(true))
     });
 }

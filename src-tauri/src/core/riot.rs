@@ -326,9 +326,9 @@ impl Riot {
     }
 
     /// drops the in-memory and on-disk valorant-api.com copies
-    pub fn clear_api_cache(&self) {
+    pub async fn clear_api_cache(&self) {
         self.api_cache.lock().unwrap().clear();
-        let _ = std::fs::remove_dir_all(api_cache_dir());
+        let _ = tokio::task::spawn_blocking(|| std::fs::remove_dir_all(api_cache_dir())).await;
     }
 
     /// puuid -> { gameName, tagLine }
