@@ -1,5 +1,20 @@
 # 📜 Changelog
 
+## 4.2.0
+
+### ✨ New
+- **Live updates:** friends, their status, friend requests and chat now update the moment they change, straight from the Riot Client, instead of waiting for the next refresh. If the Riot Client restarts, Spectre reconnects on its own
+- **Smoother page switches:** pages now cross-fade into each other (skipped when reduced motion is on)
+
+### ⚡ Performance
+- Game data (agents, maps, skins and so on) is saved on disk and only downloaded again when VALORANT updates, so startup is faster and uses less data
+- Downloads are compressed, and pages that need the same data now share one copy and one request
+- Spectre does much less background work: refreshes are merged, they slow down while live updates are connected, and they pause when the window isn't in focus
+- Saving settings and data no longer blocks the app, and an interrupted save can't leave a broken file behind
+
+### 🛠️ Fixes
+- "What's new" now shows a new release as soon as the update button appears, without restarting Spectre
+
 ## 4.1.0
 
 ### ⚡ Performance
