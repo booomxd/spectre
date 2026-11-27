@@ -66,4 +66,13 @@ export function applySavedTheme() {
   window.addEventListener('blur', () => idle(true))
   window.addEventListener('focus', () => idle(false))
   idle(!document.hasFocus())
+  // WebView2 doesn't always see the native window lose focus, get minimized or hide to the tray (the page can stay
+  // "visible" and focused), so follow the window's own focus too: minimizing or hiding always takes focus away
+  if (window.__TAURI_INTERNALS__) {
+    import('@tauri-apps/api/window').then(({ getCurrentWindow }) => {
+      const w = getCurrentWindow()
+      w.onFocusChanged(({ payload }) => idle(!payload)).catch(() => {})
+      w.isFocused().then(f => idle(!f)).catch(() => {})
+    }).catch(() => {})
+  }
 }

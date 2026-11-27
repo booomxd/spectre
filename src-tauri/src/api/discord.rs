@@ -284,11 +284,11 @@ async fn my_agent(ctx: &Ctx) -> Value {
         { let c = AGENT_CACHE.lock().unwrap(); if c.0 == p["MatchID"] && truthy(&c.1) { return Ok(c.1.clone()); } }
         let m = ctx.riot.glz("get", &format!("core-game/v1/matches/{}", tpl(p.get("MatchID"))), None).await?;
         let cid = js::arr(&m["Players"]).into_iter().find(|x| x["Subject"] == puuid.as_str()).map(|x| x["CharacterID"].clone()).unwrap_or(Value::Null);
-        let a = if truthy(&cid) {
+        let value = if truthy(&cid) {
             let agents = ctx.riot.val_api("agents?isPlayableCharacter=true").await?;
-            js::arr(&agents).into_iter().find(|x| js::lower(&x["uuid"]) == js::lower(&cid))
-        } else { None };
-        let value = a.map(|a| json!({ "name": a["displayName"], "icon": a["displayIcon"] })).unwrap_or(Value::Null);
+            js::items(&agents).iter().find(|x| js::lower(&x["uuid"]) == js::lower(&cid))
+                .map(|a| json!({ "name": a["displayName"], "icon": a["displayIcon"] })).unwrap_or(Value::Null)
+        } else { Value::Null };
         *AGENT_CACHE.lock().unwrap() = (p["MatchID"].clone(), value.clone());
         Ok(value)
     }.await;
@@ -379,7 +379,7 @@ async fn snapshot(ctx: &Ctx, cfg: &Value) -> Value {
     let map_url = js::or(&js::or(&mpd["matchMap"], ppd["partyOwnerMatchMap"].clone()), json!(""));
     if truthy(&map_url) && phase == "ingame" {
         if let Ok(maps) = ctx.riot.val_api("maps").await {
-            if let Some(m) = js::arr(&maps).into_iter().find(|x| x["mapUrl"] == map_url) {
+            if let Some(m) = js::items(&maps).iter().find(|x| x["mapUrl"] == map_url) {
                 s.insert("map".into(), json!({ "name": m["displayName"], "image": js::or(&m["listViewIcon"], m["splash"].clone()) }));
             }
         }
@@ -413,7 +413,8 @@ async fn build(ctx: &Ctx, cfg: &Value) -> Value { format(&snapshot(ctx, cfg).awa
 /// sample sessions for the preview tabs, using your real rank when available
 async fn scenario(ctx: &Ctx, name: &Value) -> Value {
     let (maps, agents, r) = tokio::join!(ctx.riot.val_api("maps"), ctx.riot.val_api("agents?isPlayableCharacter=true"), my_rank(ctx));
-    let (maps, agents) = (js::arr(&maps.unwrap_or(Value::Null)), js::arr(&agents.unwrap_or(Value::Null)));
+    let (maps, agents) = (maps.unwrap_or_default(), agents.unwrap_or_default());
+    let (maps, agents) = (js::items(&maps), js::items(&agents));
     let map = |n: &str| match maps.iter().find(|x| x["displayName"] == n) {
         Some(m) => json!({ "name": m["displayName"], "image": js::or(&m["listViewIcon"], m["splash"].clone()) }),
         None => json!({ "name": n }),

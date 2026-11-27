@@ -33,6 +33,9 @@ pub fn or(a: &Value, b: Value) -> Value { if super::truthy(a) { a.clone() } else
 /// JS `a ?? b`: `a` unless it is null/missing
 pub fn nullish(a: &Value, b: Value) -> Value { if a.is_null() { b } else { a.clone() } }
 
+/// the array's items borrowed (no copy), or empty if it isn't an array; prefer this over `arr` for big cached lists
+pub fn items(v: &Value) -> &[Value] { v.as_array().map(Vec::as_slice).unwrap_or(&[]) }
+
 /// the array's items (cloned), or empty if it isn't an array
 pub fn arr(v: &Value) -> Vec<Value> { v.as_array().cloned().unwrap_or_default() }
 

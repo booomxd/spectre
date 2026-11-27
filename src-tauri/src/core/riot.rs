@@ -7,7 +7,7 @@ use reqwest::{Client, Method};
 use serde_json::{json, Map, Value};
 use std::collections::HashMap;
 use std::path::PathBuf;
-use std::sync::{Mutex, RwLock};
+use std::sync::{Arc, Mutex, RwLock};
 use std::time::Duration;
 
 const CLIENT_PLATFORM: &str = "ew0KCSJwbGF0Zm9ybVR5cGUiOiAiUEMiLA0KCSJwbGF0Zm9ybU9TIjogIldpbmRvd3MiLA0KCSJwbGF0Zm9ybU9TVmVyc2lvbiI6ICIxMC4wLjE5MDQyLjEuNzY4LjY0Yml0IiwNCgkicGxhdGZvcm1DaGlwc2V0IjogIlVua25vd24iDQp9";
@@ -37,7 +37,9 @@ pub struct Riot {
     /// the Riot Client's local API uses a self-signed certificate on 127.0.0.1 only
     local_http: Client,
     refresh: tokio::sync::Mutex<()>,
-    api_cache: Mutex<HashMap<String, Value>>,
+    /// valorant-api content, shared (not copied) with every caller; requests for the same path share one download
+    api_cache: Mutex<HashMap<String, Arc<Value>>>,
+    api_inflight: tokio::sync::Mutex<HashMap<String, Arc<tokio::sync::OnceCell<Arc<Value>>>>>,
     store_dir: RwLock<Option<PathBuf>>,
 }
 
@@ -76,6 +78,7 @@ impl Riot {
             local_http: Client::builder().danger_accept_invalid_certs(true).timeout(Duration::from_secs(8)).build().expect("local client"),
             refresh: tokio::sync::Mutex::new(()),
             api_cache: Mutex::new(HashMap::new()),
+            api_inflight: tokio::sync::Mutex::new(HashMap::new()),
             store_dir: RwLock::new(None),
         }
     }
@@ -225,13 +228,20 @@ impl Riot {
         self.remote(format!("https://shared.{}.a.pvp.net", self.shard()), m, path, body).await
     }
 
-    /// valorant-api.com content (agents, maps, weapons, tiers...): the `data` field, cached for the session
-    pub async fn val_api(&self, path: &str) -> Res<Value> {
+    /// valorant-api.com content (agents, maps, weapons, tiers...): the `data` field, cached for the session.
+    /// Returns a shared handle, so hot paths (live match every few seconds) never copy the multi-MB lists.
+    pub async fn val_api(&self, path: &str) -> Res<Arc<Value>> {
         let key = path.trim_start_matches('/').to_string();
         if let Some(v) = self.api_cache.lock().unwrap().get(&key) { return Ok(v.clone()); }
-        let v = send(self.http.get(format!("https://valorant-api.com/v1/{key}"))).await?["data"].take();
-        self.api_cache.lock().unwrap().insert(key, v.clone());
-        Ok(v)
+        // pages that open together ask for the same list at once: download it once
+        let cell = self.api_inflight.lock().await.entry(key.clone()).or_default().clone();
+        let got = cell.get_or_try_init(|| async {
+            let v = send(self.http.get(format!("https://valorant-api.com/v1/{key}")).timeout(Duration::from_secs(20))).await?["data"].take();
+            Ok::<_, Error>(Arc::new(v))
+        }).await;
+        if let Ok(v) = &got { self.api_cache.lock().unwrap().insert(key.clone(), Arc::clone(v)); }
+        self.api_inflight.lock().await.remove(&key);
+        Ok(got?.clone())
     }
     pub fn clear_api_cache(&self) { self.api_cache.lock().unwrap().clear(); }
 

@@ -99,8 +99,8 @@ async fn presences(ctx: &Ctx) -> Res<HashMap<String, Value>> {
 async fn friends(ctx: &Ctx) -> Res<Value> {
     let (list, pres) = tokio::join!(ctx.riot.local("get", "chat/v4/friends", None), presences(ctx));
     let (list, pres) = (list?, pres?);
-    let maps = ctx.riot.val_api("maps").await.unwrap_or_else(|_| json!([]));
-    let map_name = |url: &Value| js::arr(&maps).into_iter().find(|m| &m["mapUrl"] == url)
+    let maps = ctx.riot.val_api("maps").await.unwrap_or_default();
+    let map_name = |url: &Value| js::items(&maps).iter().find(|m| &m["mapUrl"] == url)
         .map(|m| js::or(&m["displayName"], Value::Null)).unwrap_or(Value::Null);
     let rows = js::arr(&list["friends"]).into_iter().map(|f| {
         let p = pres.get(&js::s(&f["puuid"]));
