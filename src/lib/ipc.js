@@ -57,10 +57,14 @@ export function useInvoke(channel, args = [], opts = {}) {
       setState({ error: e.message, loading: false })
     }
   }
-  createEffect(on([key, () => val(opts.skip), () => val(opts.poll)], ([k, skip, poll]) => {
-    if (skip) return
-    reload(k !== null && loadedFor === k, k)
-    if (!poll) return
+  // fetch when the request (or skip) changes
+  createEffect(on([key, () => val(opts.skip)], ([k, skip]) => {
+    if (!skip) reload(k !== null && loadedFor === k, k)
+  }))
+  // polling: starts/stops with `poll`; resuming (e.g. the page becomes active again) refreshes quietly, pausing never fetches
+  createEffect(on([() => val(opts.poll), () => val(opts.skip)], ([poll, skip], prev) => {
+    if (skip || !poll) return
+    if (prev && !prev[0] && !prev[1]) reload(true)
     // no refreshing while the window is hidden
     const t = setInterval(() => { if (!document.hidden) reload(true) }, poll)
     const onShow = () => { if (!document.hidden) reload(true) }

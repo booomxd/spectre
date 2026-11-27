@@ -1,4 +1,4 @@
-import { createEffect, createSignal, on, Show, createMemo } from 'solid-js'
+import { For, createEffect, createSignal, on, Show, createMemo } from 'solid-js'
 import { st } from '../lib/st.js'
 import { FiAward, FiSearch } from 'solid-icons/fi'
 import { invoke } from '../lib/ipc'
@@ -51,20 +51,20 @@ function Podium(props) {
   
     const order = () => ([props.top[1], props.top[0], props.top[2]].filter(Boolean))
     return (<Stagger class='grid grid-cols-3 gap-4 mb-5 items-end'>
-      {order().map((p, i) => {
-        const first = p.rank === 1
-        const art = props.cards[p.cardId]?.wideArt || props.cards[p.cardId]?.largeArt
-        const link = !isSecret(p) && p.puuid
+      <For each={order()}>{(p, i) => {
+        const first = () => (p.rank === 1)
+        const art = () => (props.cards[p.cardId]?.wideArt || props.cards[p.cardId]?.largeArt)
+        const link = () => (!isSecret(p) && p.puuid)
         return (
-          <Item index={i}>
-            <Card hover={!!link} glow={first} onClick={() => link && openPlayer(p)} class={cx('relative overflow-hidden', first ? 'h-[190px] !rounded-3xl' : 'h-[160px]')}>
-              {art && <img decoding='async' src={art} alt='' loading='lazy' draggable={false} class='absolute inset-0 w-full h-full object-cover opacity-45' />}
+          <Item index={i()}>
+            <Card hover={!!link()} glow={first()} onClick={() => link() && openPlayer(p)} class={cx('relative overflow-hidden', first() ? 'h-[190px] !rounded-3xl' : 'h-[160px]')}>
+              {art() && <img decoding='async' src={art()} alt='' loading='lazy' draggable={false} class='absolute inset-0 w-full h-full object-cover opacity-45' />}
               <div class='absolute inset-0 bg-gradient-to-t from-bg via-bg/70 to-bg/20' />
-              {first && <span class='halo w-72 h-72 -top-36 left-1/2 -translate-x-1/2' />}
+              {first() && <span class='halo w-72 h-72 -top-36 left-1/2 -translate-x-1/2' />}
               <div class='relative h-full p-5 flex flex-col justify-between'>
                 <div class='flex items-center justify-between'>
-                  <span class={cx('display tabular-nums', first ? 'text-[44px] text-warn' : 'text-[34px] text-text')}>#{p.rank}</span>
-                  <TierIcon tier={p.tier} size={first ? 40 : 32} />
+                  <span class={cx('display tabular-nums', first() ? 'text-[44px] text-warn' : 'text-[34px] text-text')}>#{p.rank}</span>
+                  <TierIcon tier={p.tier} size={first() ? 40 : 32} />
                 </div>
                 <div class='min-w-0'>
                   <div class='truncate text-[15px] font-semibold tracking-tight text-text'><Name p={p} /></div>
@@ -77,7 +77,7 @@ function Podium(props) {
             </Card>
           </Item>
         )
-      })}
+      }}</For>
     </Stagger>)
   
 }

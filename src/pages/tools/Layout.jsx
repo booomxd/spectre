@@ -1,3 +1,4 @@
+import { children as resolveChildren } from 'solid-js'
 import { st } from '../../lib/st.js'
 // compact frame shared by the tool-style pages
 import { FadeIn, cx } from '../../ui'
@@ -13,18 +14,21 @@ export function ToolLayout(props) {
 
 // A quiet glass panel with an eyebrow title
 export function Panel(props) {
+  // JSX props build a new node on every read: resolve once
+  const title_ = resolveChildren(() => props.title)
+  const right_ = resolveChildren(() => props.right)
   return (
     <FadeIn delay={(props.delay ?? 0)} y={6} class={cx('glass rounded-2xl', props["class"])}>
-      {(props.title || props.right) && (
+      {(title_() || right_()) && (
         <div class='flex items-center justify-between gap-3 px-5 pt-4'>
           <div class='min-w-0'>
-            {props.title && <h3 class='eyebrow'>{props.title}</h3>}
+            {title_() && <h3 class='eyebrow'>{title_()}</h3>}
             {props.hint && <p class='text-[11.5px] text-muted mt-1'>{props.hint}</p>}
           </div>
-          {props.right}
+          {right_()}
         </div>
       )}
-      <div class={cx('p-5', (props.title || props.right) && 'pt-3.5', props.bodyClass)}>{props.children}</div>
+      <div class={cx('p-5', (title_() || right_()) && 'pt-3.5', props.bodyClass)}>{props.children}</div>
     </FadeIn>
   )
 }

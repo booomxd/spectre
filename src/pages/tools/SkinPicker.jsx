@@ -1,4 +1,4 @@
-import { createSignal, createMemo } from 'solid-js'
+import { For, createSignal, createMemo } from 'solid-js'
 import { st } from '../../lib/st.js'
 import { FiCheck, FiSearch } from 'solid-icons/fi'
 import { Badge, Empty, Input, Label, cx } from '../../ui'
@@ -35,17 +35,17 @@ export default function SkinPicker(props) {
               <div>
                 <Label>Level</Label>
                 <div class='flex flex-wrap gap-1.5'>
-                  {skin().levels.map((l, i) => {
-                    const ok = levelOwned(skin(), l, props.owned)
-                    const on = lc(l.uuid) === lc(props.value.levelId)
+                  <For each={skin().levels}>{(l, i) => {
+                    const ok = () => (levelOwned(skin(), l, props.owned))
+                    const on = () => (lc(l.uuid) === lc(props.value.levelId))
                     return (
-                      <button disabled={!ok} onClick={() => props.onChange({ ...props.value, levelId: l.uuid })}
-                        title={levelItemLabel(l) || `Level ${i + 1}`}
-                        class={cx('h-7 px-3 rounded-full border text-[11px] font-semibold transition-[transform,opacity,background-color,border-color,color] duration-200', on ? 'accent-soft border-transparent text-accent' : 'glass text-muted hover:text-text', !ok && 'opacity-30 cursor-not-allowed')}>
-                        {i + 1}{levelItemLabel(l) && <span class='ml-1 font-normal opacity-70'>{levelItemLabel(l)}</span>}
+                      <button disabled={!ok()} onClick={() => props.onChange({ ...props.value, levelId: l.uuid })}
+                        title={levelItemLabel(l) || `Level ${i() + 1}`}
+                        class={cx('h-7 px-3 rounded-full border text-[11px] font-semibold transition-[transform,opacity,background-color,border-color,color] duration-200', on() ? 'accent-soft border-transparent text-accent' : 'glass text-muted hover:text-text', !ok() && 'opacity-30 cursor-not-allowed')}>
+                        {i() + 1}{levelItemLabel(l) && <span class='ml-1 font-normal opacity-70'>{levelItemLabel(l)}</span>}
                       </button>
                     )
-                  })}
+                  }}</For>
                 </div>
               </div>
             )}
@@ -78,24 +78,24 @@ export default function SkinPicker(props) {
         </div>
         {shown().length === 0 ? <Empty title='No owned skins match' hint='Only skins you own can be equipped.' class='py-8' /> : (
           <div class='grid grid-cols-3 gap-3 overflow-y-auto pr-1 stagger' style={st({ maxHeight: (props.maxHeight ?? 260) })}>
-            {shown().map((s, i) => {
-              const on = lc(s.uuid) === lc(props.value.skinId)
-              const tier = tiersA()[lc(s.contentTierUuid)]
+            <For each={shown()}>{(s, i) => {
+              const on = () => (lc(s.uuid) === lc(props.value.skinId))
+              const tier = () => (tiersA()[lc(s.contentTierUuid)])
               return (
-                <button style={st({ '--i': Math.min(i, 12) })} onClick={() => pick(s)}
-                  class={cx('lift relative rounded-xl p-2.5 text-left', i < 12 && 'anim-rise', on ? 'accent-soft border border-transparent' : 'glass-inset hover:bg-surface-2')}>
-                  {on && <span class='accent-fill absolute top-2 right-2 w-4 h-4 rounded-full text-bg flex items-center justify-center text-[10px]'><FiCheck /></span>}
+                <button style={st({ '--i': Math.min(i(), 12) })} onClick={() => pick(s)}
+                  class={cx('lift relative rounded-xl p-2.5 text-left', i() < 12 && 'anim-rise', on() ? 'accent-soft border border-transparent' : 'glass-inset hover:bg-surface-2')}>
+                  {on() && <span class='accent-fill absolute top-2 right-2 w-4 h-4 rounded-full text-bg flex items-center justify-center text-[10px]'><FiCheck /></span>}
                   <div class='h-14 flex items-center justify-center'>
                     <img decoding='async' src={skinImage(s)} class='max-h-full max-w-full object-contain' loading='lazy' />
                   </div>
                   <div class='mt-1.5 flex items-center gap-1.5'>
-                    {tier && <img decoding='async' src={tier.displayIcon} class='w-3.5 h-3.5' title={tier.displayName} />}
-                    <span class='tier-text text-[11px] font-semibold truncate' style={st(tierColor(tier) ? { '--tier': tierColor(tier) } : undefined)}>{s.displayName}</span>
+                    {tier() && <img decoding='async' src={tier().displayIcon} class='w-3.5 h-3.5' title={tier().displayName} />}
+                    <span class='tier-text text-[11px] font-semibold truncate' style={st(tierColor(tier()) ? { '--tier': tierColor(tier()) } : undefined)}>{s.displayName}</span>
                   </div>
                   {isStandard(props.weapon, s) && <Badge class='mt-1'>Standard</Badge>}
                 </button>
               )
-            })}
+            }}</For>
           </div>
         )}
       </div>

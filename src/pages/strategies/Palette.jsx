@@ -45,18 +45,18 @@ export default function Palette(props) {
               <div class='grid grid-cols-4 gap-2'><For each={Array.from({ length: 16 })}>{(_, i) => <Skeleton class='aspect-square rounded-xl' />}</For></div>
             ) : !list().length ? <Empty title='No agents match' class='py-8' /> : (
               <div class='grid grid-cols-4 gap-2 stagger'>
-                {list().map((a, i) => {
-                  const payload = { type: 'agent', agentId: a.uuid, name: a.displayName, icon: a.displayIcon, team: teamS() }
-                  const n = props.placed[a.uuid + teamS()] || 0
+                <For each={list()}>{(a, i) => {
+                  const payload = () => ({ type: 'agent', agentId: a.uuid, name: a.displayName, icon: a.displayIcon, team: teamS() })
+                  const n = () => (props.placed[a.uuid + teamS()] || 0)
                   return (
-                    <button draggable onDragStart={e => { drag(e, payload); props.onFocus(a.uuid) }} onClick={() => { props.onPlace(payload); props.onFocus(a.uuid) }} title={`${a.displayName} - drag onto the map or click`}
-                      style={st({ '--i': Math.min(i, 20) })}
+                    <button draggable onDragStart={e => { drag(e, payload()); props.onFocus(a.uuid) }} onClick={() => { props.onPlace(payload()); props.onFocus(a.uuid) }} title={`${a.displayName} - drag onto the map or click`}
+                      style={st({ '--i': Math.min(i(), 20) })}
                       class={`glass anim-rise relative aspect-square rounded-2xl overflow-hidden transition-[transform,border-color] duration-150 hover:scale-105 hover:border-accent/60 active:scale-95 ${props.focus === a.uuid ? '!border-accent' : ''}`}>
                       <img decoding='async' src={a.displayIcon} alt='' draggable={false} class='w-full h-full object-cover' />
-                      {n > 0 && <span class='absolute bottom-0.5 right-0.5 min-w-4 h-4 px-1 rounded-full text-[9px] font-bold grid place-items-center text-bg' style={st({ background: teamColor(teamS(), props.side) })}>{n}</span>}
+                      {n() > 0 && <span class='absolute bottom-0.5 right-0.5 min-w-4 h-4 px-1 rounded-full text-[9px] font-bold grid place-items-center text-bg' style={st({ background: teamColor(teamS(), props.side) })}>{n()}</span>}
                     </button>
                   )
-                })}
+                }}</For>
               </div>
             )}
           </div>
@@ -64,15 +64,15 @@ export default function Palette(props) {
             <div class='glass-inset rounded-2xl p-2.5 anim-fade'>
               <p class='eyebrow mb-2 truncate'>{picked().displayName} utility</p>
               <div class='grid grid-cols-4 gap-1.5'>
-                {(picked().abilities || []).filter(x => x.displayIcon).map(ab => {
-                  const payload = abilityPayload(picked(), ab)
+                <For each={(picked().abilities || []).filter(x => x.displayIcon)}>{ab => {
+                  const payload = () => (abilityPayload(picked(), ab))
                   return (
-                    <button draggable onDragStart={e => drag(e, payload)} onClick={() => props.onPlace(payload)} title={`${ab.displayName} - drag onto the map or click`}
+                    <button draggable onDragStart={e => drag(e, payload())} onClick={() => props.onPlace(payload())} title={`${ab.displayName} - drag onto the map or click`}
                       class='aspect-square rounded-xl bg-black/60 border border-white/15 grid place-items-center transition-[transform,border-color] duration-150 hover:border-accent/60 hover:-translate-y-0.5 active:scale-95'>
                       <img decoding='async' src={ab.displayIcon} alt={ab.displayName} draggable={false} class='h-6 w-6' />
                     </button>
                   )
-                })}
+                }}</For>
               </div>
             </div>
           )}
@@ -91,16 +91,16 @@ export default function Palette(props) {
           </div>
           {ag() && <p class='eyebrow'>{ag().displayName} abilities</p>}
           <div class='grid grid-cols-2 gap-2 stagger'>
-            {abilities().map((ab, i) => {
-              const payload = abilityPayload(ag(), ab)
+            <For each={abilities()}>{(ab, i) => {
+              const payload = () => (abilityPayload(ag(), ab))
               return (
-                <button draggable onDragStart={e => drag(e, payload)} onClick={() => props.onPlace(payload)} style={st({ '--i': i })}
+                <button draggable onDragStart={e => drag(e, payload())} onClick={() => props.onPlace(payload())} style={st({ '--i': i() })}
                   class='glass anim-rise flex flex-col items-center gap-2 p-3.5 rounded-2xl transition-[transform,border-color] duration-150 hover:border-accent/60 hover:-translate-y-0.5 active:scale-95'>
                   <span class='h-11 w-11 rounded-full bg-black/60 border border-white/20 grid place-items-center'><img decoding='async' src={ab.displayIcon} alt='' draggable={false} class='h-7 w-7' /></span>
                   <span class='text-[11px] font-medium text-muted leading-tight text-center'>{ab.displayName}</span>
                 </button>
               )
-            })}
+            }}</For>
           </div>
         </div>
       )}

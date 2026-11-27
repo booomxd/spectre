@@ -227,7 +227,7 @@ function FriendsBody(props) {
     const chatFriend = () => (chatS() && byPuuid()[chatS().puuid])
     const shared = () => ({ canInvite: canInvite(), onInvite: invite, onChat: chatWith, chatPuuid: chatS()?.puuid })
     const list = (
-    () => (<Pane title='Friends' right={friends.data && <span class='text-[11px] font-semibold text-muted tabular-nums'><span class='text-good'>{onlineTotal()}</span> / {friends.data.length}</span>}
+    (<Pane title='Friends' right={friends.data && <span class='text-[11px] font-semibold text-muted tabular-nums'><span class='text-good'>{onlineTotal()}</span> / {friends.data.length}</span>}
       header={<SearchField value={qS()} onChange={setQ} placeholder='Search friends or notes' />}>
       {friends.loading && !friends.data ? (
         <div class='flex flex-col gap-1.5 p-1'>{Array.from({ length: 8 }, (_, i) => <Skeleton class='h-[54px] rounded-2xl' />)}</div>
@@ -244,11 +244,14 @@ function FriendsBody(props) {
   )
     return (<Page title='Friends' subtitle={friends.data ? `${onlineTotal()} online of ${friends.data.length}${pending() ? ` · ${pending()} new ${pending() === 1 ? 'request' : 'requests'}` : ''}` : 'Your Riot friends and party'}
       bodyClass={SPLIT_BODY}>
-      <SplitView list={list()}>
+      <SplitView list={list}>
         {chatS() ? (
-          <ChatPanel cid={chatS().cid} friend={chatFriend()} statusLine={statusLine} active={props.active}
-            actions={chatFriend() && <FriendActions f={chatFriend()} canInvite={canInvite()} onInvite={invite} />}
-            onClose={() => setChat(null)} onSent={() => convs.reload(true)} />
+          // keyed by conversation: each chat gets its own messages, draft and send state
+          <Show when={chatS()?.cid} keyed>{cid => (
+            <ChatPanel cid={cid} friend={chatFriend()} statusLine={statusLine} active={props.active}
+              actions={chatFriend() && <FriendActions f={chatFriend()} canInvite={canInvite()} onInvite={invite} />}
+              onClose={() => setChat(null)} onSent={() => convs.reload(true)} />
+          )}</Show>
         ) : (
           <FadeIn class='flex flex-col gap-5'>
             <PartyPanel party={party.data} loading={party.loading} error={party.error} reload={party.reload} />

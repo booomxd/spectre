@@ -27,7 +27,7 @@ function Slider(props) {
         <span class='accent-soft h-6 px-2.5 rounded-full inline-flex items-center font-display text-[12px] font-semibold text-accent tabular-nums'>{props.format(shown())}</span>
       </div>
       <input type='range' min={props.min} max={props.max} step={props.step} value={shown()} style={st({ accentColor: 'rgb(var(--accent))' })}
-        class='w-full h-1.5 cursor-pointer' onChange={e => setV(+e.target.value)} onMouseUp={commit} onKeyUp={commit} onTouchEnd={commit} />
+        class='w-full h-1.5 cursor-pointer' onInput={e => setV(+e.target.value)} onMouseUp={commit} onKeyUp={commit} onTouchEnd={commit} />
     </div>)
   
 }

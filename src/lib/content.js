@@ -35,6 +35,7 @@ export function useTiers() {
   return createMemo(() => {
     const s = seasons()
     if (!s) return null
-    return Object.fromEntries(s[s.length - 1].tiers.map(t => [t.tier, t]))
+    const latest = s[s.length - 1]?.tiers
+    return latest ? Object.fromEntries(latest.map(t => [t.tier, t])) : null
   })
 }

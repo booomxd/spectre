@@ -74,17 +74,17 @@ function Timeline(props) {
         <For each={lanes()}>{(lane, li) => (
           <div class='flex items-center gap-1'>
             <span class='w-12 text-[12px] font-semibold text-muted'>{lane.label}</span>
-            {props.rounds.map((r, i) => {
+            <For each={props.rounds}>{(r, i) => {
               const Icon = ROUND_ICON[r.kind] || FiClock
-              const won = r.winner === lane.id
+              const won = () => (r.winner === lane.id)
               return (
-                <div class={cx('w-6 h-6 rounded-full flex items-center justify-center text-[11px] border', gap(i),
-                  won ? (li() === 0 ? 'bg-good/15 border-good/40 text-good' : 'bg-bad/15 border-bad/40 text-bad') : 'border-transparent text-transparent')}
-                  title={won ? `Round ${r.num + 1}: ${ROUND_LABEL[r.kind]}${r.site ? ` (${r.site})` : ''}` : undefined}>
-                  {won && <Icon />}
+                <div class={cx('w-6 h-6 rounded-full flex items-center justify-center text-[11px] border', gap(i()),
+                  won() ? (li() === 0 ? 'bg-good/15 border-good/40 text-good' : 'bg-bad/15 border-bad/40 text-bad') : 'border-transparent text-transparent')}
+                  title={won() ? `Round ${r.num + 1}: ${ROUND_LABEL[r.kind]}${r.site ? ` (${r.site})` : ''}` : undefined}>
+                  {won() && <Icon />}
                 </div>
               )
-            })}
+            }}</For>
           </div>
         )}</For>
         <div class='flex items-center gap-1'>
@@ -93,7 +93,7 @@ function Timeline(props) {
         </div>
       </div>
       <div class='flex flex-wrap gap-x-4 gap-y-1.5 mt-3 pt-3 border-t border-line text-[11px] text-muted'>
-        {Object.keys(ROUND_ICON).map(k => { const I = ROUND_ICON[k]; return <span class='inline-flex items-center gap-1.5'><I />{ROUND_LABEL[k]}</span> })}
+        <For each={Object.keys(ROUND_ICON)}>{k => { const I = ROUND_ICON[k]; return <span class='inline-flex items-center gap-1.5'><I />{ROUND_LABEL[k]}</span> }}</For>
       </div>
     </div>)
   

@@ -44,17 +44,17 @@ export default function Weapons() {
       ) : (
         <div class='space-y-8'>
           <div class='glass rounded-full p-1.5 flex gap-1 w-fit max-w-full overflow-x-auto'>
-            {inCat().map(w => {
-              const on = weapon() && lc(w.uuid) === lc(weapon().uuid)
+            <For each={inCat()}>{w => {
+              const on = () => (weapon() && lc(w.uuid) === lc(weapon().uuid))
               return (
                 <button onClick={() => { setWid(w.uuid); setTier(''); setQ('') }}
-                  class={cx('relative h-11 pl-3 pr-4 rounded-full flex items-center gap-2.5 shrink-0 transition-colors', on ? 'text-text' : 'text-muted hover:text-text')}>
-                  {on && <Pill layoutId='weapons-pick' />}
+                  class={cx('relative h-11 pl-3 pr-4 rounded-full flex items-center gap-2.5 shrink-0 transition-colors', on() ? 'text-text' : 'text-muted hover:text-text')}>
+                  {on() && <Pill layoutId='weapons-pick' />}
                   <img decoding='async' src={w.displayIcon} class='relative h-6 w-14 object-contain' />
                   <span class='relative text-[12.5px] font-semibold tracking-tight'>{w.displayName}</span>
                 </button>
               )
-            })}
+            }}</For>
           </div>
 
           {weapon() && (
@@ -130,27 +130,27 @@ export default function Weapons() {
                 </div>
                 {skins().length === 0 ? <Empty title='No skins found' hint='Try another tier or clear the search.' /> : (
                   <Stagger class='cv-list grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4' style={st({ '--cv-h': '240px' })}>
-                    {skins().map((s, i) => {
-                      const t = tiersA()[lc(s.contentTierUuid)]
-                      const color = tierColor(t)
-                      const own = riotA().connected && skinOwned(weapon(), s, __owned.owned)
-                      const wishId = !own && s.contentTierUuid && s.levels[0]?.uuid
+                    <For each={skins()}>{(s, i) => {
+                      const t = () => (tiersA()[lc(s.contentTierUuid)])
+                      const color = () => (tierColor(t()))
+                      const own = () => (riotA().connected && skinOwned(weapon(), s, __owned.owned))
+                      const wishId = () => (!own() && s.contentTierUuid && s.levels[0]?.uuid)
                       return (
-                        <Item index={i}>
+                        <Item index={i()}>
                           <Card hover onClick={() => setSkin(s)} class='group relative overflow-hidden h-full flex flex-col'>
-                            <div class='relative h-28 flex items-center justify-center px-6 pt-4' style={st(color ? { background: `linear-gradient(180deg, transparent 35%, ${color}14)` } : undefined)}>
+                            <div class='relative h-28 flex items-center justify-center px-6 pt-4' style={st(color() ? { background: `linear-gradient(180deg, transparent 35%, ${color()}14)` } : undefined)}>
                               <span class='absolute bottom-3 left-1/2 -translate-x-1/2 w-3/5 h-3 rounded-[50%] bg-black/35 blur-md pointer-events-none' />
-                              {color && <span class='absolute inset-x-8 bottom-0 h-px pointer-events-none' style={st({ background: `linear-gradient(90deg, transparent, ${color}aa, transparent)` })} />}
+                              {color() && <span class='absolute inset-x-8 bottom-0 h-px pointer-events-none' style={st({ background: `linear-gradient(90deg, transparent, ${color()}aa, transparent)` })} />}
                               <img decoding='async' src={skinImage(s)} class='relative max-h-full max-w-full object-contain transition-transform duration-500 ease-out group-hover:scale-[1.04]' loading='lazy' />
-                              {wishId && <WishButton id={wishId} name={s.displayName} class={cx('absolute top-2.5 right-2.5 z-10', !wish.has(wishId) && 'opacity-0 group-hover:opacity-100 focus-visible:opacity-100')} />}
+                              {wishId() && <WishButton id={wishId()} name={s.displayName} class={cx('absolute top-2.5 right-2.5 z-10', !wish.has(wishId()) && 'opacity-0 group-hover:opacity-100 focus-visible:opacity-100')} />}
                             </div>
                             <div class='px-4 pb-4 pt-2'>
                               <div class='flex items-center gap-1.5'>
-                                {t && <img decoding='async' src={t.displayIcon} class='w-3.5 h-3.5' title={t.displayName} />}
+                                {t() && <img decoding='async' src={t().displayIcon} class='w-3.5 h-3.5' title={t().displayName} />}
                                 <span class='text-[13px] font-semibold tracking-tight text-text truncate'>{s.displayName}</span>
                               </div>
                               <div class='mt-2 flex items-center gap-1.5 flex-wrap'>
-                                {own && <Badge tone='good'>Owned</Badge>}
+                                {own() && <Badge tone='good'>Owned</Badge>}
                                 {s.levels.length > 1 && <Badge>{s.levels.length} levels</Badge>}
                                 {s.chromas.length > 1 && <Badge>{s.chromas.length} variants</Badge>}
                               </div>
@@ -158,7 +158,7 @@ export default function Weapons() {
                           </Card>
                         </Item>
                       )
-                    })}
+                    }}</For>
                   </Stagger>
                 )}
               </section>

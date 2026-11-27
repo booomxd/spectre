@@ -1,4 +1,4 @@
-import { createMemo } from 'solid-js'
+import { Show, createMemo } from 'solid-js'
 import { st } from '../../lib/st.js'
 import { FiUser } from 'solid-icons/fi'
 import { useContent, useTiers } from '../../lib/content'
@@ -56,25 +56,30 @@ export function playerLabel(p, agents) {
   return p.name ? riotId(p.name) : agents[p.agent]?.displayName || 'Hidden player'
 }
 
-export function AgentIcon({ id, agents, size = 36, className }) {
-  const a = agents[id]
+export function AgentIcon(props) {
+  const a = () => props.agents?.[props.id]
+  const size = () => props.size ?? 36
   return (
-    <div class={cx('shrink-0 rounded-lg bg-surface-2 border border-line overflow-hidden flex items-center justify-center shadow-[inset_0_1px_0_rgb(255_255_255/0.06)]', className)} style={st({ width: size, height: size })}>
-      {a ? <img decoding='async' src={a.displayIcon} alt={a.displayName} title={a.displayName} class='w-full h-full object-cover' draggable={false} /> : <FiUser class='text-muted' />}
+    <div class={cx('shrink-0 rounded-lg bg-surface-2 border border-line overflow-hidden flex items-center justify-center shadow-[inset_0_1px_0_rgb(255_255_255/0.06)]', props.class ?? props.className)} style={st({ width: size(), height: size() })}>
+      <Show when={a()} fallback={<FiUser class='text-muted' />}>
+        <img decoding='async' src={a().displayIcon} alt={a().displayName} title={a().displayName} class='w-full h-full object-cover' draggable={false} />
+      </Show>
     </div>
   )
 }
 
-export function TierIcon({ tier, size = 28, showName }) {
-  const tiers = useTiers()
-  const t = tiers?.[tier]
-  if (!t || !tier) return <span class='text-muted text-[12px]'>{showName ? 'Unranked' : '-'}</span>
+export function TierIcon(props) {
+  const tiersA = useTiers()
+  const t = () => (props.tier ? tiersA()?.[props.tier] : null)
+  const size = () => props.size ?? 28
   return (
-    <span class='inline-flex items-center gap-2' title={t.tierName}>
-      <img decoding='async' src={t.smallIcon} alt={t.tierName} style={st({ width: size, height: size })} draggable={false} />
-      {/* .tier-text keeps the tier color readable on the light theme */}
-      {showName && <span class='tier-text text-[12px] font-semibold' style={st({ '--tier': `#${t.color.slice(0, 6)}` })}>{t.tierName}</span>}
-    </span>
+    <Show when={t()} fallback={<span class='text-muted text-[12px]'>{props.showName ? 'Unranked' : '-'}</span>}>
+      <span class='inline-flex items-center gap-2' title={t().tierName}>
+        <img decoding='async' src={t().smallIcon} alt={t().tierName} style={st({ width: size(), height: size() })} draggable={false} />
+        {/* .tier-text keeps the tier color readable on the light theme */}
+        {props.showName && <span class='tier-text text-[12px] font-semibold' style={st({ '--tier': `#${t().color.slice(0, 6)}` })}>{t().tierName}</span>}
+      </span>
+    </Show>
   )
 }
 

@@ -1,4 +1,4 @@
-import { createSignal } from 'solid-js'
+import { For, createSignal } from 'solid-js'
 import { st } from '../../lib/st.js'
 import { FiCheck } from 'solid-icons/fi'
 import { Card, SectionTitle, Select, Toggle } from '../../ui'
@@ -32,7 +32,7 @@ function Preview(props) {
 
 export default function Appearance() {
   const [themeS, setCurrent] = createSignal(getTheme())
-  const [reduceS, setReduce] = createSignal(getReduceMotion)
+  const [reduceS, setReduce] = createSignal(getReduceMotion())
   const [langS, setLang] = useLang()
   
     const pick = id => { setTheme(id); setCurrent(id) }
@@ -54,22 +54,22 @@ export default function Appearance() {
       <div>
       <SectionTitle>Theme</SectionTitle>
       <div class='grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-4 stagger'>
-        {THEMES.map((t, i) => {
-          const on = themeS() === t.id
+        <For each={THEMES}>{(t, i) => {
+          const on = () => (themeS() === t.id)
           return (
-            <Card hover onClick={() => pick(t.id)} style={st({ '--i': i })}
-              class={'anim-rise p-2.5 rounded-2xl transition duration-200 ' + (on ? 'accent-soft' : '')}>
+            <Card hover onClick={() => pick(t.id)} style={st({ '--i': i() })}
+              class={'anim-rise p-2.5 rounded-2xl transition duration-200 ' + (on() ? 'accent-soft' : '')}>
               <Preview t={t} />
               <div class='flex items-center justify-between mt-3 mb-0.5 px-1'>
                 <div class='flex items-center gap-2 min-w-0'>
                   <span class='w-3 h-3 rounded-full shrink-0 ring-1 ring-line' style={st({ background: `linear-gradient(135deg, ${t.swatch}, ${t.glow})` })} />
                   <span class='text-[13px] font-semibold text-text truncate'>{t.name}</span>
                 </div>
-                <span class={'accent-fill w-5 h-5 rounded-full text-bg flex items-center justify-center text-[11px] shrink-0 transition duration-200 ' + (on ? 'scale-100 opacity-100' : 'scale-50 opacity-0')}><FiCheck /></span>
+                <span class={'accent-fill w-5 h-5 rounded-full text-bg flex items-center justify-center text-[11px] shrink-0 transition duration-200 ' + (on() ? 'scale-100 opacity-100' : 'scale-50 opacity-0')}><FiCheck /></span>
               </div>
             </Card>
           )
-        })}
+        }}</For>
       </div>
       </div>
     </section>)

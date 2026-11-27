@@ -33,30 +33,30 @@ const baseFit = (el) => Math.min(el?.clientWidth || 1, el?.clientHeight || 1) / 
 function Shape(props) {
   return () => {
     const sw = props.it.width || 4
-    const common = { stroke: props.it.color, strokeWidth: sw, fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' }
+    const common = { stroke: props.it.color, 'stroke-width': sw, fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }
     const op = props.it._op ?? 1
     let body = null
     if (props.it.type === 'pen') {
     const d = penPath(props.it.points)
-    body = <><path d={d} {...common} /><path d={d} stroke='transparent' stroke-width={Math.max(sw, 16)} fill='none' stroke-linecap='round' pointerEvents={props.hit ? 'stroke' : 'none'} /></>
+    body = <><path d={d} {...common} /><path d={d} stroke='transparent' stroke-width={Math.max(sw, 16)} fill='none' stroke-linecap='round' pointer-events={props.hit ? 'stroke' : 'none'} /></>
   } else if (props.it.type === 'line' || props.it.type === 'arrow') {
     const h = props.it.type === 'arrow' ? arrowHead(props.it.x1, props.it.y1, props.it.x2, props.it.y2, sw) : null
     body = <>
       <line x1={props.it.x1} y1={props.it.y1} x2={props.it.x2} y2={props.it.y2} {...common} />
       {h && <polygon points={h.map(p => p.join(',')).join(' ')} fill={props.it.color} stroke={props.it.color} stroke-width={1} stroke-linejoin='round' />}
-      <line x1={props.it.x1} y1={props.it.y1} x2={props.it.x2} y2={props.it.y2} stroke='transparent' stroke-width={Math.max(sw, 16)} pointerEvents={props.hit ? 'stroke' : 'none'} />
+      <line x1={props.it.x1} y1={props.it.y1} x2={props.it.x2} y2={props.it.y2} stroke='transparent' stroke-width={Math.max(sw, 16)} pointer-events={props.hit ? 'stroke' : 'none'} />
     </>
   } else if (props.it.type === 'rect') {
     const x = Math.min(props.it.x, props.it.x + props.it.w), y = Math.min(props.it.y, props.it.y + props.it.h)
-    body = <rect x={x} y={y} width={Math.abs(props.it.w)} height={Math.abs(props.it.h)} rx={4} stroke={props.it.color} stroke-width={sw} fill={props.it.color} fill-opacity={0.18} pointerEvents={props.hit ? 'all' : 'none'} />
+    body = <rect x={x} y={y} width={Math.abs(props.it.w)} height={Math.abs(props.it.h)} rx={4} stroke={props.it.color} stroke-width={sw} fill={props.it.color} fill-opacity={0.18} pointer-events={props.hit ? 'all' : 'none'} />
   } else if (props.it.type === 'text') {
-    body = <text x={props.it.x} y={props.it.y} transform={(props.vr ?? 0) ? `rotate(${-(props.vr ?? 0)} ${props.it.x} ${props.it.y})` : undefined} fill={props.it.color} fontSize={props.it.size || 28} fontWeight={700} stroke='rgba(0,0,0,.85)' stroke-width={6} paint-order='stroke' stroke-linejoin='round' pointerEvents={props.hit ? 'all' : 'none'} style={st({ userSelect: 'none' })}>{props.it.text}</text>
+    body = <text x={props.it.x} y={props.it.y} transform={(props.vr ?? 0) ? `rotate(${-(props.vr ?? 0)} ${props.it.x} ${props.it.y})` : undefined} fill={props.it.color} font-size={props.it.size || 28} font-weight={700} stroke='rgba(0,0,0,.85)' stroke-width={6} paint-order='stroke' stroke-linejoin='round' pointer-events={props.hit ? 'all' : 'none'} style={st({ userSelect: 'none' })}>{props.it.text}</text>
   } else if (props.it.type === 'agent') {
     const ring = teamColor(props.it.team, props.side)
-    body = <g transform={`translate(${props.it.x} ${props.it.y}) rotate(${-(props.vr ?? 0)})`} pointerEvents={props.hit ? 'all' : 'none'}>
+    body = <g transform={`translate(${props.it.x} ${props.it.y}) rotate(${-(props.vr ?? 0)})`} pointer-events={props.hit ? 'all' : 'none'}>
       <circle r={TOKEN_R + 5} fill='none' stroke={ring} stroke-opacity={0.25} stroke-width={2} />
       <circle r={TOKEN_R} fill='#111' stroke={ring} stroke-width={4} />
-      <image href={props.it.icon} x={-24} y={-24} width={48} height={48} clipPath='url(#vd-clip)' preserveAspectRatio='xMidYMid slice' />
+      <image href={props.it.icon} x={-24} y={-24} width={48} height={48} clip-path='url(#vd-clip)' preserveAspectRatio='xMidYMid slice' />
       <title>{props.it.name}{props.it.team === 'enemy' ? ' (enemy)' : ''}</title>
     </g>
   } else if (props.it.type === 'ability') {
@@ -64,9 +64,9 @@ function Shape(props) {
     const r = g ? 12 : 24, ic = g ? 17 : 34
     body = <>
       {g?.shape === 'circle' && <circle cx={props.it.x} cy={props.it.y} r={g.r} fill={col} fill-opacity={g.kind === 'smoke' ? 0.42 : g.kind === 'reveal' ? 0.08 : 0.24}
-        stroke={col} stroke-opacity={0.85} stroke-width={2} stroke-dasharray={g.kind === 'reveal' ? '8 6' : undefined} pointerEvents='none' />}
-      {g?.shape === 'beam' && <line x1={g.x1} y1={g.y1} x2={g.x2} y2={g.y2} stroke={col} stroke-opacity={g.w > 12 ? 0.26 : 0.8} stroke-width={g.w} stroke-linecap={g.w > 12 ? 'butt' : 'round'} pointerEvents='none' />}
-      <g transform={`translate(${props.it.x} ${props.it.y}) rotate(${-(props.vr ?? 0)})`} pointerEvents={props.hit ? 'all' : 'none'}>
+        stroke={col} stroke-opacity={0.85} stroke-width={2} stroke-dasharray={g.kind === 'reveal' ? '8 6' : undefined} pointer-events='none' />}
+      {g?.shape === 'beam' && <line x1={g.x1} y1={g.y1} x2={g.x2} y2={g.y2} stroke={col} stroke-opacity={g.w > 12 ? 0.26 : 0.8} stroke-width={g.w} stroke-linecap={g.w > 12 ? 'butt' : 'round'} pointer-events='none' />}
+      <g transform={`translate(${props.it.x} ${props.it.y}) rotate(${-(props.vr ?? 0)})`} pointer-events={props.hit ? 'all' : 'none'}>
         <circle r={r} fill='rgba(10,10,14,.82)' stroke={col || 'rgba(255,255,255,.5)'} stroke-width={2} />
         <image href={props.it.icon} x={-ic / 2} y={-ic / 2} width={ic} height={ic} />
         <title>{props.it.name}</title>
@@ -343,13 +343,13 @@ const Board = function Board(props) {
           <rect width={SIZE} height={SIZE} rx={14} fill='none' stroke='rgba(255,255,255,.12)' stroke-width={2} />
           <For each={calls()}>{(c, i) => (
             <text x={c.x} y={c.y} transform={vr() ? `rotate(${-vr()} ${c.x} ${c.y})` : undefined} text-anchor='middle' dominant-baseline='middle'
-              fontSize={13} fontWeight={700} fill='rgba(255,255,255,.78)' stroke='rgba(0,0,0,.8)' stroke-width={3.5} paint-order='stroke' pointerEvents='none' style={st({ userSelect: 'none' })}>{c.name}</text>
+              font-size={13} font-weight={700} fill='rgba(255,255,255,.78)' stroke='rgba(0,0,0,.8)' stroke-width={3.5} paint-order='stroke' pointer-events='none' style={st({ userSelect: 'none' })}>{c.name}</text>
           )}</For>
           <For each={props.items}>{it => <Shape it={it} side={props.side} ppm={ppm()} vr={vr()} hit={hit() || (tool() === 'select' && !props.locked)} />}</For>
           {draft() && <Shape it={draft()} side={props.side} ppm={ppm()} vr={vr()} />}
           {sb() && !props.locked && tool() === 'select' && (
             <g>
-              <rect x={sb()[0] - 8} y={sb()[1] - 8} width={sb()[2] - sb()[0] + 16} height={sb()[3] - sb()[1] + 16} rx={8} fill='none' stroke='rgb(var(--accent))' stroke-width={2 / view().k} stroke-dasharray={`${6 / view().k} ${4 / view().k}`} pointerEvents='none' />
+              <rect x={sb()[0] - 8} y={sb()[1] - 8} width={sb()[2] - sb()[0] + 16} height={sb()[3] - sb()[1] + 16} rx={8} fill='none' stroke='rgb(var(--accent))' stroke-width={2 / view().k} stroke-dasharray={`${6 / view().k} ${4 / view().k}`} pointer-events='none' />
               <g data-del transform={`translate(${sb()[2] + 8} ${sb()[1] - 8}) scale(${1 / view().k})`} style={st({ cursor: 'pointer' })}>
                 <circle r={10} fill='#ff4655' /><path d='M-4 -4L4 4M4 -4L-4 4' stroke='#fff' stroke-width={2} stroke-linecap='round' />
               </g>

@@ -20,9 +20,9 @@ function RankBlock(props) {
     </div>
   )
 }
-function TierName({ tier }) {
-  const tiers = useTiers()
-  return tier && tiers?.[tier] ? tiers[tier].tierName : 'Unranked'
+function TierName(props) {
+  const tiersA = useTiers()
+  return <>{props.tier && tiersA()?.[props.tier] ? tiersA()[props.tier].tierName : 'Unranked'}</>
 }
 
 function ScoutStats(props) {
@@ -56,12 +56,12 @@ function ActHistory(props) {
     const best = () => (Math.max(...acts().map(a => a.peak)))
     const peakAct = () => ([...acts()].reverse().find(a => a.peak === best())?.seasonId)
     return (<Show when={!(props.scout.loading && !props.scout.data)} fallback={<div class='grid gap-2'>{Array.from({ length: 4 }, (_, i) => <Skeleton class='h-[60px] rounded-2xl' />)}</div>}><Show when={!(props.scout.error && !props.scout.data)} fallback={<ErrorState error={props.scout.error} onRetry={props.scout.reload} />}><Show when={!(!acts().length)} fallback={<Empty icon={FiClock} title='No competitive acts' hint='No ranked act data is available for this player.' class='py-8' />}><Stagger class='grid gap-2'>
-      {acts().map((a, i) => {
-        const wr = Math.round(a.wins / a.games * 100)
-        const isPeak = a.seasonId === peakAct()
+      <For each={acts()}>{(a, i) => {
+        const wr = () => (Math.round(a.wins / a.games * 100))
+        const isPeak = () => (a.seasonId === peakAct())
         return (
-          <Item index={i}
-            class={cx('flex items-center gap-4 rounded-2xl px-4 py-2.5 min-w-0 overflow-hidden', isPeak ? 'accent-soft' : 'glass')}>
+          <Item index={i()}
+            class={cx('flex items-center gap-4 rounded-2xl px-4 py-2.5 min-w-0 overflow-hidden', isPeak() ? 'accent-soft' : 'glass')}>
             <div class='w-[64px] shrink-0 font-display text-[13px] font-bold tracking-tight'>{seasonName(props.seasons, a.seasonId) || 'Act'}</div>
             <div class='flex items-center gap-2 w-[150px] shrink-0' title='Final rank'>
               <TierIcon tier={a.tier} size={30} />
@@ -78,14 +78,14 @@ function ActHistory(props) {
               </div>
             </div>
             {/* the highlighted row already marks the peak act */}
-            {isPeak && a.peak > 0 && <Badge tone='accent' class='max-[1200px]:hidden'>All-time peak</Badge>}
+            {isPeak() && a.peak > 0 && <Badge tone='accent' class='max-[1200px]:hidden'>All-time peak</Badge>}
             <div class='ml-auto shrink-0 whitespace-nowrap text-right leading-tight'>
-              <div class='text-[13px] font-semibold tabular-nums'>{wr}% <span class='text-muted font-normal text-[11px]'>win rate</span></div>
+              <div class='text-[13px] font-semibold tabular-nums'>{wr()}% <span class='text-muted font-normal text-[11px]'>win rate</span></div>
               <div class='text-[11px] text-muted tabular-nums'>{a.wins}W of {a.games} games</div>
             </div>
           </Item>
         )
-      })}
+      }}</For>
     </Stagger></Show></Show></Show>)
   
 }
@@ -174,7 +174,7 @@ export default function PlayerSearch(props) {
     const open = r => { setText(`${r.gameName}#${r.tagLine}`); setPuuid(r.puuid); setSearchError(null); invoke('search:pushRecent', r).then(() => __invoke.reload(true)).catch(() => { }) }
     const clear = async () => { await invoke('search:clearRecent'); __invoke.reload(true); toast('Recent searches cleared') }
     const list = (
-    () => (<Pane title='Find a player'
+    (<Pane title='Find a player'
       header={<>
         <form class='flex flex-col gap-2' onSubmit={e => { e.preventDefault(); find(textS().trim()) }}>
           <div class='glass-field flex items-center gap-2 rounded-full pl-4 pr-1 h-11'>
@@ -205,8 +205,8 @@ export default function PlayerSearch(props) {
   )
     return (<Page title='Lookup' subtitle='Any player by Riot ID: rank, peak, level and recent matches' bodyClass={SPLIT_BODY}>
       <RequireRiot>
-        <SplitView list={list()} listWidth={300}>
-          {puuidS() ? <Profile puuid={puuidS()} />
+        <SplitView list={list} listWidth={300}>
+          {puuidS() ? <Show when={puuidS()} keyed>{id => <Profile puuid={id} />}</Show>
             : <Empty icon={FiUser} class='h-full' title='Look up a player' hint="Type any Riot ID to see their rank, peak, act history and recent matches." />}
         </SplitView>
       </RequireRiot>

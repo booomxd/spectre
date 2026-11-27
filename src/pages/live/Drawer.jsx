@@ -1,4 +1,4 @@
-import { Show, createEffect, on, onCleanup } from 'solid-js'
+import { Show, createEffect, createSignal, on, onCleanup } from 'solid-js'
 import { Portal } from 'solid-js/web'
 import { st } from '../../lib/st.js'
 import { FiEyeOff, FiX } from 'solid-icons/fi'
@@ -14,11 +14,22 @@ export default function Drawer(props) {
     window.addEventListener('keydown', onKey)
     onCleanup(() => window.removeEventListener('keydown', onKey))
   }))
+  // stays mounted for a short exit slide after `open` turns false
+  const [mounted, setMounted] = createSignal(!!props.open)
+  const [closing, setClosing] = createSignal(false)
+  createEffect(on(() => !!props.open, open => {
+    if (open) { setClosing(false); setMounted(true); return }
+    if (!mounted()) return
+    if (reduceA()) { setMounted(false); return }
+    setClosing(true)
+    const t = setTimeout(() => { setMounted(false); setClosing(false) }, 170)
+    onCleanup(() => clearTimeout(t))
+  }, { defer: true }))
   return (
-    <Show when={props.open}>
+    <Show when={mounted()}>
       <Portal>
-        <Scrim class='top-16' onMouseDown={props.onClose}>
-          <aside class={cx('glass-strong absolute right-3 top-3 bottom-3 flex flex-col overflow-hidden rounded-3xl', reduceA() ? 'anim-fade' : 'anim-drawer')} style={st({ width: (props.width ?? 'min(820px, 62vw)') })} onMouseDown={e => e.stopPropagation()}>
+        <Scrim class={cx('top-16', closing() && 'anim-scrim-out pointer-events-none')} onMouseDown={props.onClose}>
+          <aside class={cx('glass-strong absolute right-3 top-3 bottom-3 flex flex-col overflow-hidden rounded-3xl', closing() ? 'anim-drawer-out' : reduceA() ? 'anim-fade' : 'anim-drawer')} style={st({ width: (props.width ?? 'min(820px, 62vw)') })} onMouseDown={e => e.stopPropagation()}>
             {props.children}
           </aside>
         </Scrim>

@@ -136,24 +136,24 @@ function Bundle(props) {
         </div>
       </Card>
       <Stagger class='grid grid-cols-2 md:grid-cols-4 xl:grid-cols-4 gap-3'>
-        {props.b.items.map((it, i) => {
-          const item = props.cat?.items.get(it.id)
-          const clickable = !!item?.skin
+        <For each={props.b.items}>{(it, i) => {
+          const item = () => (props.cat?.items.get(it.id))
+          const clickable = () => (!!item()?.skin)
           return (
-            <Item index={i}>
-              <Card hover={clickable} onClick={() => clickable && props.onOpen(item)} class='group overflow-hidden rounded-2xl flex items-center gap-3 pr-4'>
-                <ItemArt item={item} class='w-24 h-16 shrink-0' />
+            <Item index={i()}>
+              <Card hover={clickable()} onClick={() => clickable() && props.onOpen(item())} class='group overflow-hidden rounded-2xl flex items-center gap-3 pr-4'>
+                <ItemArt item={item()} class='w-24 h-16 shrink-0' />
                 <div class='min-w-0 flex-1'>
-                  <div class='truncate text-[12.5px] font-semibold text-text'>{item?.name || '...'}{it.amount > 1 ? ` x${it.amount}` : ''}</div>
+                  <div class='truncate text-[12.5px] font-semibold text-text'>{item()?.name || '...'}{it.amount > 1 ? ` x${it.amount}` : ''}</div>
                   <div class='mt-0.5 flex items-center justify-between gap-2 text-[11px]'>
-                    <span class='text-muted capitalize'>{item?.kind}</span>
+                    <span class='text-muted capitalize'>{item()?.kind}</span>
                     {it.price === 0 ? <span class='text-good font-bold'>Included</span> : <Price amount={it.price} cat={props.cat} size={11} />}
                   </div>
                 </div>
               </Card>
             </Item>
           )
-        })}
+        }}</For>
       </Stagger>
     </div>)
   
@@ -182,22 +182,22 @@ function Wishlist(props) {
         ? <Card class='rounded-2xl'><Empty icon={FiHeart} title='Nothing on your wishlist yet' hint='Open Weapons and press the heart on any skin you want.' /></Card>
         : (
           <div class='grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3'>
-            {__wishlist.items.map(i => {
-              const item = props.cat?.items.get(i.id)
-              const hit = hits().get(i.id)
-              const name = item?.name || i.name
+            <For each={__wishlist.items}>{i => {
+              const item = () => (props.cat?.items.get(i.id))
+              const hit = () => (hits().get(i.id))
+              const name = () => (item()?.name || i.name)
               return (
-                <Card class={cx('relative flex items-center gap-3 p-3 pr-10 rounded-2xl min-w-0', hit && 'accent-glow')}>
-                  <div class='w-20 h-12 shrink-0 flex items-center justify-center'>{item?.icon && <img decoding='async' src={item.icon} alt='' class='max-w-full max-h-full object-contain' loading='lazy' />}</div>
+                <Card class={cx('relative flex items-center gap-3 p-3 pr-10 rounded-2xl min-w-0', hit() && 'accent-glow')}>
+                  <div class='w-20 h-12 shrink-0 flex items-center justify-center'>{item()?.icon && <img decoding='async' src={item().icon} alt='' class='max-w-full max-h-full object-contain' loading='lazy' />}</div>
                   <div class='min-w-0'>
-                    <div class='truncate text-[13px] font-semibold text-text'>{name}</div>
-                    <div class={cx('mt-0.5 text-[11px] truncate', hit ? 'text-good font-semibold' : 'text-muted')}>{hit ? WHERE[hit.where] : 'Not in your store'}</div>
+                    <div class='truncate text-[13px] font-semibold text-text'>{name()}</div>
+                    <div class={cx('mt-0.5 text-[11px] truncate', hit() ? 'text-good font-semibold' : 'text-muted')}>{hit() ? WHERE[hit().where] : 'Not in your store'}</div>
                   </div>
-                  <button type='button' aria-label={`Remove ${name} from wishlist`} title='Remove from wishlist' onClick={() => __wishlist.toggle(i.id, name)}
+                  <button type='button' aria-label={`Remove ${name()} from wishlist`} title='Remove from wishlist' onClick={() => __wishlist.toggle(i.id, name())}
                     class='absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center text-muted hover:text-text hover:bg-surface-2 transition-colors'><FiX size={12} /></button>
                 </Card>
               )
-            })}
+            }}</For>
           </div>
         )}
     </section>)

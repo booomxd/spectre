@@ -1,13 +1,15 @@
-import { For, Show } from 'solid-js'
+import { For, Show, children as resolveChildren } from 'solid-js'
 // shared building blocks for the Career pages (Progression, Matches, Encounters, Leaderboard) so they read as one family: a toolbar row with SegmentedTabs + right-side meta, and a stat strip of big numbers under it
 import { SegmentedTabs, Skeleton, cx } from '../../ui'
 
 // toolbar under the page header: segmented filter on the left, meta / actions on the right
 export function CareerBar(props) {
+  // JSX props build a new node on every read: resolve once
+  const right_ = resolveChildren(() => props.right)
   return (
     <div class={cx('flex flex-wrap items-center justify-between gap-3 mb-5', props["class"])}>
       {props.tabs ? <SegmentedTabs tabs={props.tabs} value={props.value} onChange={props.onChange} layoutId={props.layoutId} /> : <span />}
-      {props.right && <div class='flex items-center gap-2.5 text-[12px] text-muted tabular-nums'>{props.right}</div>}
+      {right_() && <div class='flex items-center gap-2.5 text-[12px] text-muted tabular-nums'>{right_()}</div>}
     </div>
   )
 }

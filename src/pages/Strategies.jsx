@@ -1,4 +1,4 @@
-import { Show, createEffect, createMemo, createSignal, on, onCleanup, onMount } from 'solid-js'
+import { Index, Show, createEffect, createMemo, createSignal, on, onCleanup, onMount } from 'solid-js'
 import { st } from '../lib/st.js'
 // strategies: playbook library + tactical whiteboard with steps, animation, notes and PNG export
 import { FiCheck, FiCopy, FiDownload, FiPause, FiPlay, FiPlus, FiRotateCcw, FiRotateCw, FiTrash2, FiCompass } from 'solid-icons/fi'
@@ -124,7 +124,8 @@ export default function Strategies(props) {
   }
     const deleteStep = () => {
     if (strat().steps.length < 2) return
-    commitSteps(strat().steps.filter((_, i) => i !== idx())); setStepIdx(Math.max(0, idx() - 1))
+    const at = idx()
+    commitSteps(strat().steps.filter((_, i) => i !== at)); setStepIdx(Math.max(0, at - 1))
   }
     const renameStep = () => {
     if (!stepEditS()) return
@@ -274,18 +275,19 @@ export default function Strategies(props) {
               <Button size='sm' variant={playingS() ? 'danger' : 'primary'} icon={playingS() ? FiPause : FiPlay} onClick={play}>{playingS() ? 'Stop' : 'Play'}</Button>
               <span class='w-px h-6 bg-line/60 mx-1 shrink-0' />
               <div class='relative flex items-center gap-1.5 stagger'>
-                {strat().steps.map((stp, i) => (
-                  stepEditS()?.i === i ? (
-                    <Input autofocus value={stepEditS().value} onInput={e => setStepEdit({ i, value: e.target.value })} onBlur={renameStep}
-                      onKeyDown={e => { if (e.key === 'Enter') renameStep(); if (e.key === 'Escape') setStepEdit(null) }} class='w-32 h-8 rounded-full px-3.5' />
-                  ) : (
-                    <button onClick={() => !playingS() && setStepIdx(i)} onDoubleClick={() => !playingS() && setStepEdit({ i, value: stp.name })} style={st({ '--i': i })}
+                {/* Index keeps each step pill mounted by position, so renaming or editing a step never rebuilds the bar */}
+                <Index each={strat().steps}>{(stp, i) => (
+                  <Show when={stepEditS()?.i === i} fallback={
+                    <button onClick={() => !playingS() && setStepIdx(i)} onDoubleClick={() => !playingS() && setStepEdit({ i, value: stp().name })} style={st({ '--i': i })}
                       title='Double-click to rename'
                       class={`anim-rise relative h-8 pl-1 pr-3.5 rounded-full flex items-center gap-2 text-xs font-semibold whitespace-nowrap transition-colors duration-200 ${i === idx() ? 'accent-soft text-text' : 'glass text-muted hover:text-text hover:bg-surface-2'}`}>
-                      <span class={`h-6 w-6 rounded-full grid place-items-center text-[10px] font-bold tabular-nums ${i === idx() ? 'accent-fill text-bg' : 'bg-surface-2 border border-line'}`}>{i + 1}</span>{stp.name}
+                      <span class={`h-6 w-6 rounded-full grid place-items-center text-[10px] font-bold tabular-nums ${i === idx() ? 'accent-fill text-bg' : 'bg-surface-2 border border-line'}`}>{i + 1}</span>{stp().name}
                     </button>
-                  )
-                ))}
+                  }>
+                    <Input autofocus value={stepEditS().value} onInput={e => setStepEdit({ i, value: e.target.value })} onBlur={renameStep}
+                      onKeyDown={e => { if (e.key === 'Enter') renameStep(); if (e.key === 'Escape') setStepEdit(null) }} class='w-32 h-8 rounded-full px-3.5' />
+                  </Show>
+                )}</Index>
               </div>
               <span class='w-px h-6 bg-line/60 mx-1 shrink-0' />
               <Button size='sm' variant='ghost' icon={FiPlus} onClick={() => addStep(false)} disabled={playingS()} title='Add blank step'><span class='max-[1200px]:hidden'>Step</span></Button>

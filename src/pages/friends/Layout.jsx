@@ -1,5 +1,5 @@
 import { Dynamic } from 'solid-js/web'
-import { splitProps } from 'solid-js'
+import { splitProps, children as resolveChildren } from 'solid-js'
 import { st } from '../../lib/st.js'
 // shared list/detail layout for the Squad pages
 import { FiSearch } from 'solid-icons/fi'
@@ -19,17 +19,22 @@ export function SplitView(props) {
 
 // glass pane with a fixed header and a scrolling body
 export function Pane(props) {
+  // JSX props build a new node on every read: resolve once
+  const title_ = resolveChildren(() => props.title)
+  const right_ = resolveChildren(() => props.right)
+  const header_ = resolveChildren(() => props.header)
+  const footer_ = resolveChildren(() => props.footer)
   return (
     <div class={cx('glass rounded-3xl flex flex-col min-h-0 h-full overflow-hidden', props["class"])}>
-      {(props.title || props.right) && (
+      {(title_() || right_()) && (
         <div class='flex items-center justify-between gap-3 px-5 pt-5 pb-3'>
-          <span class='eyebrow'>{props.title}</span>
-          {props.right}
+          <span class='eyebrow'>{title_()}</span>
+          {right_()}
         </div>
       )}
-      {props.header && <div class='px-4 pb-3'>{props.header}</div>}
+      {header_() && <div class='px-4 pb-3'>{header_()}</div>}
       <div class={cx('flex-1 min-h-0 overflow-y-auto px-3 pb-3', props.bodyClass)}>{props.children}</div>
-      {props.footer && <div class='border-t border-line px-4 py-3'>{props.footer}</div>}
+      {footer_() && <div class='border-t border-line px-4 py-3'>{footer_()}</div>}
     </div>
   )
 }
@@ -68,6 +73,9 @@ export function ListRow(props) {
 
 // big detail header: optional art backdrop, eyebrow, title, meta and actions
 export function DetailHero(props) {
+  // JSX props build a new node on every read: resolve once
+  const actions_ = resolveChildren(() => props.actions)
+  const meta_ = resolveChildren(() => props.meta)
   return (
     <div class={cx('glass relative overflow-hidden rounded-3xl', props["class"])}>
       {props.art && <img decoding='async' src={props.art} alt='' draggable={false} class='absolute inset-0 w-full h-full object-cover' />}
@@ -78,9 +86,9 @@ export function DetailHero(props) {
           <div class='min-w-0'>
             {props.eyebrow && <div class={cx('eyebrow mb-2', props.art && '!text-white/70')}>{props.eyebrow}</div>}
             <h2 class={cx('display text-[34px] truncate', props.art ? 'text-white drop-shadow-[0_2px_12px_rgb(0_0_0/0.45)]' : 'text-text')}>{props.title}</h2>
-            {props.meta && <div class={cx('mt-2 text-[13px]', props.art ? 'text-white/75' : 'text-muted')}>{props.meta}</div>}
+            {meta_() && <div class={cx('mt-2 text-[13px]', props.art ? 'text-white/75' : 'text-muted')}>{meta_()}</div>}
           </div>
-          {props.actions && <div class='flex flex-wrap items-center gap-2'>{props.actions}</div>}
+          {actions_() && <div class='flex flex-wrap items-center gap-2'>{actions_()}</div>}
         </div>
         {props.children}
       </div>

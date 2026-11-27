@@ -90,7 +90,7 @@ export default function FriendActivity() {
     ...Object.entries(KIND).map(([value, k]) => ({ value, label: k.label, icon: k.icon, tone: k.tone, soft: k.soft, count: counts()[value] || 0 })),
   ])
     const list = (
-    () => (<Pane title='Filter' header={<SearchField value={qS()} onChange={setQ} placeholder='Search by name' />}
+    (<Pane title='Filter' header={<SearchField value={qS()} onChange={setQ} placeholder='Search by name' />}
       footer={<div class='flex items-center gap-2'>
         <Button class='flex-1' icon={FiRefreshCw} loading={scanningS()} onClick={scan}>Scan now</Button>
         <Button variant='ghost' size='icon' icon={FiTrash2} title='Clear feed' disabled={!events().length} onClick={() => setConfirm(true)} />
@@ -116,7 +116,7 @@ export default function FriendActivity() {
     </Pane>)
   )
     return (<Show when={!(!riotA().connected)} fallback={<Page title={title()} subtitle={subtitle()}><RequireRiot hint='Open the Riot Client to see changes to your friends list.' /></Page>}><Page title={title()} subtitle={subtitle()} bodyClass={SPLIT_BODY}>
-      <SplitView list={list()} listWidth={300}>
+      <SplitView list={list} listWidth={300}>
         {log.error && !log.data ? <ErrorState error={log.error} onRetry={log.reload} />
           : log.loading && !log.data ? <div class='flex flex-col gap-2.5'>{Array.from({ length: 6 }, (_, i) => <Skeleton class='h-[72px] rounded-2xl' />)}</div>
             : !events().length ? (

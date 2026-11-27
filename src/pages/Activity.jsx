@@ -102,16 +102,16 @@ function Content() {
         <div class='mb-7'>
           <Heading hint='Named players who keep showing up in your games'>Seen most often</Heading>
           <Stagger class='grid grid-cols-2 lg:grid-cols-4 gap-3'>
-            {frequent().map((f, i) => {
-              const total = f.with + f.against
+            <For each={frequent()}>{(f, i) => {
+              const total = () => (f.with + f.against)
               return (
-                <Item index={i}>
+                <Item index={i()}>
                   <Card as='button' hover onClick={() => openPlayer({ ...f, known: true })} class='w-full text-left p-4'>
                     <div class='flex items-center gap-3'>
                       <AgentIcon id={f.agent} agents={agentsA()} size={40} class='!rounded-xl' />
                       <div class='min-w-0 flex-1'>
                         <div class='truncate text-[13.5px] font-semibold tracking-tight text-text'>{f.name.gameName}<span class='text-muted font-normal'>#{f.name.tagLine}</span></div>
-                        <div class='text-[11px] text-muted mt-0.5'>{f.friend ? 'Friend' : 'Party'} - {total} games</div>
+                        <div class='text-[11px] text-muted mt-0.5'>{f.friend ? 'Friend' : 'Party'} - {total()} games</div>
                       </div>
                     </div>
                     <div class='mt-3.5 h-1.5 rounded-full glass-inset overflow-hidden flex'>
@@ -122,7 +122,7 @@ function Content() {
                   </Card>
                 </Item>
               )
-            })}
+            }}</For>
           </Stagger>
         </div>
       )}

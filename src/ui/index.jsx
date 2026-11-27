@@ -40,16 +40,18 @@ export function useNow(interval = 1000) {
 export function Page(props) {
   const ctx = useContext(PageContext)
   const kicker = () => props.eyebrow ?? ctx.section
+  // JSX props create a new node on every read: resolve once
+  const actions = resolveChildren(() => props.actions)
   return (
     <div class={cx('h-full flex flex-col', props.class)}>
-      <Show when={props.title || props.actions}>
+      <Show when={props.title || actions()}>
         <header class='flex items-end justify-between gap-6 px-8 pt-7 pb-6'>
           <div class='min-w-0'>
             <Show when={kicker() && props.title}><div class='eyebrow mb-2.5 flex items-center gap-2'><span class='w-1.5 h-1.5 rounded-full bg-accent shadow-[0_0_10px_rgb(var(--accent))]' />{kicker()}</div></Show>
             <Show when={props.title}><h1 class='display text-[38px] text-text'>{props.title}</h1></Show>
             <Show when={props.subtitle}><p class='mt-2.5 text-[13.5px] text-muted max-w-2xl'>{props.subtitle}</p></Show>
           </div>
-          <Show when={props.actions}><div class='flex items-center gap-2 shrink-0'>{props.actions}</div></Show>
+          <Show when={actions()}><div class='flex items-center gap-2 shrink-0'>{actions()}</div></Show>
         </header>
       </Show>
       <div class={cx('flex-1 overflow-y-auto px-8 pb-8 scroll-body', props.bodyClass)}>{props.children}</div>
@@ -151,9 +153,10 @@ export function Label(props) {
 
 // switch
 export function Toggle(props) {
+  const label = resolveChildren(() => props.label)
   return (
     <label class={cx('flex items-center justify-between gap-4 cursor-pointer', props.disabled && 'opacity-50 pointer-events-none')}>
-      <Show when={props.label || props.hint}><span class='min-w-0'><span class='block text-[13px] font-medium text-text'>{props.label}</span><Show when={props.hint}><span class='block text-[11.5px] text-muted mt-0.5'>{props.hint}</span></Show></span></Show>
+      <Show when={label() || props.hint}><span class='min-w-0'><span class='block text-[13px] font-medium text-text'>{label()}</span><Show when={props.hint}><span class='block text-[11.5px] text-muted mt-0.5'>{props.hint}</span></Show></span></Show>
       <button type='button' role='switch' aria-checked={!!props.checked} aria-label={typeof props.label === 'string' ? props.label : undefined} onClick={() => props.onChange(!props.checked)}
         class={cx('relative w-11 h-6 rounded-full transition-[background-color,box-shadow] duration-300 shrink-0', props.checked ? 'accent-fill' : 'glass-field')}>
         <span class={cx('absolute top-[3px] left-[3px] w-[18px] h-[18px] rounded-full bg-white shadow-[0_2px_6px_rgb(0_0_0/0.35)] transition-transform duration-300 ease-spring', props.checked && 'translate-x-5')} />
@@ -212,6 +215,7 @@ export function Skeleton(props) { return <div class={cx('skeleton', props.class)
 export function Spinner(props) { return <FiLoader class={cx('animate-spin text-muted', props.class)} /> }
 
 export function Empty(props) {
+  const action = resolveChildren(() => props.action)
   return (
     <div class={cx('anim-fade flex flex-col items-center justify-center text-center gap-2 py-16', props.class)}>
       <div class='relative mb-2'>
@@ -220,7 +224,7 @@ export function Empty(props) {
       </div>
       <Show when={props.title}><p class='text-[15px] font-semibold tracking-tight text-text'>{props.title}</p></Show>
       <Show when={props.hint}><p class='text-[12.5px] text-muted max-w-xs leading-relaxed'>{props.hint}</p></Show>
-      <Show when={props.action}><div class='mt-3'>{props.action}</div></Show>
+      <Show when={action()}><div class='mt-3'>{action()}</div></Show>
     </div>
   )
 }
@@ -268,6 +272,7 @@ function ModalBody(props) {
     cancelAnimationFrame(id)
     if (prev && prev.isConnected && prev.focus) prev.focus({ preventScroll: true })
   })
+  const footer = resolveChildren(() => props.footer)
   return (
     <Portal>
       <Scrim class='items-center justify-center' onMouseDown={() => props.onClose?.()}>
@@ -278,7 +283,7 @@ function ModalBody(props) {
             <button aria-label='Close' title='Close' class='w-8 h-8 -mr-2 shrink-0 rounded-full flex items-center justify-center text-muted hover:text-text hover:bg-surface-2 transition-colors' onClick={() => props.onClose?.()}><FiX /></button>
           </div>
           <div class='px-7 pb-6 overflow-y-auto'>{props.children}</div>
-          <Show when={props.footer}><div class='px-7 py-4 border-t border-line flex justify-end gap-2'>{props.footer}</div></Show>
+          <Show when={footer()}><div class='px-7 py-4 border-t border-line flex justify-end gap-2'>{footer()}</div></Show>
         </div>
       </Scrim>
     </Portal>

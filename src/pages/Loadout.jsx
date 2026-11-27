@@ -82,11 +82,12 @@ function LoadoutView(props) {
   }
     const applyPreset = async () => {
     setApplyingPreset(true)
-    const r = await withToast(invoke('loadout:presetApply', confirmPresetS().id))
+    const preset = confirmPresetS()
+    const r = await withToast(invoke('loadout:presetApply', preset.id))
     setApplyingPreset(false)
     if (!r) return
     setConfirmPreset(null); setEdits({}); __invoke.reload(true)
-    toastSkipped(r.skipped, confirmPresetS().name)
+    toastSkipped(r.skipped, preset.name)
   }
     const savePreset = async () => {
     const r = await withToast(invoke('loadout:presetSave', presetNameS()), 'Preset saved')
@@ -168,22 +169,22 @@ function LoadoutView(props) {
               <Heading hint='Your spray wheel'>Sprays</Heading>
               {!__invoke.data ? <Skeleton class='h-24 rounded-2xl' /> : (
                 <div class='grid grid-cols-2 gap-2'>
-                  {__invoke.data.ActiveExpressions.slice(0, 4).map((e, i) => {
-                    const sp = spraysA()?.find(s => lc(s.uuid) === lc(e.AssetID))
+                  <For each={__invoke.data.ActiveExpressions.slice(0, 4)}>{(e, i) => {
+                    const sp = () => (spraysA()?.find(s => lc(s.uuid) === lc(e.AssetID)))
                     return (
-                      <div class='glass-inset h-[58px] rounded-2xl flex items-center justify-center p-2' title={sp?.displayName || 'Expression'}>
-                        {sp ? <img decoding='async' src={sp.fullTransparentIcon || sp.displayIcon} class='max-h-full max-w-full object-contain' /> : <span class='text-[10px] text-muted'>Flex</span>}
+                      <div class='glass-inset h-[58px] rounded-2xl flex items-center justify-center p-2' title={sp()?.displayName || 'Expression'}>
+                        {sp() ? <img decoding='async' src={sp().fullTransparentIcon || sp().displayIcon} class='max-h-full max-w-full object-contain' /> : <span class='text-[10px] text-muted'>Flex</span>}
                       </div>
                     )
-                  })}
+                  }}</For>
                 </div>
               )}
               {__invoke.data?.ActiveExpressions.length > 4 && (
                 <div class='flex gap-2 mt-2'>
-                  {__invoke.data.ActiveExpressions.slice(4).map((e, i) => {
-                    const sp = spraysA()?.find(s => lc(s.uuid) === lc(e.AssetID))
-                    return <div class='glass-inset flex-1 h-10 rounded-xl flex items-center justify-center p-1.5' title={sp?.displayName || 'Expression'}>{sp ? <img decoding='async' src={sp.fullTransparentIcon || sp.displayIcon} class='max-h-full max-w-full object-contain' /> : <span class='text-[10px] text-muted'>Flex</span>}</div>
-                  })}
+                  <For each={__invoke.data.ActiveExpressions.slice(4)}>{(e, i) => {
+                    const sp = () => (spraysA()?.find(s => lc(s.uuid) === lc(e.AssetID)))
+                    return <div class='glass-inset flex-1 h-10 rounded-xl flex items-center justify-center p-1.5' title={sp()?.displayName || 'Expression'}>{sp() ? <img decoding='async' src={sp().fullTransparentIcon || sp().displayIcon} class='max-h-full max-w-full object-contain' /> : <span class='text-[10px] text-muted'>Flex</span>}</div>
+                  }}</For>
                 </div>
               )}
             </Card>

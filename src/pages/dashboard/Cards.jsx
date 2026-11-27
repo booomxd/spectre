@@ -331,18 +331,18 @@ export function FriendsCard(props) {
         : props.friends.error || !online().length ? <Empty icon={FiUsers} title={props.friends.error ? 'Friends unavailable' : 'Nobody online'} hint={props.friends.error ? 'Open the Friends page to retry.' : 'Online friends will appear here.'} class='py-6' />
           : (
             <div class='stagger'>
-              {online().slice(0, 5).map((f, i) => {
-                const s = f.status || {}
-                const rankIcon = typeof s.rank === 'number' ? tiersA()?.[s.rank]?.smallIcon : null
+              <For each={online().slice(0, 5)}>{(f, i) => {
+                const s = () => (f.status || {})
+                const rankIcon = () => (typeof s().rank === 'number' ? tiersA()?.[s().rank]?.smallIcon : null)
                 return (
-                  <div style={st({ '--i': i })} class='flex items-center gap-3 rounded-xl px-2.5 py-2 -mx-1 hover:bg-surface-2 transition-colors'>
+                  <div style={st({ '--i': i() })} class='flex items-center gap-3 rounded-xl px-2.5 py-2 -mx-1 hover:bg-surface-2 transition-colors'>
                     <span class='w-2 h-2 rounded-full bg-good anim-pulse shadow-[0_0_8px_rgb(var(--good)/0.6)] shrink-0' />
                     <span class='truncate text-[13px] font-medium text-text flex-1'>{f.gameName}<span class='text-muted font-normal'> #{f.tagLine}</span></span>
-                    <span class='text-[11px] text-muted capitalize truncate max-w-[110px]'>{[s.state, s.map].filter(Boolean).join(' - ')}</span>
-                    {rankIcon && <img decoding='async' src={rankIcon} alt='' class='w-5 h-5' />}
+                    <span class='text-[11px] text-muted capitalize truncate max-w-[110px]'>{[s().state, s().map].filter(Boolean).join(' - ')}</span>
+                    {rankIcon() && <img decoding='async' src={rankIcon()} alt='' class='w-5 h-5' />}
                   </div>
                 )
-              })}
+              }}</For>
             </div>
           )}
     </Card>)

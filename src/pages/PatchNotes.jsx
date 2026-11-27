@@ -94,26 +94,26 @@ function SpectreNotes() {
     const current = () => (status.data?.current)
     return (<Show when={!(__invoke.loading && !__invoke.data)} fallback={<div class='grid gap-4'><For each={[0, 1, 2]}>{i => <Skeleton class='h-24 rounded-2xl' />}</For></div>}><Show when={!(__invoke.error && !__invoke.data)} fallback={<ErrorState error={__invoke.error} onRetry={__invoke.reload} />}><Show when={!(!__invoke.data?.length)} fallback={<Empty title='No Spectre releases yet' />}><Stagger class='relative flex flex-col gap-4'>
       <span class='absolute left-[21px] top-8 bottom-8 w-px bg-gradient-to-b from-accent/60 via-line to-transparent' />
-      {__invoke.data.map((r, i) => {
-        const expanded = openS() === null ? i === 0 : openS() === r.version
+      <For each={__invoke.data}>{(r, i) => {
+        const expanded = () => (openS() === null ? i() === 0 : openS() === r.version)
         return (
-          <Item index={i} class='relative flex gap-5'>
-            <span class={cx('relative z-[1] mt-4 w-11 h-11 rounded-2xl shrink-0 flex items-center justify-center', i === 0 ? 'accent-soft' : 'glass')}>
+          <Item index={i()} class='relative flex gap-5'>
+            <span class={cx('relative z-[1] mt-4 w-11 h-11 rounded-2xl shrink-0 flex items-center justify-center', i() === 0 ? 'accent-soft' : 'glass')}>
               <img decoding='async' src={logo} alt='' class='w-6 h-6' draggable={false} />
             </span>
             <Card class='flex-1 min-w-0 rounded-2xl'>
-              <button class='w-full flex items-center gap-4 text-left px-6 py-[18px]' onClick={() => setOpen(expanded ? '' : r.version)}>
+              <button class='w-full flex items-center gap-4 text-left px-6 py-[18px]' onClick={() => setOpen(expanded() ? '' : r.version)}>
                 <div class='min-w-0 flex-1'>
                   <div class='flex items-center gap-2 flex-wrap'>
                     <span class='font-display text-[19px] font-bold tracking-tight text-text'>{r.name}</span>
-                    {i === 0 && <Badge tone='accent'>Latest</Badge>}
+                    {i() === 0 && <Badge tone='accent'>Latest</Badge>}
                     {r.version === current() && <Badge tone='good'>Installed</Badge>}
                   </div>
                   <div class='text-[12px] text-muted mt-0.5 tabular-nums'>{fmt(r.date)}</div>
                 </div>
-                <span class='w-8 h-8 rounded-full glass-inset flex items-center justify-center shrink-0'><FiChevronDown class={cx('text-muted transition-transform duration-300 ease-out', expanded && 'rotate-180')} /></span>
+                <span class='w-8 h-8 rounded-full glass-inset flex items-center justify-center shrink-0'><FiChevronDown class={cx('text-muted transition-transform duration-300 ease-out', expanded() && 'rotate-180')} /></span>
               </button>
-              {expanded && (
+              {expanded() && (
                 <FadeIn y={4} class='px-6 pb-6'>
                   <div class='hairline mb-5' />
                   <Markdown text={r.notes} />
@@ -123,7 +123,7 @@ function SpectreNotes() {
             </Card>
           </Item>
         )
-      })}
+      }}</For>
     </Stagger></Show></Show></Show>)
   
 }

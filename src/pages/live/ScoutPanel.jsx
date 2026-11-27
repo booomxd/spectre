@@ -11,9 +11,9 @@ import { RankGlow, RankIcon, useRankColor } from './parts'
 
 const title = s => (s || '').toLowerCase().replace(/(^|\s)\S/g, c => c.toUpperCase())
 
-function TierName({ tier }) {
-  const tiers = useTiers()
-  return tier && tiers?.[tier] ? title(tiers[tier].tierName) : 'Unranked'
+function TierName(props) {
+  const tiersA = useTiers()
+  return <>{props.tier && tiersA()?.[props.tier] ? title(tiersA()[props.tier].tierName) : 'Unranked'}</>
 }
 
 function RankCard(props) {
@@ -73,13 +73,13 @@ function RankHistory(props) {
     const acts = () => ([...props.history].sort((a, b) => start(b.seasonId) - start(a.seasonId)))
     
     return (<Show when={!(!acts().length)} fallback={<Empty icon={FiActivity} title='No competitive acts' class='py-8' />}><Stagger class='grid gap-2.5 grid-cols-1 xl:grid-cols-2'>
-      {acts().map((a, i) => {
-        const isPeak = a.seasonId === props.peak.seasonId
+      <For each={acts()}>{(a, i) => {
+        const isPeak = () => (a.seasonId === props.peak.seasonId)
         return (
-          <Item index={i} class={cx('flex items-center gap-3 rounded-2xl px-3.5 py-3', isPeak ? 'accent-soft' : 'glass')}>
+          <Item index={i()} class={cx('flex items-center gap-3 rounded-2xl px-3.5 py-3', isPeak() ? 'accent-soft' : 'glass')}>
             <RankIcon tier={a.tier} size={34} />
             <div class='min-w-0 flex-1 leading-tight'>
-              <div class='flex items-center gap-1.5 text-[13px] font-semibold text-text'><TierName tier={a.tier} />{isPeak && <Badge tone='accent'>Peak</Badge>}</div>
+              <div class='flex items-center gap-1.5 text-[13px] font-semibold text-text'><TierName tier={a.tier} />{isPeak() && <Badge tone='accent'>Peak</Badge>}</div>
               <div class='text-[11px] text-muted mt-0.5'>{seasonName(props.seasons, a.seasonId) || 'Act'}</div>
             </div>
             <div class='text-right leading-tight shrink-0'>
@@ -88,7 +88,7 @@ function RankHistory(props) {
             </div>
           </Item>
         )
-      })}
+      }}</For>
     </Stagger></Show>)
   
 }
@@ -97,17 +97,17 @@ function TopAgents(props) {
   
     
     return (<Show when={!(!props.list.length)} fallback={<Empty icon={FiActivity} title='No recent agents' class='py-8' />}><Stagger class='grid gap-2.5'>
-      {props.list.map((a, i) => {
-        const ag = props.agents[a.agent]
-        const wr = Math.round(a.wins / a.games * 100)
+      <For each={props.list}>{(a, i) => {
+        const ag = () => (props.agents[a.agent])
+        const wr = () => (Math.round(a.wins / a.games * 100))
         return (
-          <Item index={i} class='glass flex items-center gap-3.5 rounded-2xl px-3.5 py-2.5'>
-            {ag ? <img decoding='async' src={ag.displayIcon} alt='' class='w-11 h-11 rounded-xl object-cover' draggable={false} /> : <div class='w-11 h-11 rounded-xl bg-surface-2' />}
+          <Item index={i()} class='glass flex items-center gap-3.5 rounded-2xl px-3.5 py-2.5'>
+            {ag() ? <img decoding='async' src={ag().displayIcon} alt='' class='w-11 h-11 rounded-xl object-cover' draggable={false} /> : <div class='w-11 h-11 rounded-xl bg-surface-2' />}
             <div class='min-w-0 flex-1 leading-tight'>
-              <div class='text-[13px] font-semibold text-text'>{ag?.displayName || 'Agent'}</div>
+              <div class='text-[13px] font-semibold text-text'>{ag()?.displayName || 'Agent'}</div>
               <div class='mt-1.5 flex items-center gap-2'>
-                <div class='h-1 w-24 rounded-full bg-surface-2 overflow-hidden'><div class='h-full w-full bg-accent origin-left rounded-full' style={st({ transform: `scaleX(${wr / 100})` })} /></div>
-                <span class='text-[11px] text-muted tabular-nums'>{a.games} {a.games === 1 ? 'game' : 'games'} · {wr}% WR</span>
+                <div class='h-1 w-24 rounded-full bg-surface-2 overflow-hidden'><div class='h-full w-full bg-accent origin-left rounded-full' style={st({ transform: `scaleX(${wr() / 100})` })} /></div>
+                <span class='text-[11px] text-muted tabular-nums'>{a.games} {a.games === 1 ? 'game' : 'games'} · {wr()}% WR</span>
               </div>
             </div>
             <div class='text-right leading-tight'>
@@ -116,7 +116,7 @@ function TopAgents(props) {
             </div>
           </Item>
         )
-      })}
+      }}</For>
     </Stagger></Show>)
   
 }

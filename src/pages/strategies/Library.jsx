@@ -45,13 +45,13 @@ export default function Library(props) {
             action={!needle() && <Button size='sm' variant='primary' icon={FiPlus} onClick={props.onNewPlaybook}>New playbook</Button>} />
         ) : (
           <div class='flex flex-col gap-1 stagger'>
-            {rows().map(({ pb, strategies }, i) => {
-              const open = needle() ? true : !closedS()[pb.id]
+            <For each={rows()}>{({ pb, strategies }, i) => {
+              const open = () => (needle() ? true : !closedS()[pb.id])
               return (
-                <div class='anim-rise' style={st({ '--i': i })}>
+                <div class='anim-rise' style={st({ '--i': i() })}>
                   <div class='group flex items-center gap-2 h-9 pl-2 pr-1 rounded-xl cursor-pointer text-muted hover:text-text hover:bg-surface-2 transition-colors'
-                    aria-expanded={open} {...pressable(() => setClosed(c => ({ ...c, [pb.id]: open })))}>
-                    <FiChevronRight class={`text-xs transition-transform duration-200 ${open ? 'rotate-90' : ''}`} />
+                    aria-expanded={open()} {...pressable(() => setClosed(c => ({ ...c, [pb.id]: open() })))}>
+                    <FiChevronRight class={`text-xs transition-transform duration-200 ${open() ? 'rotate-90' : ''}`} />
                     <FiFolder class='text-accent/80' />
                     <span class='flex-1 truncate text-[13px] font-semibold text-text'>{pb.name}</span>
                     <span class='text-[11px] tabular-nums group-hover:hidden group-focus-within:hidden'>{pb.strategies.length}</span>
@@ -62,18 +62,18 @@ export default function Library(props) {
                       <Act icon={FiTrash2} title='Delete' danger onClick={() => props.onDelete(pb.id)} />
                     </span>
                   </div>
-                  {open && (
+                  {open() && (
                     <div class='ml-4 pl-2 border-l border-line flex flex-col gap-1 py-1 anim-fade'>
-                      {strategies.map(s => {
-                        const m = mapById()[s.mapId]
-                        const on = props.sel?.sid === s.id
+                      <For each={strategies}>{s => {
+                        const m = () => (mapById()[s.mapId])
+                        const on = () => (props.sel?.sid === s.id)
                         return (
                           <div {...pressable(() => props.onSelect(pb.id, s.id))}
-                            class={`group flex items-center gap-2.5 h-12 px-1.5 rounded-2xl cursor-pointer transition-colors duration-150 ${on ? 'accent-soft' : 'hover:bg-surface-2'}`}>
-                            <div class='h-9 w-9 rounded-xl overflow-hidden glass-inset shrink-0'>{m?.displayIcon && <img decoding='async' src={m.displayIcon} alt='' class='h-full w-full object-cover' />}</div>
+                            class={`group flex items-center gap-2.5 h-12 px-1.5 rounded-2xl cursor-pointer transition-colors duration-150 ${on() ? 'accent-soft' : 'hover:bg-surface-2'}`}>
+                            <div class='h-9 w-9 rounded-xl overflow-hidden glass-inset shrink-0'>{m()?.displayIcon && <img decoding='async' src={m().displayIcon} alt='' class='h-full w-full object-cover' />}</div>
                             <div class='flex-1 min-w-0'>
-                              <p class={`truncate text-[12.5px] font-semibold leading-tight ${on ? 'text-text' : 'text-text/90'}`}>{s.name}</p>
-                              <p class='truncate text-[11px] text-muted leading-tight mt-0.5'>{m?.displayName || 'Unknown map'} · {s.steps.length} step{s.steps.length === 1 ? '' : 's'}</p>
+                              <p class={`truncate text-[12.5px] font-semibold leading-tight ${on() ? 'text-text' : 'text-text/90'}`}>{s.name}</p>
+                              <p class='truncate text-[11px] text-muted leading-tight mt-0.5'>{m()?.displayName || 'Unknown map'} · {s.steps.length} step{s.steps.length === 1 ? '' : 's'}</p>
                             </div>
                             <span class='group-hover:hidden group-focus-within:hidden'><Badge tone={s.side === 'attack' ? 'bad' : 'accent'}>{s.side === 'attack' ? 'ATK' : 'DEF'}</Badge></span>
                             <span class='hidden group-hover:flex group-focus-within:flex items-center'>
@@ -83,13 +83,13 @@ export default function Library(props) {
                             </span>
                           </div>
                         )
-                      })}
+                      }}</For>
                       {!strategies.length && <p class='text-[12px] text-muted px-2 py-2.5'>Empty playbook. <button class='text-accent hover:underline' onClick={() => props.onNewStrategy(pb.id)}>Add a strategy</button></p>}
                     </div>
                   )}
                 </div>
               )
-            })}
+            }}</For>
           </div>
         )}
       </div>

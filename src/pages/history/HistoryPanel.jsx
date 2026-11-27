@@ -188,7 +188,12 @@ export default function HistoryPanel(props) {
     onCleanup(() => { live = false })
   }
   createEffect(on([id, queueS, countS], load))
-  createEffect(on(id, who => { if (who) invoke('history:rr', who).then(r => setRr(reconcile(r || {}))).catch(() => { }) }))
+  createEffect(on(id, who => {
+    if (!who) return
+    let live = true
+    invoke('history:rr', who).then(r => live && setRr(reconcile(r || {}))).catch(() => { })
+    onCleanup(() => { live = false })
+  }))
   createEffect(on([() => listS().data, id], ([data, who]) => {
     for (const m of data?.matches || []) {
       const key = `${who}|${m.matchId}`

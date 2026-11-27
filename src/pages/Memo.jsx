@@ -96,7 +96,7 @@ function ItemList(props) {
       <form onSubmit={add} class='flex gap-2'>
         <For each={props.fields}>{f => (
           <Input value={formS()[f.key] || ''} maxLength={f.max} placeholder={f.placeholder} class={'!rounded-full ' + (f.className || '')}
-            onChange={e => setForm(v => ({ ...v, [f.key]: e.target.value }))} />
+            onInput={e => setForm(v => ({ ...v, [f.key]: e.target.value }))} />
         )}</For>
         <Button type='submit' variant='primary' icon={FiPlus} disabled={!ready()} class='shrink-0'>Add</Button>
       </form>
@@ -131,7 +131,7 @@ export default function Memo(props) {
     if (nb.data && !docS()) { setDoc(nb.data); setCur(nb.data.sections[0]?.id) }
   }))
   const pending = { current: null }
-  onMount(() => () => {
+  onCleanup(() => {
     clearTimeout(timer.current)
     if (pending.current) invoke('notebook:save', pending.current).catch(e => toast.error(e.message))
   })
@@ -163,13 +163,13 @@ export default function Memo(props) {
     if (curS() === id) setCur(rest[0]?.id)
   }
     const reset = async () => {
-    try { const d = await invoke('notebook:reset'); clearTimeout(timer.current); setDoc(d); setCur(d.sections[0]?.id); setSaving(false); toast.success('Notes reset') }
+    try { const d = await invoke('notebook:reset'); clearTimeout(timer.current); pending.current = null; setDoc(d); setCur(d.sections[0]?.id); setSaving(false); toast.success('Notes reset') }
     catch (e) { toast.error(e.message) }
   }
     const shown = () => (sections().filter(x => !qS() || `${x.name} ${x.notes}`.toLowerCase().includes(qS().toLowerCase())))
     const count = () => (sections().length)
     const list = (
-    () => (<Pane title='Sections' right={<Button size='sm' variant='glow' icon={FiPlus} disabled={!docS()} onClick={addSection}>New</Button>}
+    (<Pane title='Sections' right={<Button size='sm' variant='glow' icon={FiPlus} disabled={!docS()} onClick={addSection}>New</Button>}
       header={<SearchField value={qS()} onChange={setQ} placeholder='Search sections' />}
       footer={<Button size='sm' variant='ghost' icon={FiRotateCcw} class='w-full' disabled={!docS()} onClick={() => setConfirm({ kind: 'reset' })}>Reset notes</Button>}>
       {!docS() ? <div class='flex flex-col gap-1.5 p-1'><For each={[0, 1, 2, 3]}>{i => <Skeleton class='h-12 rounded-2xl' />}</For></div> : (
@@ -196,7 +196,7 @@ export default function Memo(props) {
   )
     return (<Page title='Notes' subtitle={docS() ? `${count()} ${count() === 1 ? 'section' : 'sections'} · saved on this device` : 'Saved on this device'}
       bodyClass={SPLIT_BODY}>
-      <SplitView list={list()} listWidth={300}>
+      <SplitView list={list} listWidth={300}>
         {nb.error && !docS() ? <ErrorState error={nb.error} onRetry={nb.reload} />
           : !docS() || !s() ? <Skeleton class='h-full rounded-3xl min-h-[420px]' />
             : (
@@ -210,7 +210,7 @@ export default function Memo(props) {
                       {renamingS()
                         ? <input autofocus value={s().name} maxLength={40} onFocus={e => e.target.select()}
                           class='glass-field mt-1 h-10 w-[300px] rounded-xl px-3 display text-[24px] text-text outline-none'
-                          onChange={e => update({ name: e.target.value })}
+                          onInput={e => update({ name: e.target.value })}
                           onBlur={() => { if (!s().name.trim()) update({ name: 'Untitled' }); setRenaming(false) }}
                           onKeyDown={e => { if (e.key === 'Enter' || e.key === 'Escape') e.currentTarget.blur() }} />
                         : <button title='Rename' onClick={() => setRenaming(true)}
@@ -233,7 +233,7 @@ export default function Memo(props) {
                     {tabS() === 'notes' && (
                       <div class='flex-1 flex flex-col min-h-0'>
                         <Textarea class='flex-1 min-h-[280px] !p-5 !rounded-2xl text-[14px] leading-relaxed' maxLength={NOTES_MAX}
-                          value={s().notes} onChange={e => update({ notes: e.target.value })}
+                          value={s().notes} onInput={e => update({ notes: e.target.value })}
                           placeholder='Write details, lineups, setups or strat notes here...' />
                         <div class='flex items-center justify-between mt-3 text-[12px]'>
                           <span class={cx('inline-flex items-center gap-1.5', savingS() ? 'text-muted' : 'text-good')}>

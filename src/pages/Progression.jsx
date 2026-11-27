@@ -98,28 +98,28 @@ function Contracts(props) {
   
     
     return (<Show when={!(!props.contracts.length)} fallback={<Empty title={props.empty} hint='Contracts show up here once you start progressing them.' />}><Stagger class='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4'>
-      {props.contracts.map((c, i) => {
-        const agent = c.agentId && props.cat?.items.get(c.agentId)
-        const total = c.chapters.reduce((n, ch) => n + ch.levels.length, 0)
-        const pct = bar(c.progressionLevel, total)
+      <For each={props.contracts}>{(c, i) => {
+        const agent = () => (c.agentId && props.cat?.items.get(c.agentId))
+        const total = () => (c.chapters.reduce((n, ch) => n + ch.levels.length, 0))
+        const pct = () => (bar(c.progressionLevel, total()))
         return (
-          <Item index={i}>
-            <Card class={cx('relative overflow-hidden p-5 flex items-center gap-4', pct >= 100 && 'accent-glow')}>
+          <Item index={i()}>
+            <Card class={cx('relative overflow-hidden p-5 flex items-center gap-4', pct() >= 100 && 'accent-glow')}>
               <div class='w-14 h-14 rounded-2xl glass-inset overflow-hidden shrink-0 flex items-center justify-center'>
-                {agent?.icon && <img decoding='async' src={agent.icon} alt='' class='w-full h-full object-cover' />}
+                {agent()?.icon && <img decoding='async' src={agent().icon} alt='' class='w-full h-full object-cover' />}
               </div>
               <div class='min-w-0 flex-1'>
                 <div class='flex items-center justify-between gap-2'>
-                  <span class='truncate text-[14px] font-semibold tracking-tight text-text'>{agent?.name || c.name}</span>
-                  <Badge tone={pct >= 100 ? 'good' : 'neutral'}>{c.progressionLevel}/{total}</Badge>
+                  <span class='truncate text-[14px] font-semibold tracking-tight text-text'>{agent()?.name || c.name}</span>
+                  <Badge tone={pct() >= 100 ? 'good' : 'neutral'}>{c.progressionLevel}/{total()}</Badge>
                 </div>
-                <Progress value={pct} class='mt-3' />
-                <div class='mt-1.5 text-[11px] text-muted tabular-nums'>{pct >= 100 ? 'Complete' : `${Math.round(pct)}% unlocked`}</div>
+                <Progress value={pct()} class='mt-3' />
+                <div class='mt-1.5 text-[11px] text-muted tabular-nums'>{pct() >= 100 ? 'Complete' : `${Math.round(pct())}% unlocked`}</div>
               </div>
             </Card>
           </Item>
         )
-      })}
+      }}</For>
     </Stagger></Show>)
   
 }

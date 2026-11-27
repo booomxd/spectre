@@ -1,4 +1,4 @@
-import { createEffect, createSignal, on, Show } from 'solid-js'
+import { For, createEffect, createSignal, on, Show, children as resolveChildren } from 'solid-js'
 import { FiMessageSquare, FiSend, FiX } from 'solid-icons/fi'
 import { Badge, Card, Button, Skeleton, Empty, toast, cx, Stagger, Item } from '../../ui'
 import { invoke, useInvoke } from '../../lib/ipc'
@@ -23,19 +23,19 @@ export function Conversations(props) {
     return (<Show when={!(!props.convs?.length)} fallback={null}><>
       <ListLabel count={props.convs.length}>Recent chats</ListLabel>
       <Stagger class='flex flex-col gap-0.5'>
-        {props.convs.map((c, i) => {
-          const f = props.friends[c.puuid]
-          const name = f?.gameName || c.last?.gameName || 'Unknown'
+        <For each={props.convs}>{(c, i) => {
+          const f = () => props.friends[c.puuid]
+          const name = () => f()?.gameName || c.last?.gameName || 'Unknown'
           return (
-            <Item index={i}>
+            <Item index={i()}>
               <ListRow as='button' selected={props.selected === c.cid} layoutId='squad-friend' onClick={() => props.onOpen(c.cid, c.puuid)}>
                 <div class='relative shrink-0'>
-                  <PlayerCard id={f?.status?.card} name={name} size={38} />
-                  {f?.online && <StatusDot state={f.status.state} class='absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5' />}
+                  <PlayerCard id={f()?.status?.card} name={name()} size={38} />
+                  {f()?.online && <StatusDot state={f().status.state} class='absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5' />}
                 </div>
                 <div class='relative min-w-0 flex-1'>
                   <div class='flex items-center justify-between gap-2'>
-                    <span class='text-[13.5px] font-semibold tracking-tight text-text truncate'>{name}</span>
+                    <span class='text-[13.5px] font-semibold tracking-tight text-text truncate'>{name()}</span>
                     <span class='text-[10.5px] text-muted shrink-0 tabular-nums'>{timeLabel(c.last?.time, true)}</span>
                   </div>
                   <div class='flex items-center justify-between gap-2 mt-0.5'>
@@ -46,7 +46,7 @@ export function Conversations(props) {
               </ListRow>
             </Item>
           )
-        })}
+        }}</For>
       </Stagger>
     </></Show>)
   
@@ -54,6 +54,8 @@ export function Conversations(props) {
 
 // message thread with one friend
 export function ChatPanel(props) {
+  // JSX props build a new node on every read: resolve once
+  const actions_ = resolveChildren(() => props.actions)
   const msgs = useInvoke('chat:messages', () => [props.cid], { poll: () => (props.active ? 2500 : undefined), deps: () => ([props.cid]) })
   const [pendingS, setPending] = createSignal([])
   const [textS, setText] = createSignal('')
@@ -96,7 +98,7 @@ export function ChatPanel(props) {
           </div>
           <div class='text-[12px] text-muted truncate mt-1'>{props.friend ? props.statusLine(props.friend) : ''}</div>
         </div>
-        {props.actions && <div class='relative'>{props.actions}</div>}
+        {actions_() && <div class='relative'>{actions_()}</div>}
         <Button variant='ghost' size='icon' class='relative' title='Close chat' onClick={props.onClose}><FiX /></Button>
       </div>
 
@@ -105,20 +107,24 @@ export function ChatPanel(props) {
           Array.from({ length: 5 }, (_, i) => <Skeleton class={cx('h-10 w-2/5 rounded-2xl', i % 2 && 'self-end')} />)
         ) : !list().length ? (
           <Empty icon={FiMessageSquare} title={`Say hi to ${name()}`} hint='Messages go through your Riot chat, same as in-game.' class='my-auto' />
-        ) : list().map((m, i) => {
-          const prev = list()[i - 1]
-          const gap = !prev || prev.fromMe !== m.fromMe || m.time - prev.time > 5 * 60000
-          return (
-            <div class={cx('flex flex-col max-w-[72%]', i >= animFrom() && 'anim-rise', m.fromMe ? 'self-end items-end' : 'self-start items-start', gap && i > 0 && 'mt-3')}>
-              {gap && <span class='text-[10.5px] font-medium text-muted mb-1 px-2'>{m.fromMe ? 'You' : name()} · {timeLabel(m.time)}</span>}
-              <div class={cx('rounded-[20px] px-4 py-2.5 text-[13px] leading-snug whitespace-pre-wrap break-words select-text',
-                m.fromMe ? 'accent-fill text-bg rounded-br-md' : 'glass-inset text-text rounded-bl-md',
-                m.pending && 'opacity-60')}>
-                <span translate='no'>{m.body}</span>
+        ) : (
+          <For each={list()}>{(m, i) => {
+            const prev = () => list()[i() - 1]
+            const gap = () => !prev() || prev().fromMe !== m.fromMe || m.time - prev().time > 5 * 60000
+            // only messages that arrive after the panel opened animate in
+            const anim = i() >= animFrom()
+            return (
+              <div class={cx('flex flex-col max-w-[72%]', anim && 'anim-rise', m.fromMe ? 'self-end items-end' : 'self-start items-start', gap() && i() > 0 && 'mt-3')}>
+                {gap() && <span class='text-[10.5px] font-medium text-muted mb-1 px-2'>{m.fromMe ? 'You' : name()} · {timeLabel(m.time)}</span>}
+                <div class={cx('rounded-[20px] px-4 py-2.5 text-[13px] leading-snug whitespace-pre-wrap break-words select-text',
+                  m.fromMe ? 'accent-fill text-bg rounded-br-md' : 'glass-inset text-text rounded-bl-md',
+                  m.pending && 'opacity-60')}>
+                  <span translate='no'>{m.body}</span>
+                </div>
               </div>
-            </div>
-          )
-        })}
+            )
+          }}</For>
+        )}
       </div>
 
       <form onSubmit={send} class='px-4 pb-4'>

@@ -1,4 +1,4 @@
-import { createEffect, createSignal, on, Show } from 'solid-js'
+import { For, createEffect, createSignal, on, Show } from 'solid-js'
 import { FiCheck } from 'solid-icons/fi'
 import { Badge, Button, Card, ErrorState, Page, RequireRiot, Skeleton, Swap, withToast } from '../ui'
 import { useRiot } from '../lib/riot'
@@ -46,20 +46,20 @@ function SkinsView(props) {
               return (
                 <div>
                   <ListLabel count={list.length}>{cat.label}</ListLabel>
-                  {list.map(w => {
-                    const g = __invoke.data?.Guns.find(x => lc(x.ID) === lc(w.uuid))
-                    const sk = w.skins.find(s => lc(s.uuid) === lc(g?.SkinID))
-                    const on = weapon() && lc(w.uuid) === lc(weapon().uuid)
+                  <For each={list}>{w => {
+                    const g = () => (__invoke.data?.Guns.find(x => lc(x.ID) === lc(w.uuid)))
+                    const sk = () => (w.skins.find(s => lc(s.uuid) === lc(g()?.SkinID)))
+                    const on = () => (weapon() && lc(w.uuid) === lc(weapon().uuid))
                     return (
-                      <ListRow as='button' layoutId='skins-weapon' selected={on} onClick={() => setWid(w.uuid)}>
-                        <img decoding='async' src={selectionImage(sk, g?.ChromaID) || w.displayIcon} alt='' class='relative w-12 h-8 object-contain shrink-0' loading='lazy' draggable={false} />
+                      <ListRow as='button' layoutId='skins-weapon' selected={on()} onClick={() => setWid(w.uuid)}>
+                        <img decoding='async' src={selectionImage(sk(), g()?.ChromaID) || w.displayIcon} alt='' class='relative w-12 h-8 object-contain shrink-0' loading='lazy' draggable={false} />
                         <span class='relative min-w-0'>
                           <span class='block text-[13px] font-semibold text-text'>{w.displayName}</span>
-                          <span class='block text-[11px] text-muted truncate'>{sk?.displayName || '...'}</span>
+                          <span class='block text-[11px] text-muted truncate'>{sk()?.displayName || '...'}</span>
                         </span>
                       </ListRow>
                     )
-                  })}
+                  }}</For>
                 </div>
               )
             })}

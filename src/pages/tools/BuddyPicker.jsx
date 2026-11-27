@@ -1,4 +1,4 @@
-import { createSignal, createMemo } from 'solid-js'
+import { For, createSignal, createMemo } from 'solid-js'
 import { st } from '../../lib/st.js'
 import { FiSearch, FiSlash } from 'solid-icons/fi'
 import { Empty, Input, cx } from '../../ui'
@@ -39,18 +39,18 @@ export default function BuddyPicker(props) {
             class={cx('lift h-[72px] rounded-xl flex flex-col items-center justify-center gap-1 text-[11px] font-medium', !props.value ? 'accent-soft border border-transparent text-accent' : 'glass-inset text-muted hover:text-text')}>
             <FiSlash class='text-base' />None
           </button>
-          {shown().map(g => {
-            const on = lc(g.level.uuid) === lc(props.value?.levelId)
-            const free = g.instances.some(x => lc(x) === lc(props.value?.instance) || !props.usedInstances.has(lc(x)))
+          <For each={shown()}>{g => {
+            const on = () => (lc(g.level.uuid) === lc(props.value?.levelId))
+            const free = () => (g.instances.some(x => lc(x) === lc(props.value?.instance) || !props.usedInstances.has(lc(x))))
             return (
-              <button disabled={!free && !on} onClick={() => choose(g)} title={g.buddy.displayName}
-                class={cx('lift relative h-[72px] rounded-xl p-1.5 flex flex-col items-center justify-between', on ? 'accent-soft border border-transparent' : 'glass-inset hover:bg-surface-2', !free && !on && 'opacity-[0.35]')}>
+              <button disabled={!free() && !on()} onClick={() => choose(g)} title={g.buddy.displayName}
+                class={cx('lift relative h-[72px] rounded-xl p-1.5 flex flex-col items-center justify-between', on() ? 'accent-soft border border-transparent' : 'glass-inset hover:bg-surface-2', !free() && !on() && 'opacity-[0.35]')}>
                 <img decoding='async' src={g.level.displayIcon} class='h-10 object-contain' loading='lazy' />
                 <span class='w-full truncate text-[9px] text-muted text-center'>{g.buddy.displayName}</span>
                 {g.instances.length > 1 && <span class='absolute top-1 right-1.5 text-[9px] font-semibold tabular-nums text-muted'>x{g.instances.length}</span>}
               </button>
             )
-          })}
+          }}</For>
         </div>
       )}
     </div>)

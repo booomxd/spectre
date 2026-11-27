@@ -2,7 +2,7 @@ import { For } from 'solid-js'
 import { st } from '../../lib/st.js'
 // Home, top to bottom: a hero with your overview and what you're doing right now, then today's shop beside the friends who are online
 import { FiArrowUpRight, FiClock, FiMessageSquare, FiUsers, FiWifi } from 'solid-icons/fi'
-import { Card, Badge, Skeleton, Empty, cx } from '../../ui'
+import { Card, Badge, Skeleton, Empty, cx, useNow } from '../../ui'
 import { contentPath, useContent, useTiers } from '../../lib/content'
 import { navigate } from '../../nav'
 import { cardIcon, queueName } from '../live/util'
@@ -15,8 +15,8 @@ const title = s => (s || '').toLowerCase().replace(/(^|\s)\S/g, c => c.toUpperCa
 const signed = n => (n > 0 ? '+' : '') + n
 const tierColor = t => (t?.color ? '#' + t.color.slice(0, 6) : null)
 
-function greeting() {
-  const h = new Date().getHours()
+function greeting(now = Date.now()) {
+  const h = new Date(now).getHours()
   return h < 5 ? 'Late night' : h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening'
 }
 // long names (and wide CJK names) step down so they never push the hero wider
@@ -32,10 +32,10 @@ const Arrow = () => (
 )
 
 // days until the current act ends, from the season list
-function useActDaysLeft() {
+function useActDaysLeft(nowA) {
   const seasons = useContent('seasons')
   return () => {
-    const now = Date.now()
+    const now = nowA()
     const act = seasons()?.find(s => /act/i.test(s.type || '') && Date.parse(s.startTime) <= now && Date.parse(s.endTime) > now)
     return act ? Math.max(0, Math.ceil((Date.parse(act.endTime) - now) / 864e5)) : null
   }
@@ -65,7 +65,9 @@ function sessionOfParty(riot, party) {
 export function HomeHero(props) {
   const cardA = useContent(() => contentPath('playercards', props.identity?.cardId))
   const tiersA = useTiers()
-  const daysA = useActDaysLeft()
+  // ticks once a minute so the greeting, date and act countdown roll over while the app stays open
+  const nowA = useNow(60000)
+  const daysA = useActDaysLeft(nowA)
   
     const t = () => (props.rank && tiersA()?.[props.rank.tier])
     const peak = () => (props.rank && tiersA()?.[props.rank.peak])
@@ -83,7 +85,7 @@ export function HomeHero(props) {
         </div>
 
         <div class='min-w-0 flex-1 basis-[420px] flex flex-col'>
-          <div class='eyebrow flex items-center gap-2'>{greeting()}<span class='w-1 h-1 rounded-full bg-muted/60' />{new Date().toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'short' })}</div>
+          <div class='eyebrow flex items-center gap-2'>{greeting(nowA())}<span class='w-1 h-1 rounded-full bg-muted/60' />{new Date(nowA()).toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'short' })}</div>
           <h2 class='display mt-2.5 text-text truncate pb-1' style={st({ fontSize: nameSize(props.riot.gameName) })} title={props.riot.gameName} translate='no'>
             {props.riot.gameName || 'Agent'}<span class='text-accent'>{props.riot.tagLine ? `#${props.riot.tagLine}` : ''}</span>
           </h2>
@@ -195,18 +197,18 @@ export function ShopCard(props) {
             </div>
             {props.store.daily.length ? (
               <div class='grid grid-cols-2 gap-3'>
-                {props.store.daily.slice(0, 4).map(o => {
-                  const item = props.cat?.items.get(o.itemId)
+                <For each={props.store.daily.slice(0, 4)}>{o => {
+                  const item = () => (props.cat?.items.get(o.itemId))
                   return (
                     <div class='rounded-2xl glass-inset overflow-hidden transition-[border-color,transform] duration-300 ease-out hover:border-accent/40 hover:-translate-y-0.5'>
-                      <ItemArt item={item} class='h-[112px] px-6 pt-3' />
+                      <ItemArt item={item()} class='h-[112px] px-6 pt-3' />
                       <div class='px-4 pb-3.5 pt-1 flex items-center justify-between gap-3'>
-                        <span class='truncate text-[13px] font-semibold text-text'>{item?.name || '...'}</span>
+                        <span class='truncate text-[13px] font-semibold text-text'>{item()?.name || '...'}</span>
                         <Price amount={o.price} cat={props.cat} size={12} class='text-[12.5px] text-muted shrink-0' />
                       </div>
                     </div>
                   )
-                })}
+                }}</For>
               </div>
             ) : <div class='text-[13px] text-muted py-6 text-center'>No daily offers</div>}
           </div>
@@ -250,32 +252,32 @@ export function FriendsPanel(props) {
               <div class='eyebrow !text-[10px] mb-2' translate='yes'>Online <span class='text-muted/70'>· {online().length}</span></div>
               {!online().length && <div class='text-[12.5px] text-muted px-2 pb-2' translate='yes'>Nobody is in VALORANT right now.</div>}
               <div class='space-y-0.5'>
-                {online().map(f => {
-                  const s = f.status || {}
-                  const playing = s.state === 'ingame' || s.state === 'pregame'
-                  const where = playing ? [s.map, s.queueId ? queueName(s.queueId) : null].filter(Boolean).join(' · ') : null
+                <For each={online()}>{f => {
+                  const s = () => (f.status || {})
+                  const playing = () => (s().state === 'ingame' || s().state === 'pregame')
+                  const where = () => (playing() ? [s().map, s().queueId ? queueName(s().queueId) : null].filter(Boolean).join(' · ') : null)
                   return (
                     <div class='flex items-center gap-3 rounded-2xl px-2 py-2 hover:bg-surface-2 transition-colors'>
                       <span class='relative shrink-0'>
-                        {s.card ? <img decoding='async' src={cardIcon(s.card)} alt='' loading='lazy' class='w-10 h-10 rounded-full object-cover border border-line' />
+                        {s().card ? <img decoding='async' src={cardIcon(s().card)} alt='' loading='lazy' class='w-10 h-10 rounded-full object-cover border border-line' />
                           : <span class='w-10 h-10 rounded-full glass-inset grid place-items-center text-[13px] font-bold text-muted'>{(f.gameName || '?')[0]}</span>}
-                        <span class={cx('absolute -right-0.5 -bottom-0.5 w-3 h-3 rounded-full border-2 border-panel', s.state === 'away' ? 'bg-warn' : playing ? 'bg-bad' : 'bg-good')} />
+                        <span class={cx('absolute -right-0.5 -bottom-0.5 w-3 h-3 rounded-full border-2 border-panel', s().state === 'away' ? 'bg-warn' : playing() ? 'bg-bad' : 'bg-good')} />
                       </span>
                       <span class='min-w-0 flex-1'>
                         <span class='flex items-center gap-2'>
                           <span class='truncate text-[13.5px] font-semibold text-text'>{f.gameName}</span>
-                          {s.partySize > 1 && <span class='inline-flex items-center gap-1 text-[11px] text-muted shrink-0'><FiUsers size={11} />{s.partySize}</span>}
+                          {s().partySize > 1 && <span class='inline-flex items-center gap-1 text-[11px] text-muted shrink-0'><FiUsers size={11} />{s().partySize}</span>}
                         </span>
                         <span class='flex items-center gap-2 mt-0.5'>
-                          <span class={cx('truncate text-[11.5px]', playing ? 'text-accent font-medium' : 'text-muted')} translate='yes'>{where || STATE[s.state] || 'Online'}</span>
-                          {Array.isArray(s.score) && s.score[0] != null && <span class='shrink-0 h-[18px] px-1.5 rounded-md glass-inset text-[10.5px] font-bold text-text tabular-nums inline-flex items-center'>{s.score[0]} - {s.score[1]}</span>}
+                          <span class={cx('truncate text-[11.5px]', playing() ? 'text-accent font-medium' : 'text-muted')} translate='yes'>{where() || STATE[s().state] || 'Online'}</span>
+                          {Array.isArray(s().score) && s().score[0] != null && <span class='shrink-0 h-[18px] px-1.5 rounded-md glass-inset text-[10.5px] font-bold text-text tabular-nums inline-flex items-center'>{s().score[0]} - {s().score[1]}</span>}
                         </span>
                       </span>
                       <button type='button' aria-label={`Message ${f.gameName}`} title='Message' onClick={go('friends', { puuid: f.puuid })}
                         class='w-9 h-9 rounded-xl glass-inset grid place-items-center text-muted hover:text-accent hover:border-accent/40 transition-colors shrink-0'><FiMessageSquare size={14} /></button>
                     </div>
                   )
-                })}
+                }}</For>
               </div>
               {offline().length > 0 && (
                 <>
