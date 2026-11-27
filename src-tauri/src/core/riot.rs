@@ -44,6 +44,9 @@ pub struct Riot {
     api_inflight: tokio::sync::Mutex<HashMap<String, Arc<tokio::sync::OnceCell<Arc<Value>>>>>,
     /// valorant-api.com's content version, checked once per session (None when it can't be reached)
     api_version: tokio::sync::OnceCell<Option<String>>,
+    /// guards the disk copy: writes hold it shared, a clear holds it exclusively and bumps the count, and a write
+    /// started before a clear is skipped, so nothing lands on disk after a clear returns
+    api_disk: Arc<RwLock<u64>>,
     store_dir: RwLock<Option<PathBuf>>,
 }
 
@@ -114,6 +117,7 @@ impl Riot {
             api_cache: Mutex::new(HashMap::new()),
             api_inflight: tokio::sync::Mutex::new(HashMap::new()),
             api_version: tokio::sync::OnceCell::new(),
+            api_disk: Arc::new(RwLock::new(0)),
             store_dir: RwLock::new(None),
         }
     }
@@ -290,6 +294,7 @@ impl Riot {
     /// unchanged, or can't be checked (offline), so most launches download nothing; otherwise the list is downloaded
     /// and the disk copy replaced.
     async fn load_val_api(&self, key: &str) -> Res<Arc<Value>> {
+        let clears = *self.api_disk.read().unwrap();
         let version = self.api_version().await;
         let file = api_cache_dir().join(format!("{}.json", hex::encode(Sha256::digest(key.as_bytes()))));
         let read = file.clone();
@@ -306,11 +311,15 @@ impl Riot {
         let v = Arc::new(v);
         if let Some(ver) = version {
             let data = Arc::clone(&v);
+            let disk = Arc::clone(&self.api_disk);
             tokio::task::spawn_blocking(move || {
+                let guard = disk.read().unwrap();
+                if *guard != clears { return }
                 let Ok(bytes) = serde_json::to_vec(&json!({ "version": ver, "data": &*data })) else { return };
                 if let Some(dir) = file.parent() { let _ = std::fs::create_dir_all(dir); }
                 let tmp = unique_tmp(&file);
                 if std::fs::write(&tmp, bytes).and_then(|_| std::fs::rename(&tmp, &file)).is_err() { let _ = std::fs::remove_file(&tmp); }
+                drop(guard);
             });
         }
         Ok(v)
@@ -326,9 +335,19 @@ impl Riot {
     }
 
     /// drops the in-memory and on-disk valorant-api.com copies
-    pub async fn clear_api_cache(&self) {
+    pub async fn clear_api_cache(&self) -> Res<()> {
         self.api_cache.lock().unwrap().clear();
-        let _ = tokio::task::spawn_blocking(|| std::fs::remove_dir_all(api_cache_dir())).await;
+        let disk = Arc::clone(&self.api_disk);
+        let removed = tokio::task::spawn_blocking(move || {
+            let mut clears = disk.write().unwrap();
+            *clears += 1;
+            std::fs::remove_dir_all(api_cache_dir())
+        }).await.map_err(|e| msg(e.to_string()))?;
+        match removed {
+            Ok(()) => Ok(()),
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
+            Err(e) => Err(msg(e.to_string())),
+        }
     }
 
     /// puuid -> { gameName, tagLine }
