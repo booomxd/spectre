@@ -1,5 +1,19 @@
 # 📜 Changelog
 
+## 4.1.0
+
+### ⚡ Performance
+- **Faster, lighter app:** the interface was rebuilt on a leaner framework. It looks the same, but the app is about a quarter smaller and reacts to clicks roughly 3x faster
+- Pages that refresh in the background (Live Match, Friends, Home) now update only what changed, so lists keep their scroll, focus and hover while new data comes in
+- Switching pages stutters noticeably less
+
+### 🛠️ Fixes
+- Strategy image exports always use the map, strategy and step that were selected when you started the export
+- Switching sections or tabs in Notes no longer carries a half-typed entry over
+- A player's scout or skins panel in Live Match stays on that player when the roster order changes
+- Friend log days are grouped by date, so events from different years no longer share a heading
+- Saved theme preferences are applied as soon as the app starts
+
 ## 4.0.2
 
 ### 🗑️ Removed
