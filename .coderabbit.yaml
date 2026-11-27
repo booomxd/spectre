@@ -1,0 +1,28 @@
+# CodeRabbit review settings (https://docs.coderabbit.ai/reference/configuration)
+language: en-US
+reviews:
+  profile: assertive
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  auto_review:
+    enabled: true
+    drafts: true
+  path_filters:
+    - "!build/**"
+    - "!**/package-lock.json"
+    - "!**/Cargo.lock"
+    - "!src-tauri/target/**"
+    - "!src-tauri/gen/**"
+    - "!**/*.svg"
+  path_instructions:
+    - path: "src/**/*.{js,jsx}"
+      instructions: >-
+        Frontend is SolidJS 1.9 (not React). Components run once; flag reads of signals or props
+        outside JSX or tracked scopes that would lose reactivity, React-only APIs, and list
+        rendering that should use <For>, layout thrash, and animations that are not transform/opacity only.
+        Flag visual changes unless the PR says they are intended.
+    - path: "src-tauri/**"
+      instructions: >-
+        Tauri 2 + Rust backend talking to the Riot local client API. Flag panics, blocking calls on the
+        async runtime, secrets in logs, and new heavy dependencies (the installer must stay small).

@@ -1,5 +1,5 @@
-// useState that remembers its value between launches
-import { useCallback, useState } from 'react'
+// signal that remembers its value between launches
+import { createSignal } from 'solid-js'
 
 const read = (key, fallback, allowed) => {
   try {
@@ -11,11 +11,12 @@ const read = (key, fallback, allowed) => {
 }
 
 export function useStored(key, fallback, allowed) {
-  const [value, setValue] = useState(() => read(key, fallback, allowed))
-  const set = useCallback(v => {
-    setValue(v)
-    try { localStorage.setItem('spectre:' + key, JSON.stringify(v)) } catch { /* storage unavailable */ }
-  }, [key])
+  const [value, setValue] = createSignal(read(key, fallback, allowed))
+  const set = v => {
+    const next = typeof v === 'function' ? v(value()) : v
+    setValue(() => next)
+    try { localStorage.setItem('spectre:' + key, JSON.stringify(next)) } catch { /* storage unavailable */ }
+  }
   return [value, set]
 }
 

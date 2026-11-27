@@ -1,4 +1,6 @@
-import { FiUsers, FiShoppingBag, FiClock, FiArrowUpRight, FiActivity } from 'react-icons/fi'
+import { For } from 'solid-js'
+import { st } from '../../lib/st.js'
+import { FiUsers, FiShoppingBag, FiClock, FiArrowUpRight, FiActivity } from 'solid-icons/fi'
 import { Card, Heading, Badge, Skeleton, Empty, cx, useNow } from '../../ui'
 import { contentPath, useContent, useTiers } from '../../lib/content'
 import { navigate } from '../../nav'
@@ -12,7 +14,7 @@ const signed = n => (n > 0 ? '+' : '') + n
 
 // small "open" affordance in a tile corner
 const Arrow = () => (
-  <span className='w-8 h-8 rounded-full glass-inset flex items-center justify-center text-muted transition-[transform,color] duration-300 ease-out group-hover:text-accent group-hover:-translate-y-0.5 group-hover:translate-x-0.5'>
+  <span class='w-8 h-8 rounded-full glass-inset flex items-center justify-center text-muted transition-[transform,color] duration-300 ease-out group-hover:text-accent group-hover:-translate-y-0.5 group-hover:translate-x-0.5'>
     <FiArrowUpRight />
   </span>
 )
@@ -50,26 +52,26 @@ export function sessionOf(rows) {
 }
 
 // ranked results of the current session: net RR, wins and losses, and the streak
-export function SessionTile({ rr }) {
-  const rows = sessionOf(rr.data)
-  const f = formOf(rows)
-  const losses = rows.filter(r => r.change < 0).length
-  const streak = Math.abs(f.streak) >= 2 ? `${Math.abs(f.streak)} ${f.streak > 0 ? 'wins' : 'losses'} in a row` : null
-  return (
-    <Card hover onClick={go('history')} className='group h-full p-6 flex flex-col'>
+export function SessionTile(props) {
+  
+    const rows = () => (sessionOf(props.rr.data))
+    const f = () => (formOf(rows()))
+    const losses = () => (rows().filter(r => r.change < 0).length)
+    const streak = () => (Math.abs(f().streak) >= 2 ? `${Math.abs(f().streak)} ${f().streak > 0 ? 'wins' : 'losses'} in a row` : null)
+    return (<Card hover onClick={go('history')} class='group h-full p-6 flex flex-col'>
       <Heading hint='Ranked games in one sitting' right={<Arrow />}>This session</Heading>
-      {!rr.data ? <Skeleton className='flex-1 min-h-[120px] rounded-2xl' /> : !rows.length ? <Empty icon={FiActivity} title='No ranked games yet' hint='Play a competitive match and it shows up here.' className='py-6' /> : (
-        <div className='flex-1 flex flex-col justify-end'>
-          <div className={cx('font-display text-[44px] leading-none font-750 tracking-tight tabular-nums', f.net >= 0 ? 'text-good' : 'text-bad')}>{signed(f.net)}<span className='ml-1.5 text-[15px] font-semibold text-muted'>RR</span></div>
-          <div className='mt-4 grid grid-cols-2 gap-2'>
-            <div className='glass-inset rounded-xl px-3.5 py-2.5'><div className='text-[11px] text-muted'>Wins</div><div className='text-[17px] font-semibold text-good tabular-nums'>{f.wins}</div></div>
-            <div className='glass-inset rounded-xl px-3.5 py-2.5'><div className='text-[11px] text-muted'>Losses</div><div className='text-[17px] font-semibold text-bad tabular-nums'>{losses}</div></div>
+      {!props.rr.data ? <Skeleton class='flex-1 min-h-[120px] rounded-2xl' /> : !rows().length ? <Empty icon={FiActivity} title='No ranked games yet' hint='Play a competitive match and it shows up here.' class='py-6' /> : (
+        <div class='flex-1 flex flex-col justify-end'>
+          <div class={cx('font-display text-[44px] leading-none font-750 tracking-tight tabular-nums', f().net >= 0 ? 'text-good' : 'text-bad')}>{signed(f().net)}<span class='ml-1.5 text-[15px] font-semibold text-muted'>RR</span></div>
+          <div class='mt-4 grid grid-cols-2 gap-2'>
+            <div class='glass-inset rounded-xl px-3.5 py-2.5'><div class='text-[11px] text-muted'>Wins</div><div class='text-[17px] font-semibold text-good tabular-nums'>{f().wins}</div></div>
+            <div class='glass-inset rounded-xl px-3.5 py-2.5'><div class='text-[11px] text-muted'>Losses</div><div class='text-[17px] font-semibold text-bad tabular-nums'>{losses()}</div></div>
           </div>
-          <div className='mt-3 text-[12px] text-muted'>{streak || `${f.games} ${f.games === 1 ? 'game' : 'games'} played`}</div>
+          <div class='mt-3 text-[12px] text-muted'>{streak() || `${f().games} ${f().games === 1 ? 'game' : 'games'} played`}</div>
         </div>
       )}
-    </Card>
-  )
+    </Card>)
+  
 }
 
 // hero: name over the player card art, quick stats in a recessed strip
@@ -78,288 +80,290 @@ function nameSize(name = '') {
   return w <= 10 ? 64 : w <= 14 ? 52 : w <= 20 ? 42 : 34
 }
 
-export function Hero({ riot, identity, account, rr }) {
-  const card = useContent(contentPath('playercards', identity?.cardId))
-  const f = formOf(rr)
-  const stats = [
-    ['Account level', account ? account.level : null, account ? `${fmt(account.xp)} XP` : ''],
-    ['Win rate', f.rate != null ? f.rate + '%' : '-', f.games ? `last ${f.games} ranked` : 'no ranked games'],
-    ['Net RR', f.games ? signed(f.net) : '-', f.games ? `${f.wins}W ${f.games - f.wins}L` : '', f.net > 0 ? 'text-good' : f.net < 0 ? 'text-bad' : ''],
-    ['Streak', f.streak ? `${Math.abs(f.streak)}${f.streak > 0 ? 'W' : 'L'}` : '-', f.streak > 0 ? 'Keep it going' : f.streak < 0 ? 'Reset and requeue' : '', f.streak > 0 ? 'text-good' : f.streak < 0 ? 'text-bad' : ''],
-  ]
-  return (
-    <Card className='relative overflow-hidden h-full min-h-[280px] !rounded-3xl flex flex-col'>
-      {card?.wideArt && (
-        <img decoding='async' src={card.wideArt} alt='' draggable={false} className='hero-art absolute right-0 top-0 h-full w-[72%] object-cover opacity-60 pointer-events-none'
-          style={{ WebkitMaskImage: 'linear-gradient(90deg, transparent, #000 60%)', maskImage: 'linear-gradient(90deg, transparent, #000 60%)' }} />
+export function Hero(props) {
+  const cardA = useContent(() => contentPath('playercards', props.identity?.cardId))
+  
+    const f = () => (formOf(props.rr))
+    const stats = () => ([
+    ['Account level', props.account ? props.account.level : null, props.account ? `${fmt(props.account.xp)} XP` : ''],
+    ['Win rate', f().rate != null ? f().rate + '%' : '-', f().games ? `last ${f().games} ranked` : 'no ranked games'],
+    ['Net RR', f().games ? signed(f().net) : '-', f().games ? `${f().wins}W ${f().games - f().wins}L` : '', f().net > 0 ? 'text-good' : f().net < 0 ? 'text-bad' : ''],
+    ['Streak', f().streak ? `${Math.abs(f().streak)}${f().streak > 0 ? 'W' : 'L'}` : '-', f().streak > 0 ? 'Keep it going' : f().streak < 0 ? 'Reset and requeue' : '', f().streak > 0 ? 'text-good' : f().streak < 0 ? 'text-bad' : ''],
+  ])
+    return (<Card class='relative overflow-hidden h-full min-h-[280px] !rounded-3xl flex flex-col'>
+      {cardA()?.wideArt && (
+        <img decoding='async' src={cardA().wideArt} alt='' draggable={false} class='hero-art absolute right-0 top-0 h-full w-[72%] object-cover opacity-60 pointer-events-none'
+          style={st({ WebkitMaskImage: 'linear-gradient(90deg, transparent, #000 60%)', maskImage: 'linear-gradient(90deg, transparent, #000 60%)' })} />
       )}
-      <div className='absolute inset-0 bg-gradient-to-t from-bg/80 via-bg/10 to-transparent pointer-events-none' />
-      <span className='halo -top-28 -left-20 w-80 h-80' />
-      <LiveClock className='hero-strip absolute top-6 right-6' />
-      <div className='relative px-8 pt-7 flex-1'>
-        <div className='eyebrow flex items-center gap-2'>{greeting()}<span className='w-1 h-1 rounded-full bg-muted/60' />{new Date().toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long' })}</div>
-        <h2 className='display mt-3 text-text truncate pb-1' style={{ fontSize: nameSize(riot.gameName) }} title={riot.gameName}>
-          {riot.gameName || 'Agent'}<span className='text-muted/70 text-[26px] font-semibold tracking-tight ml-2'>{riot.tagLine ? `#${riot.tagLine}` : ''}</span>
+      <div class='absolute inset-0 bg-gradient-to-t from-bg/80 via-bg/10 to-transparent pointer-events-none' />
+      <span class='halo -top-28 -left-20 w-80 h-80' />
+      <LiveClock class='hero-strip absolute top-6 right-6' />
+      <div class='relative px-8 pt-7 flex-1'>
+        <div class='eyebrow flex items-center gap-2'>{greeting()}<span class='w-1 h-1 rounded-full bg-muted/60' />{new Date().toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long' })}</div>
+        <h2 class='display mt-3 text-text truncate pb-1' style={st({ fontSize: nameSize(props.riot.gameName) })} title={props.riot.gameName}>
+          {props.riot.gameName || 'Agent'}<span class='text-muted/70 text-[26px] font-semibold tracking-tight ml-2'>{props.riot.tagLine ? `#${props.riot.tagLine}` : ''}</span>
         </h2>
-        <div className='mt-3 flex flex-wrap items-center gap-2'>
-          {account && <Badge tone='accent'>Level {account.level}</Badge>}
-          {riot.region && <Badge>{riot.region}</Badge>}
+        <div class='mt-3 flex flex-wrap items-center gap-2'>
+          {props.account && <Badge tone='accent'>Level {props.account.level}</Badge>}
+          {props.riot.region && <Badge>{props.riot.region}</Badge>}
         </div>
       </div>
-      <div className='hero-strip relative m-3 mt-6 rounded-2xl glass-inset grid grid-cols-4 divide-x divide-line'>
-        {stats.map(([label, v, sub, tone]) => (
-          <div key={label} className='px-5 py-3.5 min-w-0'>
-            <div className='eyebrow !text-[10px] truncate'>{label}</div>
-            {v == null ? <Skeleton className='h-7 w-14 mt-2' /> : <div className={cx('font-display text-[26px] font-750 tracking-tight leading-none tabular-nums mt-2', tone || 'text-text')}>{v}</div>}
-            <div className='text-[11px] text-muted mt-1.5 truncate'>{sub}</div>
+      <div class='hero-strip relative m-3 mt-6 rounded-2xl glass-inset grid grid-cols-4 divide-x divide-line'>
+        <For each={stats()}>{([label, v, sub, tone]) => (
+          <div class='px-5 py-3.5 min-w-0'>
+            <div class='eyebrow !text-[10px] truncate'>{label}</div>
+            {v == null ? <Skeleton class='h-7 w-14 mt-2' /> : <div class={cx('font-display text-[26px] font-750 tracking-tight leading-none tabular-nums mt-2', tone || 'text-text')}>{v}</div>}
+            <div class='text-[11px] text-muted mt-1.5 truncate'>{sub}</div>
           </div>
-        ))}
+        )}</For>
       </div>
-    </Card>
-  )
+    </Card>)
+  
 }
 
 // local time pill (ticks every second)
-function LiveClock({ className }) {
-  const now = new Date(useNow())
-  return (
-    <div className={cx('glass-inset rounded-full pl-3 pr-3.5 h-8 inline-flex items-center gap-2 text-[12px] text-muted', className)} title='Local time'>
-      <FiClock /><span className='font-display font-bold text-text tabular-nums'>{now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-      <span className='tabular-nums text-muted/80'>{String(now.getSeconds()).padStart(2, '0')}</span>
-    </div>
-  )
+function LiveClock(props) {
+  const nowA = useNow()
+  
+    const now = () => (new Date(nowA()))
+    return (<div class={cx('glass-inset rounded-full pl-3 pr-3.5 h-8 inline-flex items-center gap-2 text-[12px] text-muted', props["class"])} title='Local time'>
+      <FiClock /><span class='font-display font-bold text-text tabular-nums'>{now().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+      <span class='tabular-nums text-muted/80'>{String(now().getSeconds()).padStart(2, '0')}</span>
+    </div>)
+  
 }
 
 // current rank with a tier-tinted glow, RR bar and peak
-export function RankTile({ rank }) {
-  const tiers = useTiers()
-  const t = rank && tiers?.[rank.tier]
-  const peak = rank && tiers?.[rank.peak]
-  const color = tierColor(t)
-  return (
-    <Card hover onClick={go('progression')} className='group relative overflow-hidden h-full !rounded-3xl p-6 flex flex-col'>
-      <span className='halo w-80 h-80 -right-20 -top-20' style={color ? { background: `radial-gradient(closest-side, ${color}45, transparent)` } : undefined} />
-      <div className='relative flex items-center justify-between'>
-        <span className='eyebrow'>Current rank</span>
+export function RankTile(props) {
+  const tiersA = useTiers()
+  
+    const t = () => (props.rank && tiersA()?.[props.rank.tier])
+    const peak = () => (props.rank && tiersA()?.[props.rank.peak])
+    const color = () => (tierColor(t()))
+    return (<Card hover onClick={go('progression')} class='group relative overflow-hidden h-full !rounded-3xl p-6 flex flex-col'>
+      <span class='halo w-80 h-80 -right-20 -top-20' style={st(color() ? { background: `radial-gradient(closest-side, ${color()}45, transparent)` } : undefined)} />
+      <div class='relative flex items-center justify-between'>
+        <span class='eyebrow'>Current rank</span>
         <Arrow />
       </div>
-      {!rank ? <Skeleton className='mt-6 h-36 rounded-2xl' /> : (
-        <div className='relative flex-1 flex flex-col justify-end'>
-          <div className='flex items-center gap-4 mt-3'>
-            {t ? <img decoding='async' src={t.largeIcon} alt='' className='w-[96px] h-[96px] object-contain drop-shadow-[0_10px_24px_rgb(0_0_0/0.35)] transition-transform duration-500 ease-out group-hover:scale-105 group-hover:-rotate-3' />
-              : <Skeleton className='w-[96px] h-[96px] rounded-2xl' />}
-            <div className='min-w-0'>
-              <div className='tier-text display text-[30px] truncate' style={color ? { '--tier': color } : undefined}>{rank.tier ? t?.tierName : 'Unranked'}</div>
-              {rank.tier > 0 && <div className='mt-2 text-[13px] font-semibold text-text tabular-nums'>{rank.rr} RR <span className={cx('font-medium', rank.lastChange >= 0 ? 'text-good' : 'text-bad')}>{signed(rank.lastChange)} last game</span></div>}
+      {!props.rank ? <Skeleton class='mt-6 h-36 rounded-2xl' /> : (
+        <div class='relative flex-1 flex flex-col justify-end'>
+          <div class='flex items-center gap-4 mt-3'>
+            {t() ? <img decoding='async' src={t().largeIcon} alt='' class='w-[96px] h-[96px] object-contain drop-shadow-[0_10px_24px_rgb(0_0_0/0.35)] transition-transform duration-500 ease-out group-hover:scale-105 group-hover:-rotate-3' />
+              : <Skeleton class='w-[96px] h-[96px] rounded-2xl' />}
+            <div class='min-w-0'>
+              <div class='tier-text display text-[30px] truncate' style={st(color() ? { '--tier': color() } : undefined)}>{props.rank.tier ? t()?.tierName : 'Unranked'}</div>
+              {props.rank.tier > 0 && <div class='mt-2 text-[13px] font-semibold text-text tabular-nums'>{props.rank.rr} RR <span class={cx('font-medium', props.rank.lastChange >= 0 ? 'text-good' : 'text-bad')}>{signed(props.rank.lastChange)} last game</span></div>}
             </div>
           </div>
-          {rank.tier > 0 && rank.tier < 27 && (
-            <div className='mt-5'>
-              <div className='flex justify-between text-[11px] text-muted mb-1.5 tabular-nums'><span>Next rank</span><span>{100 - rank.rr} RR to go</span></div>
-              <div className='h-2 rounded-full glass-inset overflow-hidden'>
-                <div className='h-full w-full rounded-full bg-gradient-to-r from-accent-2 to-accent origin-left transition-transform duration-1000 ease-out' style={{ transform: `scaleX(${rank.rr / 100})` }} />
+          {props.rank.tier > 0 && props.rank.tier < 27 && (
+            <div class='mt-5'>
+              <div class='flex justify-between text-[11px] text-muted mb-1.5 tabular-nums'><span>Next rank</span><span>{100 - props.rank.rr} RR to go</span></div>
+              <div class='h-2 rounded-full glass-inset overflow-hidden'>
+                <div class='h-full w-full rounded-full bg-gradient-to-r from-accent-2 to-accent origin-left transition-transform duration-1000 ease-out' style={st({ transform: `scaleX(${props.rank.rr / 100})` })} />
               </div>
             </div>
           )}
-          {peak && <div className='mt-4 flex items-center gap-2 text-[12px] text-muted'><img decoding='async' src={peak.smallIcon} alt='' className='w-5 h-5' />Peak <span className='font-semibold text-text'>{peak.tierName}</span></div>}
+          {peak() && <div class='mt-4 flex items-center gap-2 text-[12px] text-muted'><img decoding='async' src={peak().smallIcon} alt='' class='w-5 h-5' />Peak <span class='font-semibold text-text'>{peak().tierName}</span></div>}
         </div>
       )}
-    </Card>
-  )
+    </Card>)
+  
 }
 
 // ranked trend chart tile
-export function TrendTile({ rr }) {
-  const f = formOf(rr.data)
-  return (
-    <Card hover onClick={go('progression')} className='group h-full p-6 flex flex-col'>
-      <Heading hint={rr.data?.length ? `Last ${rr.data.length} competitive games` : 'Competitive games'}
-        right={<div className='flex items-center gap-3'>{f.games > 0 && <span className={cx('font-display text-[20px] font-750 tracking-tight tabular-nums', f.net >= 0 ? 'text-good' : 'text-bad')}>{signed(f.net)} RR</span>}<Arrow /></div>}>
+export function TrendTile(props) {
+  
+    const f = () => (formOf(props.rr.data))
+    return (<Card hover onClick={go('progression')} class='group h-full p-6 flex flex-col'>
+      <Heading hint={props.rr.data?.length ? `Last ${props.rr.data.length} competitive games` : 'Competitive games'}
+        right={<div class='flex items-center gap-3'>{f().games > 0 && <span class={cx('font-display text-[20px] font-750 tracking-tight tabular-nums', f().net >= 0 ? 'text-good' : 'text-bad')}>{signed(f().net)} RR</span>}<Arrow /></div>}>
         Ranked trend
       </Heading>
-      <div className='flex-1 flex items-end'>
-        {rr.error && !rr.data ? <p className='text-[13px] text-muted py-8 w-full text-center'>Ranked history unavailable</p>
-          : !rr.data ? <Skeleton className='h-44 w-full rounded-2xl' />
-            : rr.data.length < 2 ? <Empty icon={FiActivity} title='Not enough ranked games' hint='Play a couple of competitive matches to see your trend.' className='py-8 w-full' />
-              : <div className='w-full'><RrChart rows={rr.data} height={210} /></div>}
+      <div class='flex-1 flex items-end'>
+        {props.rr.error && !props.rr.data ? <p class='text-[13px] text-muted py-8 w-full text-center'>Ranked history unavailable</p>
+          : !props.rr.data ? <Skeleton class='h-44 w-full rounded-2xl' />
+            : props.rr.data.length < 2 ? <Empty icon={FiActivity} title='Not enough ranked games' hint='Play a couple of competitive matches to see your trend.' class='py-8 w-full' />
+              : <div class='w-full'><RrChart rows={props.rr.data} height={210} /></div>}
       </div>
-    </Card>
-  )
+    </Card>)
+  
 }
 
 // last ranked games as signed RR bars around a baseline, plus the latest three
-export function FormTile({ rr }) {
-  const maps = useContent('maps')
-  const rows = (rr.data || []).slice(-10)
-  const f = formOf(rows)
-  const max = Math.max(10, ...rows.map(r => Math.abs(r.change)))
-  const mapName = id => maps?.find(m => m.mapUrl === id)?.displayName || 'Competitive'
-  return (
-    <Card hover onClick={go('history')} className='group h-full p-6 flex flex-col'>
-      <Heading hint={f.games ? `${f.wins} wins in the last ${f.games}` : 'Ranked results'} right={<Arrow />}>Recent form</Heading>
-      {!rr.data ? <Skeleton className='flex-1 min-h-[160px] rounded-2xl' /> : !rows.length ? <Empty icon={FiActivity} title='No ranked games yet' className='py-8' /> : (
-        <div className='flex-1 flex flex-col mt-1'>
-          <div className='relative flex-1 min-h-[96px] rounded-2xl glass-inset px-3 flex items-center gap-1.5'>
-            <span className='absolute left-3 right-3 top-1/2 h-px bg-line' />
-            {rows.map((r, i) => (
-              <div key={r.id || i} className='relative flex-1 h-full' title={`${signed(r.change)} RR`}>
-                <span className={cx('absolute inset-x-0 mx-auto w-full max-w-[14px] rounded-full', r.change >= 0 ? 'bottom-1/2 bg-gradient-to-t from-good/40 to-good' : 'top-1/2 bg-gradient-to-b from-bad/40 to-bad')}
-                  style={{ height: Math.max(6, Math.abs(r.change) / max * 44) + '%' }} />
+export function FormTile(props) {
+  const mapsA = useContent('maps')
+  
+    const rows = () => ((props.rr.data || []).slice(-10))
+    const f = () => (formOf(rows()))
+    const max = () => (Math.max(10, ...rows().map(r => Math.abs(r.change))))
+    const mapName = id => mapsA()?.find(m => m.mapUrl === id)?.displayName || 'Competitive'
+    return (<Card hover onClick={go('history')} class='group h-full p-6 flex flex-col'>
+      <Heading hint={f().games ? `${f().wins} wins in the last ${f().games}` : 'Ranked results'} right={<Arrow />}>Recent form</Heading>
+      {!props.rr.data ? <Skeleton class='flex-1 min-h-[160px] rounded-2xl' /> : !rows().length ? <Empty icon={FiActivity} title='No ranked games yet' class='py-8' /> : (
+        <div class='flex-1 flex flex-col mt-1'>
+          <div class='relative flex-1 min-h-[96px] rounded-2xl glass-inset px-3 flex items-center gap-1.5'>
+            <span class='absolute left-3 right-3 top-1/2 h-px bg-line' />
+            <For each={rows()}>{(r, i) => (
+              <div class='relative flex-1 h-full' title={`${signed(r.change)} RR`}>
+                <span class={cx('absolute inset-x-0 mx-auto w-full max-w-[14px] rounded-full', r.change >= 0 ? 'bottom-1/2 bg-gradient-to-t from-good/40 to-good' : 'top-1/2 bg-gradient-to-b from-bad/40 to-bad')}
+                  style={st({ height: Math.max(6, Math.abs(r.change) / max() * 44) + '%' })} />
               </div>
-            ))}
+            )}</For>
           </div>
-          <div className='mt-3'>
-            {rows.slice(-3).reverse().map((r, i) => (
-              <div key={r.id || i} className='flex items-center gap-3 px-1 py-1.5 text-[12.5px]'>
-                <span className={cx('w-1.5 h-1.5 rounded-full', r.change >= 0 ? 'bg-good' : 'bg-bad')} />
-                <span className='text-text font-medium truncate flex-1'>{mapName(r.mapId)}</span>
-                <span className={cx('font-display font-bold tabular-nums', r.change >= 0 ? 'text-good' : 'text-bad')}>{signed(r.change)}</span>
+          <div class='mt-3'>
+            <For each={rows().slice(-3).reverse()}>{(r, i) => (
+              <div class='flex items-center gap-3 px-1 py-1.5 text-[12.5px]'>
+                <span class={cx('w-1.5 h-1.5 rounded-full', r.change >= 0 ? 'bg-good' : 'bg-bad')} />
+                <span class='text-text font-medium truncate flex-1'>{mapName(r.mapId)}</span>
+                <span class={cx('font-display font-bold tabular-nums', r.change >= 0 ? 'text-good' : 'text-bad')}>{signed(r.change)}</span>
               </div>
-            ))}
+            )}</For>
           </div>
         </div>
       )}
-    </Card>
-  )
+    </Card>)
+  
 }
 
-export function WalletCard({ wallet, cat }) {
-  const rows = [['Valorant Points', CUR.vp, wallet?.vp], ['Radianite', CUR.rad, wallet?.rad], ['Kingdom Credits', CUR.kc, wallet?.kc]]
-  return (
-    <Card className='h-full p-6'>
+export function WalletCard(props) {
+  
+    const rows = () => ([['Valorant Points', CUR.vp, props.wallet?.vp], ['Radianite', CUR.rad, props.wallet?.rad], ['Kingdom Credits', CUR.kc, props.wallet?.kc]])
+    return (<Card class='h-full p-6'>
       <Heading>Wallet</Heading>
-      <div className='space-y-2'>
-        {rows.map(([label, id, v], i) => (
-          <div key={id} className={cx('flex items-center justify-between gap-2 rounded-xl px-3.5 py-2.5', i === 0 ? 'accent-soft' : 'glass-inset')}>
-            <span className='text-[12px] text-muted truncate'>{label}</span>
-            {wallet ? <Price amount={v} currencyId={id} cat={cat} size={15} className='text-[17px] text-text' /> : <Skeleton className='h-5 w-16' />}
+      <div class='space-y-2'>
+        <For each={rows()}>{([label, id, v], i) => (
+          <div class={cx('flex items-center justify-between gap-2 rounded-xl px-3.5 py-2.5', i() === 0 ? 'accent-soft' : 'glass-inset')}>
+            <span class='text-[12px] text-muted truncate'>{label}</span>
+            {props.wallet ? <Price amount={v} currencyId={id} cat={props.cat} size={15} class='text-[17px] text-text' /> : <Skeleton class='h-5 w-16' />}
           </div>
-        ))}
+        )}</For>
       </div>
-    </Card>
-  )
+    </Card>)
+  
 }
 
-export function BundleCard({ bundles, cat }) {
-  const b = bundles?.[0]
-  const meta = b && cat?.bundles[b.id]
-  const art = meta?.displayIcon2 || meta?.displayIcon
-  return (
-    <Card hover onClick={go('shop')} className='group relative overflow-hidden h-full min-h-[210px]'>
-      {art && <img decoding='async' src={art} alt='' className='absolute inset-0 w-full h-full object-cover opacity-80 transition-transform duration-700 ease-out group-hover:scale-105' />}
-      <div className='absolute inset-0 bg-gradient-to-t from-bg via-bg/45 to-transparent' />
-      <div className='absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-bg/70 to-transparent' />
-      <div className='relative p-6 h-full flex flex-col justify-between'>
-        <div className='flex items-center justify-between'>
-          <span className='eyebrow'>Featured bundle</span>
-          <div className='flex items-center gap-2'>{bundles?.length > 1 && <Badge>+{bundles.length - 1} more</Badge>}<Arrow /></div>
+export function BundleCard(props) {
+  
+    const b = () => (props.bundles?.[0])
+    const meta = () => (b() && props.cat?.bundles[b().id])
+    const art = () => (meta()?.displayIcon2 || meta()?.displayIcon)
+    return (<Card hover onClick={go('shop')} class='group relative overflow-hidden h-full min-h-[210px]'>
+      {art() && <img decoding='async' src={art()} alt='' class='absolute inset-0 w-full h-full object-cover opacity-80 transition-transform duration-700 ease-out group-hover:scale-105' />}
+      <div class='absolute inset-0 bg-gradient-to-t from-bg via-bg/45 to-transparent' />
+      <div class='absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-bg/70 to-transparent' />
+      <div class='relative p-6 h-full flex flex-col justify-between'>
+        <div class='flex items-center justify-between'>
+          <span class='eyebrow'>Featured bundle</span>
+          <div class='flex items-center gap-2'>{props.bundles?.length > 1 && <Badge>+{props.bundles.length - 1} more</Badge>}<Arrow /></div>
         </div>
-        {!bundles ? <Skeleton className='h-10' /> : !b ? <span className='text-sm text-muted'>No bundles right now</span> : (
-          <div className='flex items-end justify-between gap-3'>
-            <div className='min-w-0'>
-              <div className='display truncate text-[30px] text-text pb-0.5'>{meta?.displayName || 'Bundle'}</div>
-              <Countdown seconds={b.secondsLeft} className='mt-1.5 text-xs text-muted' />
+        {!props.bundles ? <Skeleton class='h-10' /> : !b() ? <span class='text-sm text-muted'>No bundles right now</span> : (
+          <div class='flex items-end justify-between gap-3'>
+            <div class='min-w-0'>
+              <div class='display truncate text-[30px] text-text pb-0.5'>{meta()?.displayName || 'Bundle'}</div>
+              <Countdown seconds={b().secondsLeft} class='mt-1.5 text-xs text-muted' />
             </div>
-            <div className='text-right shrink-0 space-y-1.5'>
-              {b.discountPercent > 0 && <Badge tone='good'>-{Math.round(b.discountPercent * 100)}%</Badge>}
-              <div><Price amount={b.totalDiscounted ?? b.totalBase} cat={cat} size={16} className='text-[22px] text-text' /></div>
+            <div class='text-right shrink-0 space-y-1.5'>
+              {b().discountPercent > 0 && <Badge tone='good'>-{Math.round(b().discountPercent * 100)}%</Badge>}
+              <div><Price amount={b().totalDiscounted ?? b().totalBase} cat={props.cat} size={16} class='text-[22px] text-text' /></div>
             </div>
           </div>
         )}
       </div>
-    </Card>
-  )
+    </Card>)
+  
 }
 
-export function DailyCard({ store, cat }) {
+export function DailyCard(props) {
   return (
-    <Card hover onClick={go('shop')} className='group h-full p-6'>
-      <Heading hint='Your rotating store' right={<div className='flex items-center gap-3'>{store && <Countdown seconds={store.dailySecondsLeft} className='text-[12px] text-muted' />}<Arrow /></div>}>Daily offers</Heading>
-      <div className='grid grid-cols-4 gap-3'>
-        {!store ? [0, 1, 2, 3].map(i => <Skeleton key={i} className='h-32 rounded-2xl' />) : store.daily.length ? store.daily.slice(0, 4).map(o => {
-          const item = cat?.items.get(o.itemId)
+    <Card hover onClick={go('shop')} class='group h-full p-6'>
+      <Heading hint='Your rotating store' right={<div class='flex items-center gap-3'>{props.store && <Countdown seconds={props.store.dailySecondsLeft} class='text-[12px] text-muted' />}<Arrow /></div>}>Daily offers</Heading>
+      <div class='grid grid-cols-4 gap-3'>
+        {!props.store ? [0, 1, 2, 3].map(i => <Skeleton class='h-32 rounded-2xl' />) : props.store.daily.length ? <For each={props.store.daily.slice(0, 4)}>{o => {
+          const item = () => props.cat?.items.get(o.itemId)
           return (
-            <div key={o.id} className='rounded-2xl glass-inset overflow-hidden transition-[border-color,transform] duration-300 ease-out hover:border-accent/40 hover:-translate-y-0.5'>
-              <ItemArt item={item} className='h-[84px]' />
-              <div className='px-3 pb-3'>
-                <div className='truncate text-[12px] font-semibold text-text'>{item?.name || '...'}</div>
-                <Price amount={o.price} cat={cat} size={11} className='mt-1 text-[11.5px] text-muted' />
+            <div class='rounded-2xl glass-inset overflow-hidden transition-[border-color,transform] duration-300 ease-out hover:border-accent/40 hover:-translate-y-0.5'>
+              <ItemArt item={item()} class='h-[84px]' />
+              <div class='px-3 pb-3'>
+                <div class='truncate text-[12px] font-semibold text-text'>{item()?.name || '...'}</div>
+                <Price amount={o.price} cat={props.cat} size={11} class='mt-1 text-[11.5px] text-muted' />
               </div>
             </div>
           )
-        }) : <div className='col-span-4 text-[13px] text-muted py-6 text-center'>No daily offers</div>}
+        }}</For> : <div class='col-span-4 text-[13px] text-muted py-6 text-center'>No daily offers</div>}
       </div>
     </Card>
   )
 }
 
-export function PassCard({ pass, cat, loading }) {
-  const flat = pass?.chapters.flatMap(c => c.levels) || []
-  const next = flat[pass?.progressionLevel]
-  const nextReward = rewardItem(cat, next?.reward)
-  const pct = Math.min(100, next?.xp ? pass.towardsNext / next.xp * 100 : 100)
-  return (
-    <Card hover onClick={go('progression')} className='group h-full p-6 flex flex-col'>
+export function PassCard(props) {
+  
+    const flat = () => (props.pass?.chapters.flatMap(c => c.levels) || [])
+    const next = () => (flat()[props.pass?.progressionLevel])
+    const nextReward = () => (rewardItem(props.cat, next()?.reward))
+    const pct = () => (Math.min(100, next()?.xp ? props.pass.towardsNext / next().xp * 100 : 100))
+    return (<Card hover onClick={go('progression')} class='group h-full p-6 flex flex-col'>
       <Heading right={<Arrow />}>Battle pass</Heading>
-      {loading ? <Skeleton className='h-24 rounded-2xl' /> : !pass ? <div className='text-[13px] text-muted py-3'>No active battle pass</div> : (
-        <div className='flex-1 flex flex-col justify-end'>
-          <div className='flex items-end justify-between gap-3'>
-            <span className='display text-[52px] text-text tabular-nums'>{pass.progressionLevel}<span className='text-[16px] font-semibold tracking-normal text-muted'> / {flat.length}</span></span>
-            {nextReward?.icon && <span className='w-12 h-12 p-2 rounded-xl glass-inset shrink-0 grid place-items-center'><img decoding='async' src={nextReward.icon} alt='' className={'max-w-full max-h-full object-contain' + (nextReward.kind === 'currency' ? ' mono-icon' : '')} /></span>}
+      {props.loading ? <Skeleton class='h-24 rounded-2xl' /> : !props.pass ? <div class='text-[13px] text-muted py-3'>No active battle pass</div> : (
+        <div class='flex-1 flex flex-col justify-end'>
+          <div class='flex items-end justify-between gap-3'>
+            <span class='display text-[52px] text-text tabular-nums'>{props.pass.progressionLevel}<span class='text-[16px] font-semibold tracking-normal text-muted'> / {flat().length}</span></span>
+            {nextReward()?.icon && <span class='w-12 h-12 p-2 rounded-xl glass-inset shrink-0 grid place-items-center'><img decoding='async' src={nextReward().icon} alt='' class={'max-w-full max-h-full object-contain' + (nextReward().kind === 'currency' ? ' mono-icon' : '')} /></span>}
           </div>
-          <div className='mt-1 truncate text-[12px] text-muted'>{pass.name}</div>
-          <div className='mt-3 h-2 rounded-full glass-inset overflow-hidden'>
-            <div className='h-full w-full rounded-full bg-gradient-to-r from-accent-2 to-accent origin-left transition-transform duration-1000 ease-out' style={{ transform: `scaleX(${pct / 100})` }} />
+          <div class='mt-1 truncate text-[12px] text-muted'>{props.pass.name}</div>
+          <div class='mt-3 h-2 rounded-full glass-inset overflow-hidden'>
+            <div class='h-full w-full rounded-full bg-gradient-to-r from-accent-2 to-accent origin-left transition-transform duration-1000 ease-out' style={st({ transform: `scaleX(${pct() / 100})` })} />
           </div>
-          <div className='mt-2.5 truncate text-[11.5px] text-muted'>{next ? `Next: ${nextReward?.name || 'reward'} (${fmt(pass.towardsNext)} / ${fmt(next.xp)} XP)` : 'Pass complete'}</div>
+          <div class='mt-2.5 truncate text-[11.5px] text-muted'>{next() ? `Next: ${nextReward()?.name || 'reward'} (${fmt(props.pass.towardsNext)} / ${fmt(next().xp)} XP)` : 'Pass complete'}</div>
         </div>
       )}
-    </Card>
-  )
+    </Card>)
+  
 }
 
-export function FriendsCard({ friends }) {
-  const tiers = useTiers()
-  const online = (friends.data || []).filter(f => f.online)
-  return (
-    <Card hover onClick={go('friends')} className='group h-full p-6'>
-      <Heading right={<div className='flex items-center gap-2'>{friends.data && <Badge tone='good'>{online.length} online</Badge>}<Arrow /></div>}>Friends</Heading>
-      {friends.loading && !friends.data ? <div className='space-y-2'>{[0, 1, 2, 3].map(i => <Skeleton key={i} className='h-10 rounded-xl' />)}</div>
-        : friends.error || !online.length ? <Empty icon={FiUsers} title={friends.error ? 'Friends unavailable' : 'Nobody online'} hint={friends.error ? 'Open the Friends page to retry.' : 'Online friends will appear here.'} className='py-6' />
+export function FriendsCard(props) {
+  const tiersA = useTiers()
+  
+    const online = () => ((props.friends.data || []).filter(f => f.online))
+    return (<Card hover onClick={go('friends')} class='group h-full p-6'>
+      <Heading right={<div class='flex items-center gap-2'>{props.friends.data && <Badge tone='good'>{online().length} online</Badge>}<Arrow /></div>}>Friends</Heading>
+      {props.friends.loading && !props.friends.data ? <div class='space-y-2'><For each={[0, 1, 2, 3]}>{i => <Skeleton class='h-10 rounded-xl' />}</For></div>
+        : props.friends.error || !online().length ? <Empty icon={FiUsers} title={props.friends.error ? 'Friends unavailable' : 'Nobody online'} hint={props.friends.error ? 'Open the Friends page to retry.' : 'Online friends will appear here.'} class='py-6' />
           : (
-            <div className='stagger'>
-              {online.slice(0, 5).map((f, i) => {
-                const s = f.status || {}
-                const rankIcon = typeof s.rank === 'number' ? tiers?.[s.rank]?.smallIcon : null
+            <div class='stagger'>
+              <For each={online().slice(0, 5)}>{(f, i) => {
+                const s = () => (f.status || {})
+                const rankIcon = () => (typeof s().rank === 'number' ? tiersA()?.[s().rank]?.smallIcon : null)
                 return (
-                  <div key={f.puuid} style={{ '--i': i }} className='flex items-center gap-3 rounded-xl px-2.5 py-2 -mx-1 hover:bg-surface-2 transition-colors'>
-                    <span className='w-2 h-2 rounded-full bg-good anim-pulse shadow-[0_0_8px_rgb(var(--good)/0.6)] shrink-0' />
-                    <span className='truncate text-[13px] font-medium text-text flex-1'>{f.gameName}<span className='text-muted font-normal'> #{f.tagLine}</span></span>
-                    <span className='text-[11px] text-muted capitalize truncate max-w-[110px]'>{[s.state, s.map].filter(Boolean).join(' - ')}</span>
-                    {rankIcon && <img decoding='async' src={rankIcon} alt='' className='w-5 h-5' />}
+                  <div style={st({ '--i': i() })} class='flex items-center gap-3 rounded-xl px-2.5 py-2 -mx-1 hover:bg-surface-2 transition-colors'>
+                    <span class='w-2 h-2 rounded-full bg-good anim-pulse shadow-[0_0_8px_rgb(var(--good)/0.6)] shrink-0' />
+                    <span class='truncate text-[13px] font-medium text-text flex-1'>{f.gameName}<span class='text-muted font-normal'> #{f.tagLine}</span></span>
+                    <span class='text-[11px] text-muted capitalize truncate max-w-[110px]'>{[s().state, s().map].filter(Boolean).join(' - ')}</span>
+                    {rankIcon() && <img decoding='async' src={rankIcon()} alt='' class='w-5 h-5' />}
                   </div>
                 )
-              })}
+              }}</For>
             </div>
           )}
-    </Card>
-  )
+    </Card>)
+  
 }
 
-export function ClockCard({ store }) {
-  const now = new Date(useNow())
-  const left = useCountdown(store?.dailySecondsLeft)
-  return (
-    <Card className='h-full p-6 flex flex-col'>
-      <div className='flex items-center justify-between'>
-        <span className='eyebrow'>Local time</span>
-        <FiClock className='text-muted' />
+export function ClockCard(props) {
+  const leftA = useCountdown(() => props.store?.dailySecondsLeft)
+  const nowA = useNow()
+  
+    const now = () => (new Date(nowA()))
+    return (<Card class='h-full p-6 flex flex-col'>
+      <div class='flex items-center justify-between'>
+        <span class='eyebrow'>Local time</span>
+        <FiClock class='text-muted' />
       </div>
-      <div className='flex-1 flex flex-col justify-end'>
-        <div className='mt-3 display text-[52px] text-text tabular-nums'>{now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}<span className='ml-1.5 text-[16px] font-semibold tracking-normal text-muted'>{String(now.getSeconds()).padStart(2, '0')}</span></div>
-        <div className='mt-2 text-[12.5px] text-muted'>{now.toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long' })}</div>
-        {left != null && <div className='mt-4 self-start inline-flex items-center gap-1.5 rounded-full glass-inset px-3 py-1.5 text-[11px] text-muted'><FiShoppingBag /> Store refreshes in <span className='font-semibold text-text tabular-nums'>{fmtDuration(left)}</span></div>}
+      <div class='flex-1 flex flex-col justify-end'>
+        <div class='mt-3 display text-[52px] text-text tabular-nums'>{now().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}<span class='ml-1.5 text-[16px] font-semibold tracking-normal text-muted'>{String(now().getSeconds()).padStart(2, '0')}</span></div>
+        <div class='mt-2 text-[12.5px] text-muted'>{now().toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long' })}</div>
+        {leftA() != null && <div class='mt-4 self-start inline-flex items-center gap-1.5 rounded-full glass-inset px-3 py-1.5 text-[11px] text-muted'><FiShoppingBag /> Store refreshes in <span class='font-semibold text-text tabular-nums'>{fmtDuration(leftA())}</span></div>}
       </div>
-    </Card>
-  )
+    </Card>)
+  
 }

@@ -1,5 +1,6 @@
-import { useMemo } from 'react'
-import { FiUser } from 'react-icons/fi'
+import { Show, createMemo } from 'solid-js'
+import { st } from '../../lib/st.js'
+import { FiUser } from 'solid-icons/fi'
 import { useContent, useTiers } from '../../lib/content'
 import { useInvoke } from '../../lib/ipc'
 import { navigate } from '../../nav'
@@ -12,22 +13,12 @@ export function openPlayer(p) {
 export const cx = (...c) => c.filter(Boolean).join(' ')
 
 // valorant-api content lookups, keyed for fast access
-export function useAgents() {
-  const list = useContent('agents?isPlayableCharacter=true')
-  return useMemo(() => Object.fromEntries((list || []).map(a => [a.uuid, a])), [list])
-}
-export function useMaps() {
-  const list = useContent('maps')
-  return useMemo(() => Object.fromEntries((list || []).map(m => [m.mapUrl, m])), [list])
-}
-export function useCards() {
-  const list = useContent('playercards')
-  return useMemo(() => Object.fromEntries((list || []).map(c => [c.uuid, c])), [list])
-}
-export function useSeasons() {
-  const list = useContent('seasons')
-  return useMemo(() => Object.fromEntries((list || []).map(s => [s.uuid, s])), [list])
-}
+// each returns an accessor
+const keyed = (path, key) => { const list = useContent(path); return createMemo(() => Object.fromEntries((list() || []).map(a => [a[key], a]))) }
+export const useAgents = () => keyed('agents?isPlayableCharacter=true', 'uuid')
+export const useMaps = () => keyed('maps', 'mapUrl')
+export const useCards = () => keyed('playercards', 'uuid')
+export const useSeasons = () => keyed('seasons', 'uuid')
 export function seasonName(seasons, id) {
   const s = seasons[id]
   if (!s) return ''
@@ -65,25 +56,30 @@ export function playerLabel(p, agents) {
   return p.name ? riotId(p.name) : agents[p.agent]?.displayName || 'Hidden player'
 }
 
-export function AgentIcon({ id, agents, size = 36, className }) {
-  const a = agents[id]
+export function AgentIcon(props) {
+  const a = () => props.agents?.[props.id]
+  const size = () => props.size ?? 36
   return (
-    <div className={cx('shrink-0 rounded-lg bg-surface-2 border border-line overflow-hidden flex items-center justify-center shadow-[inset_0_1px_0_rgb(255_255_255/0.06)]', className)} style={{ width: size, height: size }}>
-      {a ? <img decoding='async' src={a.displayIcon} alt={a.displayName} title={a.displayName} className='w-full h-full object-cover' draggable={false} /> : <FiUser className='text-muted' />}
+    <div class={cx('shrink-0 rounded-lg bg-surface-2 border border-line overflow-hidden flex items-center justify-center shadow-[inset_0_1px_0_rgb(255_255_255/0.06)]', props.class ?? props.className)} style={st({ width: size(), height: size() })}>
+      <Show when={a()} fallback={<FiUser class='text-muted' />}>
+        <img decoding='async' src={a().displayIcon} alt={a().displayName} title={a().displayName} class='w-full h-full object-cover' draggable={false} />
+      </Show>
     </div>
   )
 }
 
-export function TierIcon({ tier, size = 28, showName }) {
-  const tiers = useTiers()
-  const t = tiers?.[tier]
-  if (!t || !tier) return <span className='text-muted text-[12px]'>{showName ? 'Unranked' : '-'}</span>
+export function TierIcon(props) {
+  const tiersA = useTiers()
+  const t = () => (props.tier ? tiersA()?.[props.tier] : null)
+  const size = () => props.size ?? 28
   return (
-    <span className='inline-flex items-center gap-2' title={t.tierName}>
-      <img decoding='async' src={t.smallIcon} alt={t.tierName} style={{ width: size, height: size }} draggable={false} />
-      {/* .tier-text keeps the tier color readable on the light theme */}
-      {showName && <span className='tier-text text-[12px] font-semibold' style={{ '--tier': `#${t.color.slice(0, 6)}` }}>{t.tierName}</span>}
-    </span>
+    <Show when={t()} fallback={<span class='text-muted text-[12px]'>{props.showName ? 'Unranked' : '-'}</span>}>
+      <span class='inline-flex items-center gap-2' title={t().tierName}>
+        <img decoding='async' src={t().smallIcon} alt={t().tierName} style={st({ width: size(), height: size() })} draggable={false} />
+        {/* .tier-text keeps the tier color readable on the light theme */}
+        {props.showName && <span class='tier-text text-[12px] font-semibold' style={st({ '--tier': `#${t().color.slice(0, 6)}` })}>{t().tierName}</span>}
+      </span>
+    </Show>
   )
 }
 
@@ -91,7 +87,7 @@ export const kd = (k, d) => (d ? k / d : k).toFixed(2)
 
 // all saved memos as a { puuid: memo } map
 export function useMemos(skip) {
-  const { data, reload } = useInvoke('memo:list', [], { skip })
-  const map = useMemo(() => Object.fromEntries((data || []).map(m => [m.puuid, m])), [data])
-  return { memos: data || [], map, reload }
+  const res = useInvoke('memo:list', [], { skip })
+  const map = createMemo(() => Object.fromEntries((res.data || []).map(m => [m.puuid, m])))
+  return { get memos() { return res.data || [] }, get map() { return map() }, reload: q => res.reload(q) }
 }

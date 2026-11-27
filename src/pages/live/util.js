@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { createEffect, createMemo, createSignal, onCleanup } from 'solid-js'
 import { invoke } from '../../lib/ipc'
 import { useContent } from '../../lib/content'
 
@@ -15,10 +15,13 @@ const MODE_ASSET = {
   spikerush: 'QuickBomb', deathmatch: 'Deathmatch', ggteam: 'GunGame', onefa: 'OneForAll', hurm: 'HURM', snowball: 'SnowballFight',
   skirmish2v2: 'Skirmish', abilitydraftarena: 'AbilityDraftArena',
 }
+// accessor; `queue` is an accessor
 export function useModeIcon(queue) {
   const modes = useContent('gamemodes')
-  const folder = MODE_ASSET[queue ?? '']
-  return (folder && modes?.find(m => m.assetPath?.split('/').slice(-2, -1)[0] === folder)?.displayIcon) || null
+  return createMemo(() => {
+    const folder = MODE_ASSET[queue() ?? '']
+    return (folder && modes()?.find(m => m.assetPath?.split('/').slice(-2, -1)[0] === folder)?.displayIcon) || null
+  })
 }
 
 // sheriff kill-feed silhouette, used as the weapons icon
@@ -36,18 +39,20 @@ export const STATE_LABEL = { menus: 'In menus', queue: 'In queue', pregame: 'Age
 
 // memo badges: 'memo:get' is owned by the memo page
 const memoCache = new Map()
+// accessor; `puuids` is an accessor
 export function useMemos(puuids) {
-  const key = puuids.filter(Boolean).sort().join(',')
-  const [memos, setMemos] = useState({})
-  useEffect(() => {
+  const key = createMemo(() => puuids().filter(Boolean).sort().join(','))
+  const [memos, setMemos] = createSignal({})
+  createEffect(() => {
     let live = true
-    const ids = key ? key.split(',') : []
+    const k = key()
+    const ids = k ? k.split(',') : []
     Promise.all(ids.map(async id => {
       if (!memoCache.has(id)) memoCache.set(id, invoke('memo:get', id).catch(() => null))
       return [id, await memoCache.get(id)]
     })).then(rows => live && setMemos(Object.fromEntries(rows.filter(r => r[1]))))
-    return () => { live = false }
-  }, [key])
+    onCleanup(() => { live = false })
+  })
   return memos
 }
 export const clearMemoCache = () => memoCache.clear()

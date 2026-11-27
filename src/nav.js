@@ -1,6 +1,6 @@
 // app navigation
-import { FiActivity, FiAward, FiClock, FiCompass, FiEdit3, FiFileText, FiGrid, FiHome, FiLayers, FiMessageSquare, FiRadio, FiSearch, FiSettings, FiShoppingBag, FiTrendingUp, FiUserCheck, FiUsers } from 'react-icons/fi'
-import { FaDiscord } from 'react-icons/fa'
+import { FiActivity, FiAward, FiClock, FiCompass, FiEdit3, FiFileText, FiGrid, FiHome, FiLayers, FiMessageSquare, FiRadio, FiSearch, FiSettings, FiShoppingBag, FiTrendingUp, FiUserCheck, FiUsers } from 'solid-icons/fi'
+import { FaBrandsDiscord as FaDiscord } from 'solid-icons/fa'
 import { GunIcon } from './pages/live/parts'
 
 import Dashboard from './pages/Dashboard'

@@ -1,14 +1,16 @@
-import { createContext, createElement, useContext, useEffect, useState } from 'react'
-import { invoke, useEvent } from './ipc'
+import { createSignal } from 'solid-js'
+import { invoke, listenEvent } from './ipc'
 
-const RiotContext = createContext({ connected: false })
-
-// provides the Riot connection status
-export function RiotProvider({ children }) {
-  const [status, setStatus] = useState({ connected: false })
-  useEffect(() => { invoke('riot:status').then(setStatus).catch(() => { }) }, [])
-  useEvent('riot:status', setStatus)
-  return createElement(RiotContext.Provider, { value: status }, children)
+// Riot connection status, shared app-wide (one signal, no provider needed)
+const [status, setStatus] = createSignal({ connected: false })
+let started = false
+function start() {
+  if (started) return
+  started = true
+  invoke('riot:status').then(setStatus).catch(() => { })
+  listenEvent('riot:status', setStatus)
 }
 
-export const useRiot = () => useContext(RiotContext)
+// accessor: riot().connected, riot().gameName ...
+export function useRiot() { start(); return status }
+export const RiotProvider = props => { start(); return props.children }

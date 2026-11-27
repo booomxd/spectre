@@ -1,9 +1,8 @@
 import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import solid from 'vite-plugin-solid'
 
-// https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [solid()],
   base: './',
   server: {
     port: 5173,
@@ -11,6 +10,7 @@ export default defineConfig({
   },
   build: {
     outDir: 'build',
+    target: 'es2021',
     chunkSizeWarningLimit: 2000,
   }
 })

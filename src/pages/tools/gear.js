@@ -1,5 +1,5 @@
 // shared helpers for the weapon / loadout / presence tool pages
-import { useMemo } from 'react'
+import { createMemo } from 'solid-js'
 import { useContent } from '../../lib/content'
 import { useInvoke } from '../../lib/ipc'
 
@@ -23,31 +23,32 @@ export const levelItemLabel = l => (l?.levelItem || '').split('::').pop().replac
 
 // weapons with their real skins (no "Random Favorite" placeholder), in category order
 export function useWeapons() {
-  const raw = useContent('weapons')
-  return useMemo(() => {
+  const rawA = useContent('weapons')
+  return createMemo(() => {
+    const raw = rawA()
     if (!raw) return null
     const order = k => CATEGORIES.findIndex(c => c.key === k)
     return raw.map(w => ({ ...w, skins: w.skins.filter(s => !/^random favorite/i.test(s.displayName)) }))
       .sort((a, b) => order(catKey(a)) - order(catKey(b)) || a.displayName.localeCompare(b.displayName))
-  }, [raw])
+  })
 }
 
 // contenttiers by uuid: { displayName, displayIcon, highlightColor }
 export function useContentTiers() {
   const raw = useContent('contenttiers')
-  return useMemo(() => raw ? Object.fromEntries(raw.map(t => [lc(t.uuid), t])) : {}, [raw])
+  return createMemo(() => raw() ? Object.fromEntries(raw().map(t => [lc(t.uuid), t])) : {})
 }
 export const tierColor = t => t?.highlightColor ? '#' + t.highlightColor.slice(0, 6) : undefined
 
 // entitlements as lowercase sets (levels, chromas, cards, titles, sprays) + buddies [{id, instance}]
 export function useOwned(skip) {
-  const { data, error, loading, reload } = useInvoke('loadout:owned', [], { skip })
-  const owned = useMemo(() => data && ({
+  const res = useInvoke('loadout:owned', [], { skip })
+  const owned = createMemo(() => { const data = res.data; return data && ({
     levels: new Set(data.levels.map(lc)), chromas: new Set(data.chromas.map(lc)),
     cards: new Set(data.cards.map(lc)), titles: new Set(data.titles.map(lc)), sprays: new Set(data.sprays.map(lc)),
     buddies: data.buddies,
-  }), [data])
-  return { owned, error, loading, reload }
+  }) })
+  return { get owned() { return owned() }, get error() { return res.error }, get loading() { return res.loading }, reload: q => res.reload(q) }
 }
 
 export const skinOwned = (w, s, o) => isStandard(w, s) || !!(o && s.levels.some(l => o.levels.has(lc(l.uuid))))

@@ -1,34 +1,41 @@
-import { useEffect, useState } from 'react'
+import { createMemo, createSignal } from 'solid-js'
 import axios from 'axios'
 
 // valorant-api.com content (agents, maps, weapons, competitivetiers, playercards...), cached per path
 const cache = new Map()
+const values = new Map() // path -> resolved data, so a second page reading the same path renders on its first pass
 export function getContent(path) {
   if (!cache.has(path)) {
-    cache.set(path, axios.get('https://valorant-api.com/v1/' + path).then(r => r.data.data).catch(e => { cache.delete(path); throw e }))
+    cache.set(path, axios.get('https://valorant-api.com/v1/' + path).then(r => { values.set(path, r.data.data); return r.data.data }).catch(e => { cache.delete(path); throw e }))
   }
   return cache.get(path)
 }
 
-// A falsy path loads nothing (returns null)
+// Accessor for a content path; `path` may itself be an accessor. A falsy path loads nothing (null)
 export function useContent(path) {
-  const [data, setData] = useState(null)
-  useEffect(() => {
-    if (!path) return
-    let live = true
-    getContent(path).then(d => live && setData(d)).catch(() => { })
-    return () => { live = false }
-  }, [path])
-  return path ? data : null
+  const p = typeof path === 'function' ? path : () => path
+  const [tick, setTick] = createSignal(0)
+  return createMemo(() => {
+    tick()
+    const k = p()
+    if (!k) return null
+    if (values.has(k)) return values.get(k)
+    getContent(k).then(() => setTick(t => t + 1)).catch(() => { })
+    return null
+  })
 }
 
 // Riot uses the all-zero GUID for "none"
 const NONE = '00000000-0000-0000-0000-000000000000'
 export const contentPath = (kind, id) => (id && id !== NONE ? `${kind}/${id}` : null)
 
-// latest competitive tier list: tier number -> { tierName, smallIcon, largeIcon, color }
+// latest competitive tier list: tier number -> { tierName, smallIcon, largeIcon, color } (accessor)
 export function useTiers() {
   const seasons = useContent('competitivetiers')
-  if (!seasons) return null
-  return Object.fromEntries(seasons[seasons.length - 1].tiers.map(t => [t.tier, t]))
+  return createMemo(() => {
+    const s = seasons()
+    if (!s) return null
+    const latest = s[s.length - 1]?.tiers
+    return latest ? Object.fromEntries(latest.map(t => [t.tier, t])) : null
+  })
 }

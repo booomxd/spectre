@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { createEffect, createSignal, on, onCleanup, untrack } from 'solid-js'
+import { createStore, reconcile } from 'solid-js/store'
 import { invoke as tauriInvoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import { getCurrentWindow } from '@tauri-apps/api/window'
@@ -17,57 +18,72 @@ export async function invoke(channel, ...args) {
   }
 }
 
-// subscribe to a backend event for the component's lifetime
-export function useEvent(channel, fn) {
-  const ref = useRef(fn)
-  ref.current = fn
-  useEffect(() => {
-    let off = null, gone = false
-    if (DEMO) {
-      demo.then(m => { if (!gone) off = m.listen(channel, p => ref.current(p)) })
-      return () => { gone = true; off?.() }
-    }
-    listen(channel, e => ref.current(e.payload)).then(un => { if (gone) un(); else off = un })
-    return () => { gone = true; off?.() }
-  }, [channel])
+// subscribe to a backend event; returns an unsubscribe function
+export function listenEvent(channel, fn) {
+  let off = null, gone = false
+  if (DEMO) demo.then(m => { if (!gone) off = m.listen(channel, fn) })
+  else listen(channel, e => fn(e.payload)).then(un => { if (gone) un(); else off = un })
+  return () => { gone = true; off?.() }
 }
 
-// loads data from a handler
-function sameJson(a, b) { try { return JSON.stringify(a) === JSON.stringify(b) } catch { return false } }
+// subscribe to a backend event for the owner's lifetime
+export function useEvent(channel, fn) {
+  onCleanup(listenEvent(channel, p => fn(p)))
+}
 
-export function useInvoke(channel, args = [], { deps = [], poll, skip } = {}) {
-  const [state, setState] = useState({ data: null, error: null, loading: !skip })
-  // what the shown data was loaded for
-  let key
-  try { key = JSON.stringify([channel, args, deps]) } catch { key = null }
-  const loadedFor = useRef(null)
-  const reload = useCallback(async (quiet, forKey) => {
-    if (!quiet) setState(s => ({ ...s, loading: true }))
+const val = v => (typeof v === 'function' ? v() : v)
+const json = v => { try { return JSON.stringify(v) } catch { return null } }
+
+// Loads data from a handler. `args`, `poll` and `skip` may be accessors, so the call reloads when they change.
+// The result is a reactive object: res.data / res.error / res.loading, plus res.reload(quiet?).
+// Data is reconciled into a store (array items matched by `opts.key`, default 'id'), so a poll that changes one field only updates the DOM that reads that field.
+export function useInvoke(channel, args = [], opts = {}) {
+  const [state, setState] = createStore({ data: null, error: null, loading: !val(opts.skip) })
+  let loadedFor = null, seq = 0, inflight = 0
+  const key = () => json([channel, val(args), val(opts.deps)])
+  const reload = async (quiet, forKey, background) => {
+    // a background refresh (poll, refocus) never supersedes a request that is still running, so a handler
+    // slower than the poll interval still lands; request changes (forKey) and explicit reloads always win
+    if (background && inflight) return
+    const a = untrack(() => val(args)) || []
+    const mine = ++seq
+    inflight = mine
+    if (!quiet) setState('loading', true)
     try {
-      const data = await invoke(channel, ...args)
-      if (forKey !== undefined) loadedFor.current = forKey
-      // quiet polls that return the same payload keep the old state object
-      setState(s => (quiet && !s.error && !s.loading && s.data != null && sameJson(s.data, data)) ? s : { data, error: null, loading: false })
+      const data = await invoke(channel, ...a)
+      if (inflight === mine) inflight = 0
+      if (mine !== seq) return
+      if (forKey !== undefined) loadedFor = forKey
+      setState('data', reconcile(data ?? null, { merge: true, key: opts.key || 'id' }))
+      setState({ error: null, loading: false })
+    } catch (e) {
+      if (inflight === mine) inflight = 0
+      if (mine !== seq) return
+      if (forKey !== undefined) loadedFor = forKey
+      setState({ error: e.message, loading: false })
     }
-    catch (e) {
-      // A failed request counts as loaded too
-      if (forKey !== undefined) loadedFor.current = forKey
-      setState(s => ({ ...s, error: e.message, loading: false }))
-    }
-  }, [channel, JSON.stringify(args)])
-
-  useEffect(() => {
-    if (skip) return
-    reload(key !== null && loadedFor.current === key, key)
-    if (!poll) return
+  }
+  // fetch when the request (or skip) changes
+  createEffect(on([key, () => val(opts.skip)], ([k, skip]) => {
+    if (!skip) reload(k !== null && loadedFor === k, k)
+  }))
+  // polling: starts/stops with `poll`; resuming (e.g. the page becomes active again) refreshes quietly, pausing never fetches
+  createEffect(on([() => val(opts.poll), () => val(opts.skip)], ([poll, skip], prev) => {
+    if (skip || !poll) return
+    if (prev && !prev[0] && !prev[1]) reload(true, undefined, true)
     // no refreshing while the window is hidden
-    const t = setInterval(() => { if (!document.hidden) reload(true) }, poll)
-    const onShow = () => { if (!document.hidden) reload(true) }
+    const t = setInterval(() => { if (!document.hidden) reload(true, undefined, true) }, poll)
+    const onShow = () => { if (!document.hidden) reload(true, undefined, true) }
     document.addEventListener('visibilitychange', onShow)
-    return () => { clearInterval(t); document.removeEventListener('visibilitychange', onShow) }
-  }, [reload, skip, poll, ...deps])
-
-  return { ...state, reload }
+    onCleanup(() => { clearInterval(t); document.removeEventListener('visibilitychange', onShow) })
+  }))
+  return {
+    get data() { return state.data },
+    get error() { return state.error },
+    get loading() { return state.loading },
+    reload: q => reload(q),
+    mutate: fn => setState('data', d => fn(d)),
+  }
 }
 
 export const openExternal = url => invoke('app:openExternal', url)
@@ -77,3 +93,5 @@ export function isOverlayWindow() {
   if (DEMO) return new URLSearchParams(window.location.search).has('overlay')
   try { return getCurrentWindow().label === 'overlay' } catch (e) { return window.location.hash === '#/overlay' }
 }
+
+export { createSignal }

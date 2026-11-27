@@ -1,5 +1,6 @@
-import { useState } from 'react'
-import { FiRefreshCw, FiMoon, FiPackage, FiPlay, FiHeart, FiX } from 'react-icons/fi'
+import { For, createSignal, Show } from 'solid-js'
+import { st } from '../lib/st.js'
+import { FiRefreshCw, FiMoon, FiPackage, FiPlay, FiHeart, FiX } from 'solid-icons/fi'
 import { Page, Card, Heading, Button, Badge, Skeleton, Empty, ErrorState, RequireRiot, Modal, SegmentedTabs, Stagger, Item, Swap, cx } from '../ui'
 import { useInvoke } from '../lib/ipc'
 import { useWishlist } from '../lib/wishlist'
@@ -10,159 +11,159 @@ const pct = d => Math.round((d || 0) * 100)
 const tierHex = item => item?.tier?.highlightColor ? '#' + item.tier.highlightColor.slice(0, 6) : null
 
 // segmented live countdown: 5d 06h 59m 12s
-function BigCountdown({ seconds, label, onArt, className }) {
-  const left = useCountdown(seconds)
-  if (left == null) return null
-  const s = Math.floor(left)
-  const parts = [[Math.floor(s / 86400), 'd'], [Math.floor(s % 86400 / 3600), 'h'], [Math.floor(s % 3600 / 60), 'm'], [s % 60, 's']]
-  const shown = parts[0][0] > 0 ? parts : parts.slice(1)
-  return (
-    <div className={cx('flex items-center gap-2', className)}>
-      {label && <span className={cx('text-[11px] font-semibold tracking-[0.14em] uppercase mr-1', onArt ? 'text-white/70' : 'text-muted')}>{label}</span>}
-      {shown.map(([v, u]) => (
-        <span key={u} className={cx('inline-flex items-baseline gap-0.5 rounded-xl px-2.5 h-8 items-center', onArt ? 'bg-black/35 border border-white/15' : 'glass-inset')}>
-          <span className={cx('font-display text-[16px] font-bold tabular-nums tracking-tight', onArt ? 'text-white' : 'text-text')}>{String(v).padStart(2, '0')}</span>
-          <span className={cx('text-[10px] font-semibold', onArt ? 'text-white/60' : 'text-muted')}>{u}</span>
+function BigCountdown(props) {
+  const leftA = useCountdown(() => props.seconds)
+  
+    
+    const s = () => (Math.floor(leftA()))
+    const parts = () => ([[Math.floor(s() / 86400), 'd'], [Math.floor(s() % 86400 / 3600), 'h'], [Math.floor(s() % 3600 / 60), 'm'], [s() % 60, 's']])
+    const shown = () => (parts()[0][0] > 0 ? parts() : parts().slice(1))
+    return (<Show when={!(leftA() == null)} fallback={null}><div class={cx('flex items-center gap-2', props["class"])}>
+      {props.label && <span class={cx('text-[11px] font-semibold tracking-[0.14em] uppercase mr-1', props.onArt ? 'text-white/70' : 'text-muted')}>{props.label}</span>}
+      <For each={shown()}>{([v, u]) => (
+        <span class={cx('inline-flex items-baseline gap-0.5 rounded-xl px-2.5 h-8 items-center', props.onArt ? 'bg-black/35 border border-white/15' : 'glass-inset')}>
+          <span class={cx('font-display text-[16px] font-bold tabular-nums tracking-tight', props.onArt ? 'text-white' : 'text-text')}>{String(v).padStart(2, '0')}</span>
+          <span class={cx('text-[10px] font-semibold', props.onArt ? 'text-white/60' : 'text-muted')}>{u}</span>
         </span>
-      ))}
-    </div>
-  )
+      )}</For>
+    </div></Show>)
+  
 }
 
-function Wallet({ wallet, cat }) {
-  if (!wallet) return <Skeleton className='h-9 w-56 rounded-full' />
-  return (
-    <div className='glass flex items-center rounded-full px-4 h-9 gap-4'>
-      <Price amount={wallet.vp} currencyId={CUR.vp} cat={cat} size={15} />
-      <span className='w-px h-4 bg-line' />
-      <Price amount={wallet.rad} currencyId={CUR.rad} cat={cat} size={15} />
-      <span className='w-px h-4 bg-line' />
-      <Price amount={wallet.kc} currencyId={CUR.kc} cat={cat} size={15} />
-    </div>
-  )
+function Wallet(props) {
+  
+    
+    return (<Show when={!(!props.wallet)} fallback={<Skeleton class='h-9 w-56 rounded-full' />}><div class='glass flex items-center rounded-full px-4 h-9 gap-4'>
+      <Price amount={props.wallet.vp} currencyId={CUR.vp} cat={props.cat} size={15} />
+      <span class='w-px h-4 bg-line' />
+      <Price amount={props.wallet.rad} currencyId={CUR.rad} cat={props.cat} size={15} />
+      <span class='w-px h-4 bg-line' />
+      <Price amount={props.wallet.kc} currencyId={CUR.kc} cat={props.cat} size={15} />
+    </div></Show>)
+  
 }
 
 // large skin card: tier-tinted art stage, name, tier and price
-function OfferCard({ item, price, base, discount, cat, onOpen, index, currencyId, size = 'lg', hidden }) {
-  const color = tierHex(item)
-  const clickable = !!item?.skin
-  return (
-    <Item index={index} className='h-full'>
-      <Card hover={clickable} onClick={() => clickable && onOpen(item)} className='group relative overflow-hidden h-full flex flex-col'>
-        <div className={cx('relative', size === 'lg' ? 'h-48' : 'h-32')}>
-          {color && <div className='absolute inset-x-0 top-0 h-px' style={{ background: `linear-gradient(90deg, transparent, ${color}, transparent)` }} />}
-          <ItemArt item={hidden ? null : item} className={cx('h-full', size === 'lg' ? 'px-6 pt-6 pb-2' : 'px-5 pt-5 pb-1')} />
-          {discount > 0 && <span className='absolute top-3 left-3 inline-flex h-6 items-center px-2.5 rounded-full accent-fill text-bg text-[11px] font-bold tabular-nums'>-{pct(discount)}%</span>}
-          {clickable && <span className='absolute top-3 right-3 w-8 h-8 rounded-full glass flex items-center justify-center text-muted opacity-0 group-hover:opacity-100 transition-opacity'><FiPlay size={12} /></span>}
+function OfferCard(props) {
+  
+    const color = () => (tierHex(props.item))
+    const clickable = () => (!!props.item?.skin)
+    return (<Item index={props.index} class='h-full'>
+      <Card hover={clickable()} onClick={() => clickable() && props.onOpen(props.item)} class='group relative overflow-hidden h-full flex flex-col'>
+        <div class={cx('relative', (props.size ?? 'lg') === 'lg' ? 'h-48' : 'h-32')}>
+          {color() && <div class='absolute inset-x-0 top-0 h-px' style={st({ background: `linear-gradient(90deg, transparent, ${color()}, transparent)` })} />}
+          <ItemArt item={props.hidden ? null : props.item} class={cx('h-full', (props.size ?? 'lg') === 'lg' ? 'px-6 pt-6 pb-2' : 'px-5 pt-5 pb-1')} />
+          {props.discount > 0 && <span class='absolute top-3 left-3 inline-flex h-6 items-center px-2.5 rounded-full accent-fill text-bg text-[11px] font-bold tabular-nums'>-{pct(props.discount)}%</span>}
+          {clickable() && <span class='absolute top-3 right-3 w-8 h-8 rounded-full glass flex items-center justify-center text-muted opacity-0 group-hover:opacity-100 transition-opacity'><FiPlay size={12} /></span>}
         </div>
-        <div className='px-5 pb-5 pt-1 mt-auto flex items-end justify-between gap-3'>
-          <div className='min-w-0'>
-            <div className={cx('truncate font-semibold tracking-tight text-text', size === 'lg' ? 'text-[15px]' : 'text-[13px]')}>{hidden ? 'Not revealed yet' : item?.name || 'Loading...'}</div>
-            <div className='mt-1 flex items-center gap-1.5 text-[11px] font-medium text-muted'>
-              {color && <span className='w-1.5 h-1.5 rounded-full' style={{ background: color, boxShadow: `0 0 8px ${color}` }} />}
-              <span className='capitalize'>{item?.tier?.devName || item?.kind || ''}</span>
+        <div class='px-5 pb-5 pt-1 mt-auto flex items-end justify-between gap-3'>
+          <div class='min-w-0'>
+            <div class={cx('truncate font-semibold tracking-tight text-text', (props.size ?? 'lg') === 'lg' ? 'text-[15px]' : 'text-[13px]')}>{props.hidden ? 'Not revealed yet' : props.item?.name || 'Loading...'}</div>
+            <div class='mt-1 flex items-center gap-1.5 text-[11px] font-medium text-muted'>
+              {color() && <span class='w-1.5 h-1.5 rounded-full' style={st({ background: color(), boxShadow: `0 0 8px ${color()}` })} />}
+              <span class='capitalize'>{props.item?.tier?.devName || props.item?.kind || ''}</span>
             </div>
           </div>
-          <div className='text-right shrink-0'>
-            {base != null && base !== price && <div className='text-[11px] text-muted line-through tabular-nums'>{fmt(base)}</div>}
-            <Price amount={price} cat={cat} currencyId={currencyId} className={size === 'lg' ? 'text-[17px]' : 'text-[14px]'} size={size === 'lg' ? 15 : 13} />
+          <div class='text-right shrink-0'>
+            {props.base != null && props.base !== props.price && <div class='text-[11px] text-muted line-through tabular-nums'>{fmt(props.base)}</div>}
+            <Price amount={props.price} cat={props.cat} currencyId={props.currencyId} class={(props.size ?? 'lg') === 'lg' ? 'text-[17px]' : 'text-[14px]'} size={(props.size ?? 'lg') === 'lg' ? 15 : 13} />
           </div>
         </div>
       </Card>
-    </Item>
-  )
+    </Item>)
+  
 }
 
-function SkinModal({ item, onClose }) {
-  const [chroma, setChroma] = useState(null)
-  const skin = item?.skin
-  const chromas = skin?.chromas || []
-  const active = chroma ? chromas.find(c => c.uuid === chroma) : null
-  const video = active?.streamedVideo || [...(skin?.levels || [])].reverse().find(l => l.streamedVideo)?.streamedVideo || skin?.streamedVideo
-  const close = () => { onClose(); setChroma(null) }
-  return (
-    <Modal open={!!item} onClose={close} title={item?.name} width={680}>
-      {item && (
-        <div className='space-y-5'>
-          <ItemArt item={{ ...item, icon: active?.fullRender || item.icon }} className='glass-inset h-60 rounded-2xl' />
-          {chromas.length > 1 && (
+function SkinModal(props) {
+  const [chromaS, setChroma] = createSignal(null)
+  
+    const skin = () => (props.item?.skin)
+    const chromas = () => (skin()?.chromas || [])
+    const active = () => (chromaS() ? chromas().find(c => c.uuid === chromaS()) : null)
+    const video = () => (active()?.streamedVideo || [...(skin()?.levels || [])].reverse().find(l => l.streamedVideo)?.streamedVideo || skin()?.streamedVideo)
+    const close = () => { props.onClose(); setChroma(null) }
+    return (<Modal open={!!props.item} onClose={close} title={props.item?.name} width={680}>
+      {props.item && (
+        <div class='space-y-5'>
+          <ItemArt item={{ ...props.item, icon: active()?.fullRender || props.item.icon }} class='glass-inset h-60 rounded-2xl' />
+          {chromas().length > 1 && (
             <div>
-              <div className='eyebrow mb-2.5'>Variants</div>
-              <div className='flex flex-wrap gap-2'>
-                {chromas.map((c, idx) => (
-                  <button key={c.uuid} onClick={() => setChroma(c.uuid)} title={c.displayName}
-                    className={cx('w-16 h-12 rounded-xl flex items-center justify-center transition-transform hover:-translate-y-0.5', c.uuid === chroma || (!chroma && idx === 0) ? 'accent-soft' : 'glass')}>
-                    {(c.swatch || c.fullRender) && <img decoding='async' src={c.swatch || c.fullRender} alt='' className='max-h-9 max-w-14 object-contain' />}
+              <div class='eyebrow mb-2.5'>Variants</div>
+              <div class='flex flex-wrap gap-2'>
+                <For each={chromas()}>{(c, idx) => (
+                  <button onClick={() => setChroma(c.uuid)} title={c.displayName}
+                    class={cx('w-16 h-12 rounded-xl flex items-center justify-center transition-transform hover:-translate-y-0.5', c.uuid === chromaS() || (!chromaS() && idx() === 0) ? 'accent-soft' : 'glass')}>
+                    {(c.swatch || c.fullRender) && <img decoding='async' src={c.swatch || c.fullRender} alt='' class='max-h-9 max-w-14 object-contain' />}
                   </button>
-                ))}
+                )}</For>
               </div>
             </div>
           )}
-          {video ? <video key={video} src={video} controls muted loop className='w-full rounded-2xl border border-line bg-black' />
-            : <p className='text-xs text-muted'>No video preview available for this skin.</p>}
+          {video() ? <video src={video()} controls muted loop class='w-full rounded-2xl border border-line bg-black' />
+            : <p class='text-xs text-muted'>No video preview available for this skin.</p>}
         </div>
       )}
-    </Modal>
-  )
+    </Modal>)
+  
 }
 
 // featured bundle: full-bleed art hero with a live countdown, items in a strip below
-function Bundle({ b, cat, onOpen }) {
-  const meta = cat?.bundles[b.id]
-  const art = meta?.displayIcon2 || meta?.displayIcon
-  return (
-    <div className='flex flex-col gap-4'>
-      <Card className='relative overflow-hidden rounded-3xl h-[300px]'>
-        {art ? <img decoding='async' src={art} alt='' className='absolute inset-0 w-full h-full object-cover' draggable={false} /> : <span className='halo -top-24 -left-20 w-96 h-96' />}
-        <div className='absolute inset-0 bg-gradient-to-r from-black/85 via-black/45 to-transparent' />
-        <div className='absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent' />
-        <div className='relative h-full flex flex-col justify-end p-8 gap-5'>
+function Bundle(props) {
+  
+    const meta = () => (props.cat?.bundles[props.b.id])
+    const art = () => (meta()?.displayIcon2 || meta()?.displayIcon)
+    return (<div class='flex flex-col gap-4'>
+      <Card class='relative overflow-hidden rounded-3xl h-[300px]'>
+        {art() ? <img decoding='async' src={art()} alt='' class='absolute inset-0 w-full h-full object-cover' draggable={false} /> : <span class='halo -top-24 -left-20 w-96 h-96' />}
+        <div class='absolute inset-0 bg-gradient-to-r from-black/85 via-black/45 to-transparent' />
+        <div class='absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent' />
+        <div class='relative h-full flex flex-col justify-end p-8 gap-5'>
           <div>
-            <div className='flex items-center gap-2 mb-3'>
-              <span className='text-[11px] font-semibold tracking-[0.14em] uppercase text-white/70'>Featured bundle</span>
-              {b.discountPercent > 0 && <span className='inline-flex h-5 items-center px-2 rounded-full bg-good/90 text-[10px] font-bold text-black tabular-nums'>-{pct(b.discountPercent)}%</span>}
-              {b.wholesaleOnly && <span className='inline-flex h-5 items-center px-2 rounded-full bg-white/15 text-[10px] font-semibold text-white'>Full bundle only</span>}
+            <div class='flex items-center gap-2 mb-3'>
+              <span class='text-[11px] font-semibold tracking-[0.14em] uppercase text-white/70'>Featured bundle</span>
+              {props.b.discountPercent > 0 && <span class='inline-flex h-5 items-center px-2 rounded-full bg-good/90 text-[10px] font-bold text-black tabular-nums'>-{pct(props.b.discountPercent)}%</span>}
+              {props.b.wholesaleOnly && <span class='inline-flex h-5 items-center px-2 rounded-full bg-white/15 text-[10px] font-semibold text-white'>Full bundle only</span>}
             </div>
-            <h2 className='display text-[52px] text-white drop-shadow-[0_4px_20px_rgb(0_0_0/0.5)]'>{meta?.displayName || 'Bundle'}</h2>
+            <h2 class='display text-[52px] text-white drop-shadow-[0_4px_20px_rgb(0_0_0/0.5)]'>{meta()?.displayName || 'Bundle'}</h2>
           </div>
-          <div className='flex flex-wrap items-center justify-between gap-4'>
-            <BigCountdown seconds={b.secondsLeft} label='Leaves in' onArt />
-            <div className='flex items-baseline gap-2.5 rounded-full bg-black/40 border border-white/15 px-5 h-11 items-center text-white'>
-              {b.totalBase != null && b.totalBase !== b.totalDiscounted && <span className='text-[12px] text-white/60 line-through tabular-nums'>{fmt(b.totalBase)}</span>}
-              <Price amount={b.totalDiscounted ?? b.totalBase} cat={cat} size={17} onArt className='text-[20px]' />
+          <div class='flex flex-wrap items-center justify-between gap-4'>
+            <BigCountdown seconds={props.b.secondsLeft} label='Leaves in' onArt />
+            <div class='flex items-baseline gap-2.5 rounded-full bg-black/40 border border-white/15 px-5 h-11 items-center text-white'>
+              {props.b.totalBase != null && props.b.totalBase !== props.b.totalDiscounted && <span class='text-[12px] text-white/60 line-through tabular-nums'>{fmt(props.b.totalBase)}</span>}
+              <Price amount={props.b.totalDiscounted ?? props.b.totalBase} cat={props.cat} size={17} onArt class='text-[20px]' />
             </div>
           </div>
         </div>
       </Card>
-      <Stagger className='grid grid-cols-2 md:grid-cols-4 xl:grid-cols-4 gap-3'>
-        {b.items.map((it, i) => {
-          const item = cat?.items.get(it.id)
-          const clickable = !!item?.skin
+      <Stagger class='grid grid-cols-2 md:grid-cols-4 xl:grid-cols-4 gap-3'>
+        <For each={props.b.items}>{(it, i) => {
+          const item = () => (props.cat?.items.get(it.id))
+          const clickable = () => (!!item()?.skin)
           return (
-            <Item key={it.id} index={i}>
-              <Card hover={clickable} onClick={() => clickable && onOpen(item)} className='group overflow-hidden rounded-2xl flex items-center gap-3 pr-4'>
-                <ItemArt item={item} className='w-24 h-16 shrink-0' />
-                <div className='min-w-0 flex-1'>
-                  <div className='truncate text-[12.5px] font-semibold text-text'>{item?.name || '...'}{it.amount > 1 ? ` x${it.amount}` : ''}</div>
-                  <div className='mt-0.5 flex items-center justify-between gap-2 text-[11px]'>
-                    <span className='text-muted capitalize'>{item?.kind}</span>
-                    {it.price === 0 ? <span className='text-good font-bold'>Included</span> : <Price amount={it.price} cat={cat} size={11} />}
+            <Item index={i()}>
+              <Card hover={clickable()} onClick={() => clickable() && props.onOpen(item())} class='group overflow-hidden rounded-2xl flex items-center gap-3 pr-4'>
+                <ItemArt item={item()} class='w-24 h-16 shrink-0' />
+                <div class='min-w-0 flex-1'>
+                  <div class='truncate text-[12.5px] font-semibold text-text'>{item()?.name || '...'}{it.amount > 1 ? ` x${it.amount}` : ''}</div>
+                  <div class='mt-0.5 flex items-center justify-between gap-2 text-[11px]'>
+                    <span class='text-muted capitalize'>{item()?.kind}</span>
+                    {it.price === 0 ? <span class='text-good font-bold'>Included</span> : <Price amount={it.price} cat={props.cat} size={11} />}
                   </div>
                 </div>
               </Card>
             </Item>
           )
-        })}
+        }}</For>
       </Stagger>
-    </div>
-  )
+    </div>)
+  
 }
 
-function Section({ title, hint, seconds, countdownLabel = 'Resets in', children }) {
+function Section(props) {
   return (
     <section>
-      <Heading hint={hint} right={seconds != null && <BigCountdown seconds={seconds} label={countdownLabel} />}>{title}</Heading>
-      {children}
+      <Heading hint={props.hint} right={props.seconds != null && <BigCountdown seconds={props.seconds} label={(props.countdownLabel ?? 'Resets in')} />}>{props.title}</Heading>
+      {props.children}
     </section>
   )
 }
@@ -170,93 +171,92 @@ function Section({ title, hint, seconds, countdownLabel = 'Resets in', children 
 const WHERE = { daily: 'In your daily offers', night: 'In your Night Market', bundle: 'In a featured bundle' }
 
 // skins you are waiting for
-function Wishlist({ cat }) {
-  const { items, toggle } = useWishlist()
-  const check = useInvoke('wishlist:check', [], { deps: [items.length] })
-  const hits = new Map((check.data?.hits || []).map(h => [h.id, h]))
-  return (
-    <section>
+function Wishlist(props) {
+  const __wishlist = useWishlist()
+  const check = useInvoke('wishlist:check', [], { deps: () => ([__wishlist.items.length]) })
+  
+    const hits = () => (new Map((check.data?.hits || []).map(h => [h.id, h])))
+    return (<section>
       <Heading hint='You get a Windows notification when one of these reaches your store'>Wishlist</Heading>
-      {items.length === 0
-        ? <Card className='rounded-2xl'><Empty icon={FiHeart} title='Nothing on your wishlist yet' hint='Open Weapons and press the heart on any skin you want.' /></Card>
+      {__wishlist.items.length === 0
+        ? <Card class='rounded-2xl'><Empty icon={FiHeart} title='Nothing on your wishlist yet' hint='Open Weapons and press the heart on any skin you want.' /></Card>
         : (
-          <div className='grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3'>
-            {items.map(i => {
-              const item = cat?.items.get(i.id)
-              const hit = hits.get(i.id)
-              const name = item?.name || i.name
+          <div class='grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3'>
+            <For each={__wishlist.items}>{i => {
+              const item = () => (props.cat?.items.get(i.id))
+              const hit = () => (hits().get(i.id))
+              const name = () => (item()?.name || i.name)
               return (
-                <Card key={i.id} className={cx('relative flex items-center gap-3 p-3 pr-10 rounded-2xl min-w-0', hit && 'accent-glow')}>
-                  <div className='w-20 h-12 shrink-0 flex items-center justify-center'>{item?.icon && <img decoding='async' src={item.icon} alt='' className='max-w-full max-h-full object-contain' loading='lazy' />}</div>
-                  <div className='min-w-0'>
-                    <div className='truncate text-[13px] font-semibold text-text'>{name}</div>
-                    <div className={cx('mt-0.5 text-[11px] truncate', hit ? 'text-good font-semibold' : 'text-muted')}>{hit ? WHERE[hit.where] : 'Not in your store'}</div>
+                <Card class={cx('relative flex items-center gap-3 p-3 pr-10 rounded-2xl min-w-0', hit() && 'accent-glow')}>
+                  <div class='w-20 h-12 shrink-0 flex items-center justify-center'>{item()?.icon && <img decoding='async' src={item().icon} alt='' class='max-w-full max-h-full object-contain' loading='lazy' />}</div>
+                  <div class='min-w-0'>
+                    <div class='truncate text-[13px] font-semibold text-text'>{name()}</div>
+                    <div class={cx('mt-0.5 text-[11px] truncate', hit() ? 'text-good font-semibold' : 'text-muted')}>{hit() ? WHERE[hit().where] : 'Not in your store'}</div>
                   </div>
-                  <button type='button' aria-label={`Remove ${name} from wishlist`} title='Remove from wishlist' onClick={() => toggle(i.id, name)}
-                    className='absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center text-muted hover:text-text hover:bg-surface-2 transition-colors'><FiX size={12} /></button>
+                  <button type='button' aria-label={`Remove ${name()} from wishlist`} title='Remove from wishlist' onClick={() => __wishlist.toggle(i.id, name())}
+                    class='absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center text-muted hover:text-text hover:bg-surface-2 transition-colors'><FiX size={12} /></button>
                 </Card>
               )
-            })}
+            }}</For>
           </div>
         )}
-    </section>
-  )
+    </section>)
+  
 }
 
 function ShopBody() {
-  const cat = useCatalog()
+  const catA = useCatalog()
   const store = useInvoke('store:storefront')
   const wallet = useInvoke('store:wallet')
-  const [open, setOpen] = useState(null)
-  const [bi, setBi] = useState(0)
-  const s = store.data
-  const bundle = s?.bundles[Math.min(bi, (s?.bundles.length || 1) - 1)]
-
-  return (
-    <Page title='Store' subtitle='Featured bundles, your daily offers and the accessory store'
-      actions={<><Wallet wallet={wallet.data} cat={cat} /><Button size='icon' icon={FiRefreshCw} title='Refresh' loading={store.loading && !!s} onClick={() => { store.reload(); wallet.reload() }} /></>}>
-      {store.error && !s ? <ErrorState error={store.error} onRetry={store.reload} /> : !s ? (
-        <div className='space-y-6'><Skeleton className='h-[300px] rounded-3xl' /><div className='grid grid-cols-4 gap-4'>{[0, 1, 2, 3].map(i => <Skeleton key={i} className='h-64 rounded-2xl' />)}</div></div>
+  const [openS, setOpen] = createSignal(null)
+  const [biS, setBi] = createSignal(0)
+  
+    const s = () => (store.data)
+    const bundle = () => (s()?.bundles[Math.min(biS(), (s()?.bundles.length || 1) - 1)])
+    return (<Page title='Store' subtitle='Featured bundles, your daily offers and the accessory store'
+      actions={<><Wallet wallet={wallet.data} cat={catA()} /><Button size='icon' icon={FiRefreshCw} title='Refresh' loading={store.loading && !!s()} onClick={() => { store.reload(); wallet.reload() }} /></>}>
+      {store.error && !s() ? <ErrorState error={store.error} onRetry={store.reload} /> : !s() ? (
+        <div class='space-y-6'><Skeleton class='h-[300px] rounded-3xl' /><div class='grid grid-cols-4 gap-4'><For each={[0, 1, 2, 3]}>{i => <Skeleton class='h-64 rounded-2xl' />}</For></div></div>
       ) : (
-        <div className='space-y-12'>
+        <div class='space-y-12'>
           <section>
-            {s.bundles.length > 1 && (
-              <SegmentedTabs className='mb-4' layoutId='store-bundles' value={Math.min(bi, s.bundles.length - 1)} onChange={setBi}
-                tabs={s.bundles.map((b, i) => ({ value: i, label: cat?.bundles[b.id]?.displayName || `Bundle ${i + 1}` }))} />
+            {s().bundles.length > 1 && (
+              <SegmentedTabs class='mb-4' layoutId='store-bundles' value={Math.min(biS(), s().bundles.length - 1)} onChange={setBi}
+                tabs={s().bundles.map((b, i) => ({ value: i, label: catA()?.bundles[b.id]?.displayName || `Bundle ${i + 1}` }))} />
             )}
-            {bundle ? <Swap id={bundle.id}><Bundle b={bundle} cat={cat} onOpen={setOpen} /></Swap>
-              : <Card className='rounded-3xl'><Empty icon={FiPackage} title='No featured bundles right now' /></Card>}
+            {bundle() ? <Swap id={bundle().id}><Bundle b={bundle()} cat={catA()} onOpen={setOpen} /></Swap>
+              : <Card class='rounded-3xl'><Empty icon={FiPackage} title='No featured bundles right now' /></Card>}
           </section>
 
-          <Section title='Daily offers' hint='Four skins, picked for you' seconds={s.dailySecondsLeft}>
-            {s.daily.length ? <Stagger className='grid grid-cols-2 xl:grid-cols-4 gap-4'>
-              {s.daily.map((o, i) => <OfferCard key={o.id} index={i} item={cat?.items.get(o.itemId)} price={o.price} cat={cat} onOpen={setOpen} />)}
+          <Section title='Daily offers' hint='Four skins, picked for you' seconds={s().dailySecondsLeft}>
+            {s().daily.length ? <Stagger class='grid grid-cols-2 xl:grid-cols-4 gap-4'>
+              <For each={s().daily}>{(o, i) => <OfferCard index={i()} item={catA()?.items.get(o.itemId)} price={o.price} cat={catA()} onOpen={setOpen} />}</For>
             </Stagger> : <Empty title='No daily offers' />}
           </Section>
 
-          <Wishlist cat={cat} />
+          <Wishlist cat={catA()} />
 
-          {s.night && (
-            <Section title='Night market' hint={!s.night.offers.some(o => o.revealed) ? 'Offers have not been revealed in-game yet' : 'Your personal discounts'} seconds={s.night.secondsLeft} countdownLabel='Ends in'>
-              <Stagger className='grid grid-cols-2 xl:grid-cols-3 gap-4'>
-                {s.night.offers.map((o, i) => <OfferCard key={o.id} index={i} item={cat?.items.get(o.itemId)} price={o.price} base={o.base} discount={o.discount / 100} cat={cat} onOpen={setOpen} />)}
+          {s().night && (
+            <Section title='Night market' hint={!s().night.offers.some(o => o.revealed) ? 'Offers have not been revealed in-game yet' : 'Your personal discounts'} seconds={s().night.secondsLeft} countdownLabel='Ends in'>
+              <Stagger class='grid grid-cols-2 xl:grid-cols-3 gap-4'>
+                <For each={s().night.offers}>{(o, i) => <OfferCard index={i()} item={catA()?.items.get(o.itemId)} price={o.price} base={o.base} discount={o.discount / 100} cat={catA()} onOpen={setOpen} />}</For>
               </Stagger>
-              {!s.night.offers.some(o => o.revealed) && <p className='mt-3 text-xs text-muted flex items-center gap-1.5'><FiMoon /> Reveal them in VALORANT to lock in the discounts.</p>}
+              {!s().night.offers.some(o => o.revealed) && <p class='mt-3 text-xs text-muted flex items-center gap-1.5'><FiMoon /> Reveal them in VALORANT to lock in the discounts.</p>}
             </Section>
           )}
 
-          {s.accessories && (
-            <Section title='Accessories' hint='Buddies, cards, sprays and titles for Kingdom Credits' seconds={s.accessories.secondsLeft}>
-              <Stagger className='grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4'>
-                {s.accessories.offers.map((o, i) => <OfferCard key={o.id} index={i} size='sm' item={cat?.items.get(o.itemId)} price={o.price} currencyId={o.currencyId} cat={cat} onOpen={setOpen} />)}
+          {s().accessories && (
+            <Section title='Accessories' hint='Buddies, cards, sprays and titles for Kingdom Credits' seconds={s().accessories.secondsLeft}>
+              <Stagger class='grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4'>
+                <For each={s().accessories.offers}>{(o, i) => <OfferCard index={i()} size='sm' item={catA()?.items.get(o.itemId)} price={o.price} currencyId={o.currencyId} cat={catA()} onOpen={setOpen} />}</For>
               </Stagger>
             </Section>
           )}
         </div>
       )}
-      <SkinModal item={open} onClose={() => setOpen(null)} />
-    </Page>
-  )
+      <SkinModal item={openS()} onClose={() => setOpen(null)} />
+    </Page>)
+  
 }
 
 export default function Shop() {

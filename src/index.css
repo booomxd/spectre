@@ -296,6 +296,18 @@ html[data-reduce-motion] .page-in { animation: none; }
 .anim-pop { animation: pop 0.22s var(--ease-out) both; }
 .anim-pulse { animation: pulse-dot 1.6s steps(8, end) infinite; }
 .anim-slide { animation: slide-in 0.28s var(--ease-out) both; }
+/* feedback motion for overlays (replaces the old framer-motion springs) */
+@keyframes dialog-in { from { opacity: 0; transform: translateY(10px) scale(0.97); } to { opacity: 1; transform: none; } }
+@keyframes toast-in { from { opacity: 0; transform: translateY(12px) scale(0.96); } to { opacity: 1; transform: none; } }
+@keyframes drawer-in { from { opacity: 0; transform: translateX(48px); } to { opacity: 1; transform: none; } }
+.anim-scrim { animation: fade 0.16s ease both; }
+.anim-dialog { animation: dialog-in 0.22s var(--ease-out) both; }
+.anim-toast { animation: toast-in 0.24s var(--ease-out) both; }
+.anim-drawer { animation: drawer-in 0.26s var(--ease-out) both; }
+@keyframes drawer-out { to { opacity: 0; transform: translateX(32px); } }
+@keyframes fade-out { to { opacity: 0; } }
+.anim-drawer-out { animation: drawer-out 0.16s ease-in both; }
+.anim-scrim-out { animation: fade-out 0.16s ease-in both; }
 /* stagger children: give each child style={{ '--i': index }} */
 .stagger > * { animation: rise 0.34s var(--ease-out) both; animation-delay: calc(min(var(--i, 0), 12) * 32ms); }
 .stagger > *:nth-child(n+13) { animation: none; }

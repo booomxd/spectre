@@ -1,6 +1,7 @@
+import { For, createSignal, createMemo } from 'solid-js'
+import { st } from '../../lib/st.js'
 // right panel: agent tokens, ability icons and strategy notes
-import { useMemo, useState } from 'react'
-import { FiSearch } from 'react-icons/fi'
+import { FiSearch } from 'solid-icons/fi'
 import { Empty, Input, Skeleton, Tabs, Textarea } from '../../ui'
 import { teamColor } from './model'
 
@@ -10,108 +11,106 @@ function drag(e, payload) {
 }
 
 // the agent you last picked (here or on the board) keeps its abilities one drag away under the agent grid
-export default function Palette({ agents, side, placed, onPlace, notes, onNotes, focus, onFocus }) {
-  const [tab, setTab] = useState('agents')
-  const [team, setTeam] = useState('ally')
-  const [q, setQ] = useState('')
-  const abilityAgent = focus, setAbilityAgent = onFocus
-
-  const list = useMemo(() => (agents || []).filter(a => a.displayName.toLowerCase().includes(q.toLowerCase())), [agents, q])
-  const ag = (agents || []).find(a => a.uuid === abilityAgent) || agents?.[0]
-  const picked = (agents || []).find(a => a.uuid === focus)
-  const abilities = (ag?.abilities || []).filter(a => a.displayIcon)
-  const abilityPayload = (a, ab) => ({ type: 'ability', agentId: a.uuid, name: `${a.displayName}: ${ab.displayName}`, icon: ab.displayIcon })
-
-  return (
-    <div className='glass h-full flex flex-col rounded-[28px] overflow-hidden'>
-      <div className='p-4 pb-3'>
-        <Tabs tabs={[{ value: 'agents', label: 'Agents' }, { value: 'abilities', label: 'Abilities' }, { value: 'notes', label: 'Notes' }]} value={tab} onChange={setTab} layoutId='strat-palette' className='w-full [&>button]:flex-1 [&>button]:justify-center' />
+export default function Palette(props) {
+  const [tabS, setTab] = createSignal('agents')
+  const [teamS, setTeam] = createSignal('ally')
+  const [qS, setQ] = createSignal('')
+  
+    const abilityAgent = () => (props.focus), setAbilityAgent = () => (props.onFocus)
+    const list = createMemo(() => (props.agents || []).filter(a => a.displayName.toLowerCase().includes(qS().toLowerCase())))
+    const ag = () => ((props.agents || []).find(a => a.uuid === abilityAgent()) || props.agents?.[0])
+    const picked = () => ((props.agents || []).find(a => a.uuid === props.focus))
+    const abilities = () => ((ag()?.abilities || []).filter(a => a.displayIcon))
+    const abilityPayload = (a, ab) => ({ type: 'ability', agentId: a.uuid, name: `${a.displayName}: ${ab.displayName}`, icon: ab.displayIcon })
+    return (<div class='glass h-full flex flex-col rounded-[28px] overflow-hidden'>
+      <div class='p-4 pb-3'>
+        <Tabs tabs={[{ value: 'agents', label: 'Agents' }, { value: 'abilities', label: 'Abilities' }, { value: 'notes', label: 'Notes' }]} value={tabS()} onChange={setTab} layoutId='strat-palette' class='w-full [&>button]:flex-1 [&>button]:justify-center' />
       </div>
 
-      {tab === 'agents' && (
-        <div className='flex-1 min-h-0 flex flex-col px-3.5 pb-3.5 gap-3 anim-fade' key='agents'>
-          <div className='glass-inset flex gap-1 p-1 rounded-full'>
-            {['ally', 'enemy'].map(t => (
-              <button key={t} onClick={() => setTeam(t)}
-                className={`flex-1 h-7 rounded-full text-[12px] font-semibold border transition-colors duration-200 ${team === t ? 'text-bg shadow-[inset_0_1px_0_rgb(255_255_255/0.35)]' : 'border-transparent text-muted hover:text-text'}`}
-                style={team === t ? { background: teamColor(t, side), borderColor: teamColor(t, side) } : undefined}>{t === 'ally' ? 'My team' : 'Enemy'}</button>
-            ))}
+      {tabS() === 'agents' && (
+        <div class='flex-1 min-h-0 flex flex-col px-3.5 pb-3.5 gap-3 anim-fade'>
+          <div class='glass-inset flex gap-1 p-1 rounded-full'>
+            <For each={['ally', 'enemy']}>{t => (
+              <button onClick={() => setTeam(t)}
+                class={`flex-1 h-7 rounded-full text-[12px] font-semibold border transition-colors duration-200 ${teamS() === t ? 'text-bg shadow-[inset_0_1px_0_rgb(255_255_255/0.35)]' : 'border-transparent text-muted hover:text-text'}`}
+                style={st(teamS() === t ? { background: teamColor(t, props.side), borderColor: teamColor(t, props.side) } : undefined)}>{t === 'ally' ? 'My team' : 'Enemy'}</button>
+            )}</For>
           </div>
-          <div className='relative'>
-            <FiSearch className='absolute left-3 top-1/2 -translate-y-1/2 text-muted text-sm' />
-            <Input value={q} onChange={e => setQ(e.target.value)} placeholder='Search agents' className='pl-8 !h-9 rounded-full' />
+          <div class='relative'>
+            <FiSearch class='absolute left-3 top-1/2 -translate-y-1/2 text-muted text-sm' />
+            <Input value={qS()} onInput={e => setQ(e.target.value)} placeholder='Search agents' class='pl-8 !h-9 rounded-full' />
           </div>
-          <div className='flex-1 overflow-y-auto -mr-1 pr-1'>
-            {!agents ? (
-              <div className='grid grid-cols-4 gap-2'>{Array.from({ length: 16 }).map((_, i) => <Skeleton key={i} className='aspect-square rounded-xl' />)}</div>
-            ) : !list.length ? <Empty title='No agents match' className='py-8' /> : (
-              <div className='grid grid-cols-4 gap-2 stagger'>
-                {list.map((a, i) => {
-                  const payload = { type: 'agent', agentId: a.uuid, name: a.displayName, icon: a.displayIcon, team }
-                  const n = placed[a.uuid + team] || 0
+          <div class='flex-1 overflow-y-auto -mr-1 pr-1'>
+            {!props.agents ? (
+              <div class='grid grid-cols-4 gap-2'><For each={Array.from({ length: 16 })}>{(_, i) => <Skeleton class='aspect-square rounded-xl' />}</For></div>
+            ) : !list().length ? <Empty title='No agents match' class='py-8' /> : (
+              <div class='grid grid-cols-4 gap-2 stagger'>
+                <For each={list()}>{(a, i) => {
+                  const payload = () => ({ type: 'agent', agentId: a.uuid, name: a.displayName, icon: a.displayIcon, team: teamS() })
+                  const n = () => (props.placed[a.uuid + teamS()] || 0)
                   return (
-                    <button key={a.uuid} draggable onDragStart={e => { drag(e, payload); onFocus(a.uuid) }} onClick={() => { onPlace(payload); onFocus(a.uuid) }} title={`${a.displayName} - drag onto the map or click`}
-                      style={{ '--i': Math.min(i, 20) }}
-                      className={`glass anim-rise relative aspect-square rounded-2xl overflow-hidden transition-[transform,border-color] duration-150 hover:scale-105 hover:border-accent/60 active:scale-95 ${focus === a.uuid ? '!border-accent' : ''}`}>
-                      <img decoding='async' src={a.displayIcon} alt='' draggable={false} className='w-full h-full object-cover' />
-                      {n > 0 && <span className='absolute bottom-0.5 right-0.5 min-w-4 h-4 px-1 rounded-full text-[9px] font-bold grid place-items-center text-bg' style={{ background: teamColor(team, side) }}>{n}</span>}
+                    <button draggable onDragStart={e => { drag(e, payload()); props.onFocus(a.uuid) }} onClick={() => { props.onPlace(payload()); props.onFocus(a.uuid) }} title={`${a.displayName} - drag onto the map or click`}
+                      style={st({ '--i': Math.min(i(), 20) })}
+                      class={`glass anim-rise relative aspect-square rounded-2xl overflow-hidden transition-[transform,border-color] duration-150 hover:scale-105 hover:border-accent/60 active:scale-95 ${props.focus === a.uuid ? '!border-accent' : ''}`}>
+                      <img decoding='async' src={a.displayIcon} alt='' draggable={false} class='w-full h-full object-cover' />
+                      {n() > 0 && <span class='absolute bottom-0.5 right-0.5 min-w-4 h-4 px-1 rounded-full text-[9px] font-bold grid place-items-center text-bg' style={st({ background: teamColor(teamS(), props.side) })}>{n()}</span>}
                     </button>
                   )
-                })}
+                }}</For>
               </div>
             )}
           </div>
-          {picked && (
-            <div className='glass-inset rounded-2xl p-2.5 anim-fade' key={picked.uuid}>
-              <p className='eyebrow mb-2 truncate'>{picked.displayName} utility</p>
-              <div className='grid grid-cols-4 gap-1.5'>
-                {(picked.abilities || []).filter(x => x.displayIcon).map(ab => {
-                  const payload = abilityPayload(picked, ab)
+          {picked() && (
+            <div class='glass-inset rounded-2xl p-2.5 anim-fade'>
+              <p class='eyebrow mb-2 truncate'>{picked().displayName} utility</p>
+              <div class='grid grid-cols-4 gap-1.5'>
+                <For each={(picked().abilities || []).filter(x => x.displayIcon)}>{ab => {
+                  const payload = () => (abilityPayload(picked(), ab))
                   return (
-                    <button key={ab.slot} draggable onDragStart={e => drag(e, payload)} onClick={() => onPlace(payload)} title={`${ab.displayName} - drag onto the map or click`}
-                      className='aspect-square rounded-xl bg-black/60 border border-white/15 grid place-items-center transition-[transform,border-color] duration-150 hover:border-accent/60 hover:-translate-y-0.5 active:scale-95'>
-                      <img decoding='async' src={ab.displayIcon} alt={ab.displayName} draggable={false} className='h-6 w-6' />
+                    <button draggable onDragStart={e => drag(e, payload())} onClick={() => props.onPlace(payload())} title={`${ab.displayName} - drag onto the map or click`}
+                      class='aspect-square rounded-xl bg-black/60 border border-white/15 grid place-items-center transition-[transform,border-color] duration-150 hover:border-accent/60 hover:-translate-y-0.5 active:scale-95'>
+                      <img decoding='async' src={ab.displayIcon} alt={ab.displayName} draggable={false} class='h-6 w-6' />
                     </button>
                   )
-                })}
+                }}</For>
               </div>
             </div>
           )}
         </div>
       )}
 
-      {tab === 'abilities' && (
-        <div className='flex-1 min-h-0 flex flex-col px-3.5 pb-3.5 gap-3 anim-fade' key='abilities'>
-          <div className='flex flex-wrap gap-1.5'>
-            {(agents || []).map(a => (
-              <button key={a.uuid} onClick={() => setAbilityAgent(a.uuid)} title={a.displayName}
-                className={`h-8 w-8 rounded-full overflow-hidden border bg-surface-2 transition duration-200 ${ag?.uuid === a.uuid ? 'border-accent ring-2 ring-accent/30 scale-110' : 'border-line opacity-60 hover:opacity-100'}`}>
-                <img decoding='async' src={a.displayIcon} alt='' draggable={false} className='w-full h-full object-cover' />
+      {tabS() === 'abilities' && (
+        <div class='flex-1 min-h-0 flex flex-col px-3.5 pb-3.5 gap-3 anim-fade'>
+          <div class='flex flex-wrap gap-1.5'>
+            <For each={props.agents || []}>{a => (
+              <button onClick={() => setAbilityAgent()(a.uuid)} title={a.displayName}
+                class={`h-8 w-8 rounded-full overflow-hidden border bg-surface-2 transition duration-200 ${ag()?.uuid === a.uuid ? 'border-accent ring-2 ring-accent/30 scale-110' : 'border-line opacity-60 hover:opacity-100'}`}>
+                <img decoding='async' src={a.displayIcon} alt='' draggable={false} class='w-full h-full object-cover' />
               </button>
-            ))}
+            )}</For>
           </div>
-          {ag && <p className='eyebrow'>{ag.displayName} abilities</p>}
-          <div className='grid grid-cols-2 gap-2 stagger' key={ag?.uuid}>
-            {abilities.map((ab, i) => {
-              const payload = abilityPayload(ag, ab)
+          {ag() && <p class='eyebrow'>{ag().displayName} abilities</p>}
+          <div class='grid grid-cols-2 gap-2 stagger'>
+            <For each={abilities()}>{(ab, i) => {
+              const payload = () => (abilityPayload(ag(), ab))
               return (
-                <button key={ab.slot} draggable onDragStart={e => drag(e, payload)} onClick={() => onPlace(payload)} style={{ '--i': i }}
-                  className='glass anim-rise flex flex-col items-center gap-2 p-3.5 rounded-2xl transition-[transform,border-color] duration-150 hover:border-accent/60 hover:-translate-y-0.5 active:scale-95'>
-                  <span className='h-11 w-11 rounded-full bg-black/60 border border-white/20 grid place-items-center'><img decoding='async' src={ab.displayIcon} alt='' draggable={false} className='h-7 w-7' /></span>
-                  <span className='text-[11px] font-medium text-muted leading-tight text-center'>{ab.displayName}</span>
+                <button draggable onDragStart={e => drag(e, payload())} onClick={() => props.onPlace(payload())} style={st({ '--i': i() })}
+                  class='glass anim-rise flex flex-col items-center gap-2 p-3.5 rounded-2xl transition-[transform,border-color] duration-150 hover:border-accent/60 hover:-translate-y-0.5 active:scale-95'>
+                  <span class='h-11 w-11 rounded-full bg-black/60 border border-white/20 grid place-items-center'><img decoding='async' src={ab.displayIcon} alt='' draggable={false} class='h-7 w-7' /></span>
+                  <span class='text-[11px] font-medium text-muted leading-tight text-center'>{ab.displayName}</span>
                 </button>
               )
-            })}
+            }}</For>
           </div>
         </div>
       )}
 
-      {tab === 'notes' && (
-        <div className='flex-1 min-h-0 flex flex-col px-3.5 pb-3.5 gap-2.5 anim-fade' key='notes'>
-          <p className='eyebrow'>Strategy notes</p>
-          <Textarea value={notes} onChange={e => onNotes(e.target.value)} placeholder='Calls, timings, utility order, fallbacks...' className='flex-1 leading-relaxed rounded-xl py-2.5' />
+      {tabS() === 'notes' && (
+        <div class='flex-1 min-h-0 flex flex-col px-3.5 pb-3.5 gap-2.5 anim-fade'>
+          <p class='eyebrow'>Strategy notes</p>
+          <Textarea value={props.notes} onInput={e => props.onNotes(e.target.value)} placeholder='Calls, timings, utility order, fallbacks...' class='flex-1 leading-relaxed rounded-xl py-2.5' />
         </div>
       )}
-    </div>
-  )
+    </div>)
+  
 }

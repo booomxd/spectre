@@ -1,5 +1,5 @@
-import React from 'react'
-import { FiAlertTriangle, FiAward, FiBarChart2, FiUsers } from 'react-icons/fi'
+import { For, Show, createMemo } from 'solid-js'
+import { FiAlertTriangle, FiAward, FiBarChart2, FiUsers } from 'solid-icons/fi'
 import { FadeIn } from '../../ui'
 import { useTiers } from '../../lib/content'
 import { RankIcon } from './parts'
@@ -29,63 +29,64 @@ const lowLevel = ps => ps.filter(p => p.level != null && p.level > 0 && p.level 
 // Streamer-mode players are only ever called by their agent
 const who = p => (p.hidden || !p.gameName ? p.agent?.name || 'Player' : p.gameName)
 
-function Cell({ icon: Icon, label, children, tone }) {
+function Cell(props) {
   return (
-    <div className='min-w-0 px-5 py-4'>
-      <div className='flex items-center gap-2 eyebrow'><Icon size={12} className={cx(tone === 'warn' ? 'text-warn' : 'text-accent')} />{label}</div>
-      <div className='mt-2 text-[13px] leading-snug text-text'>{children}</div>
+    <div class='min-w-0 px-5 py-4'>
+      <div class='flex items-center gap-2 eyebrow'><props.icon size={12} class={cx(props.tone === 'warn' ? 'text-warn' : 'text-accent')} />{props.label}</div>
+      <div class='mt-2 text-[13px] leading-snug text-text'>{props.children}</div>
     </div>
   )
 }
 
-function Side({ tone, children }) {
+function Side(props) {
   return (
-    <div className='flex items-center gap-2 min-w-0'>
-      <span className={cx('w-1.5 h-1.5 rounded-full shrink-0', tone === 'bad' ? 'bg-bad' : 'bg-good')} />
-      <span className='min-w-0 truncate'>{children}</span>
+    <div class='flex items-center gap-2 min-w-0'>
+      <span class={cx('w-1.5 h-1.5 rounded-full shrink-0', props.tone === 'bad' ? 'bg-bad' : 'bg-good')} />
+      <span class='min-w-0 truncate'>{props.children}</span>
     </div>
   )
 }
 
 // A quick read of the lobby from what Live Match already shows: which side is ranked higher, who queued together, the highest rank on each side, and high ranks on low-level accounts
-export default function LobbyRead({ players, pregame }) {
-  const tiers = useTiers()
-  const name = t => title(tiers?.[t]?.tierName) || 'Unranked'
-  const mine = players.filter(p => !p.enemy)
-  const theirs = pregame ? [] : players.filter(p => p.enemy)
-  const both = theirs.length > 0
-  const a = mean(mine), b = mean(theirs)
-  const gap = a && b ? a - b : 0
-  const divisions = Math.max(1, Math.round(Math.abs(gap)))
-  const verdict = !both || !a || !b ? null
-    : Math.abs(gap) < 0.75 ? 'Evenly ranked'
-      : `${gap > 0 ? 'Your team' : 'Opponents'} ranked about ${divisions} ${divisions === 1 ? 'division' : 'divisions'} higher`
-  const sm = stacks(mine), st = stacks(theirs)
-  const stackText = s => (s.length ? s.map(partyLabel).join(' + ') : 'All solo')
-  const tm = top(mine), tt = top(theirs)
-  const flags = [...lowLevel(mine).map(p => ({ p, tone: 'good' })), ...lowLevel(theirs).map(p => ({ p, tone: 'bad' }))]
-  if (!ranked(players).length && !sm.length && !st.length) return null
-
-  return (
-    <FadeIn className='glass rounded-[22px] mb-8 grid sm:grid-cols-2 xl:grid-cols-4 divide-line max-xl:divide-y xl:divide-x overflow-hidden'>
+export default function LobbyRead(props) {
+  const tiersA = useTiers()
+  
+    const name = t => title(tiersA()?.[t]?.tierName) || 'Unranked'
+    const mine = () => (props.players.filter(p => !p.enemy))
+    const theirs = () => (props.pregame ? [] : props.players.filter(p => p.enemy))
+    const both = () => (theirs().length > 0)
+    const a = () => (mean(mine())), b = () => (mean(theirs()))
+    const gap = () => (a() && b() ? a() - b() : 0)
+    const divisions = () => (Math.max(1, Math.round(Math.abs(gap()))))
+    const verdict = () => (!both() || !a() || !b() ? null
+    : Math.abs(gap()) < 0.75 ? 'Evenly ranked'
+      : `${gap() > 0 ? 'Your team' : 'Opponents'} ranked about ${divisions()} ${divisions() === 1 ? 'division' : 'divisions'} higher`)
+    const sm = () => (stacks(mine())), st = () => (stacks(theirs()))
+    const stackText = s => (s.length ? s.map(partyLabel).join(' + ') : 'All solo')
+    const tm = () => (top(mine())), tt = () => (top(theirs()))
+    // player references (not fresh wrappers) so <For> keeps rows; the side decides the tone
+    const flags = createMemo(() => [...lowLevel(mine()), ...lowLevel(theirs())])
+    const toneOf = p => (lowLevel(mine()).includes(p) ? 'good' : 'bad')
+    
+    return (<Show when={!(!ranked(props.players).length && !sm().length && !st().length)} fallback={null}><FadeIn class='glass rounded-[22px] mb-8 grid sm:grid-cols-2 xl:grid-cols-4 divide-line max-xl:divide-y xl:divide-x overflow-hidden'>
       <Cell icon={FiBarChart2} label='Lobby read'>
-        {verdict
-          ? <span className={cx('font-semibold', Math.abs(gap) >= 0.75 && (gap > 0 ? 'text-good' : 'text-bad'))}>{verdict}</span>
-          : <span className='text-muted'>{pregame ? 'Opponents show once the match starts' : 'Not enough ranked players to compare'}</span>}
+        {verdict()
+          ? <span class={cx('font-semibold', Math.abs(gap()) >= 0.75 && (gap() > 0 ? 'text-good' : 'text-bad'))}>{verdict()}</span>
+          : <span class='text-muted'>{props.pregame ? 'Opponents show once the match starts' : 'Not enough ranked players to compare'}</span>}
       </Cell>
       <Cell icon={FiUsers} label='Premades'>
-        <Side>{stackText(sm)}</Side>
-        {both && <Side tone='bad'>{stackText(st)}</Side>}
+        <Side>{stackText(sm())}</Side>
+        {both() && <Side tone='bad'>{stackText(st())}</Side>}
       </Cell>
       <Cell icon={FiAward} label='Highest rank'>
-        {tm ? <Side><RankIcon tier={tm.rank} size={16} className='inline-block align-[-3px] mr-1' />{name(tm.rank)} · {who(tm)}</Side> : <Side><span className='text-muted'>Unranked</span></Side>}
-        {both && (tt ? <Side tone='bad'><RankIcon tier={tt.rank} size={16} className='inline-block align-[-3px] mr-1' />{name(tt.rank)} · {who(tt)}</Side> : <Side tone='bad'><span className='text-muted'>Unranked</span></Side>)}
+        {tm() ? <Side><RankIcon tier={tm().rank} size={16} class='inline-block align-[-3px] mr-1' />{name(tm().rank)} · {who(tm())}</Side> : <Side><span class='text-muted'>Unranked</span></Side>}
+        {both() && (tt() ? <Side tone='bad'><RankIcon tier={tt().rank} size={16} class='inline-block align-[-3px] mr-1' />{name(tt().rank)} · {who(tt())}</Side> : <Side tone='bad'><span class='text-muted'>Unranked</span></Side>)}
       </Cell>
-      <Cell icon={FiAlertTriangle} label='Low-level accounts' tone={flags.length ? 'warn' : undefined}>
-        {flags.length
-          ? flags.slice(0, 3).map(({ p, tone }) => <Side key={p.ref} tone={tone}>{who(p)} · level {p.level} at {name(p.rank)}</Side>)
-          : <span className='text-muted'>None at Platinum or above</span>}
+      <Cell icon={FiAlertTriangle} label='Low-level accounts' tone={flags().length ? 'warn' : undefined}>
+        {flags().length
+          ? <For each={flags().slice(0, 3)}>{p => <Side tone={toneOf(p)}>{who(p)} · level {p.level} at {name(p.rank)}</Side>}</For>
+          : <span class='text-muted'>None at Platinum or above</span>}
       </Cell>
-    </FadeIn>
-  )
+    </FadeIn></Show>)
+  
 }

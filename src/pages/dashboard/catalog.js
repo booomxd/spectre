@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { createMemo, createSignal } from 'solid-js'
 import { getContent } from '../../lib/content'
 import { useNow } from '../../ui'
 import { skinImage } from '../tools/gear'
@@ -42,10 +42,12 @@ function load() {
   return promise
 }
 
+let loaded = null
+const [catSig, setCat] = createSignal(null)
+// accessor for the shared catalog (null until loaded)
 export function useCatalog() {
-  const [cat, setCat] = useState(null)
-  useEffect(() => { let live = true; load().then(c => live && setCat(c)); return () => { live = false } }, [])
-  return cat
+  if (!loaded) loaded = load().then(c => { setCat(c); return c })
+  return catSig
 }
 
 // picks the active season battle pass from the contracts list
@@ -64,11 +66,13 @@ export function fmtDuration(s) {
   return `${m}m ${String(sec).padStart(2, '0')}s`
 }
 
-// Live countdown from a "seconds left" snapshot
+// Live countdown (accessor) from a "seconds left" snapshot; `secondsLeft` is an accessor
 export function useCountdown(secondsLeft) {
   const now = useNow()
-  const [snap, setSnap] = useState(() => ({ s: secondsLeft, t: Date.now() }))
-  if (snap.s !== secondsLeft) setSnap({ s: secondsLeft, t: Date.now() })
-  if (secondsLeft == null) return null
-  return Math.max(0, secondsLeft - Math.max(0, now - snap.t) / 1000)
+  const snap = createMemo(() => ({ s: secondsLeft(), t: Date.now() }))
+  return () => {
+    const { s, t } = snap()
+    if (s == null) return null
+    return Math.max(0, s - Math.max(0, now() - t) / 1000)
+  }
 }
