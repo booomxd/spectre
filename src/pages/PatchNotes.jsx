@@ -1,7 +1,7 @@
 import { For, createSignal, Show } from 'solid-js'
 import { FiArrowUpRight, FiChevronDown, FiExternalLink } from 'solid-icons/fi'
 import { Badge, Button, Card, Empty, ErrorState, FadeIn, Item, Page, SegmentedTabs, Skeleton, Stagger, Swap, cx } from '../ui'
-import { openExternal, useInvoke } from '../lib/ipc'
+import { openExternal, useEvent, useInvoke } from '../lib/ipc'
 import logo from '../assets/spectre-logo.svg'
 
 const fmt = d => d ? new Date(d).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : ''
@@ -86,6 +86,8 @@ function Markdown(props) {
 function SpectreNotes() {
   const __invoke = useInvoke('spectre:releases')
   const status = useInvoke('update:status')
+  // the list loads at startup and stays mounted; refetch when an update check finds a newer release, so it shows up here too
+  useEvent('update:status', () => { __invoke.reload(true); status.reload(true) })
   const [openS, setOpen] = createSignal(null)
   
     
