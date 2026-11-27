@@ -59,11 +59,25 @@ static RE_VERSION: Lazy<Regex> = Lazy::new(|| Regex::new(r"CI server version: (\
 static RE_PD: Lazy<Regex> = Lazy::new(|| Regex::new(r"https://pd\.(\w+)\.a\.pvp\.net").unwrap());
 static RE_GLZ: Lazy<Regex> = Lazy::new(|| Regex::new(r"https://glz-(\w+)-1\.\w+\.a\.pvp\.net").unwrap());
 
-/// sends a request and returns the parsed JSON body
+/// sends a request and returns the parsed JSON body. A body that fails to arrive reads as empty, so an action Riot
+/// accepted still succeeds and an error keeps its HTTP status
 pub async fn send(req: reqwest::RequestBuilder) -> Res<Value> {
+    send_inner(req, false).await
+}
+
+/// like `send`, but a body that fails to arrive is an error: for content that gets cached
+pub async fn send_strict(req: reqwest::RequestBuilder) -> Res<Value> {
+    send_inner(req, true).await
+}
+
+async fn send_inner(req: reqwest::RequestBuilder, strict: bool) -> Res<Value> {
     let res = req.send().await?;
     let status = res.status();
-    let text = res.text().await?;
+    let text = match res.text().await {
+        Ok(t) => t,
+        Err(e) if strict && status.is_success() => return Err(e.into()),
+        Err(_) => String::new(),
+    };
     let body = if text.trim().is_empty() { Value::Null } else { serde_json::from_str(&text).unwrap_or(Value::String(text)) };
     if status.is_success() { Ok(body) } else { Err(Error::Http { status: status.as_u16(), body }) }
 }
@@ -234,9 +248,14 @@ impl Riot {
         let key = path.trim_start_matches('/').to_string();
         if let Some(v) = self.api_cache.lock().unwrap().get(&key) { return Ok(v.clone()); }
         // pages that open together ask for the same list at once: download it once
-        let cell = self.api_inflight.lock().await.entry(key.clone()).or_default().clone();
+        let cell = {
+            let mut inflight = self.api_inflight.lock().await;
+            // another caller may have finished this download while we waited for the lock
+            if let Some(v) = self.api_cache.lock().unwrap().get(&key) { return Ok(v.clone()); }
+            inflight.entry(key.clone()).or_default().clone()
+        };
         let got = cell.get_or_try_init(|| async {
-            let mut body = send(self.http.get(format!("https://valorant-api.com/v1/{key}")).timeout(Duration::from_secs(20))).await?;
+            let mut body = send_strict(self.http.get(format!("https://valorant-api.com/v1/{key}")).timeout(Duration::from_secs(20))).await?;
             // a non-JSON 200 (captive portal, proxy page) is an error, never a cached Null
             let v = body.as_object_mut().and_then(|o| o.remove("data"))
                 .ok_or_else(|| msg("valorant-api.com returned an unexpected response"))?;
