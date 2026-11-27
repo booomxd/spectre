@@ -63,7 +63,7 @@ static RE_GLZ: Lazy<Regex> = Lazy::new(|| Regex::new(r"https://glz-(\w+)-1\.\w+\
 pub async fn send(req: reqwest::RequestBuilder) -> Res<Value> {
     let res = req.send().await?;
     let status = res.status();
-    let text = res.text().await.unwrap_or_default();
+    let text = res.text().await?;
     let body = if text.trim().is_empty() { Value::Null } else { serde_json::from_str(&text).unwrap_or(Value::String(text)) };
     if status.is_success() { Ok(body) } else { Err(Error::Http { status: status.as_u16(), body }) }
 }
@@ -240,7 +240,12 @@ impl Riot {
             Ok::<_, Error>(Arc::new(v))
         }).await;
         if let Ok(v) = &got { self.api_cache.lock().unwrap().insert(key.clone(), Arc::clone(v)); }
-        self.api_inflight.lock().await.remove(&key);
+        {
+            // drop this path's slot once nobody can still be (re)trying through it
+            let mut inflight = self.api_inflight.lock().await;
+            let ours = inflight.get(&key).is_some_and(|c| Arc::ptr_eq(c, &cell));
+            if ours && (cell.initialized() || Arc::strong_count(&cell) <= 2) { inflight.remove(&key); }
+        }
         Ok(got?.clone())
     }
     pub fn clear_api_cache(&self) { self.api_cache.lock().unwrap().clear(); }
