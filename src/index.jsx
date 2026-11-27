@@ -1,13 +1,10 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
+import { render } from 'solid-js/web'
 import App from './App.jsx'
 import './index.css'
 import { initLang } from './lib/i18n'
+import { applySavedTheme } from './lib/theme'
 
+applySavedTheme()
 initLang()
 
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-)
+render(() => <App />, document.getElementById('root'))

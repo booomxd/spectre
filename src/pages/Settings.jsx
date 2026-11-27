@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { FiInfo, FiLink, FiMonitor, FiSliders, FiDroplet } from 'react-icons/fi'
+import { For, createEffect, createSignal, on } from 'solid-js'
+import { FiInfo, FiLink, FiMonitor, FiSliders, FiDroplet } from 'solid-icons/fi'
 import { Page, ErrorState, SegmentedTabs, Skeleton, Swap } from '../ui'
 import { useSettings } from './settings/useSettings'
 import Appearance from './settings/Appearance'
@@ -14,30 +14,29 @@ export const SETTINGS_TABS = [
 ]
 
 // params: { tab?: one of SETTINGS_TABS } (navigate('settings', {...}))
-export default function Settings({ active, params }) {
-  const { settings, error, save } = useSettings()
-  const [tab, setTab] = useState('general')
-  useEffect(() => {
-    if (params?.tab && SETTINGS_TABS.some(t => t.value === params.tab)) setTab(params.tab)
-  }, [params])
-
-  const body = () => {
-    switch (tab) {
+export default function Settings(props) {
+  const __settings = useSettings()
+  const [tabS, setTab] = createSignal('general')
+  createEffect(on(() => [props.params], () => {
+    if (props.params?.tab && SETTINGS_TABS.some(t => t.value === props.params.tab)) setTab(props.params.tab)
+  }))
+  
+    const body = () => {
+    switch (tabS()) {
       case 'appearance': return <Appearance />
-      case 'overlay': return <Overlay settings={settings} save={save} />
+      case 'overlay': return <Overlay settings={__settings.settings} save={__settings.save} />
       case 'connection': return <Connection />
-      case 'about': return <div className='flex flex-col gap-9'><About /><Data /></div>
-      default: return <General settings={settings} save={save} />
+      case 'about': return <div class='flex flex-col gap-9'><About /><Data /></div>
+      default: return <General settings={__settings.settings} save={__settings.save} />
     }
   }
-  return (
-    <Page title='Settings' subtitle='Appearance, behavior, overlay and connection'>
-      <SegmentedTabs className='mb-7' layoutId='settings-tabs' tabs={SETTINGS_TABS} value={tab} onChange={setTab} />
-      {error ? <ErrorState error={error} /> : !settings ? (
-        <div className='grid gap-5 max-w-4xl'>{[0, 1, 2].map(i => <Skeleton key={i} className='h-32 rounded-2xl' />)}</div>
+    return (<Page title='Settings' subtitle='Appearance, behavior, overlay and connection'>
+      <SegmentedTabs class='mb-7' layoutId='settings-tabs' tabs={SETTINGS_TABS} value={tabS()} onChange={setTab} />
+      {__settings.error ? <ErrorState error={__settings.error} /> : !__settings.settings ? (
+        <div class='grid gap-5 max-w-4xl'><For each={[0, 1, 2]}>{i => <Skeleton class='h-32 rounded-2xl' />}</For></div>
       ) : (
-        <Swap id={tab} className='max-w-4xl'>{body()}</Swap>
+        <Swap id={tabS()} class='max-w-4xl'>{body()}</Swap>
       )}
-    </Page>
-  )
+    </Page>)
+  
 }

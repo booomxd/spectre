@@ -1,74 +1,87 @@
-import React from 'react'
+import { Show, createMemo } from 'solid-js'
+import { st } from '../../lib/st.js'
 import { useTiers } from '../../lib/content'
 import { GUN_ICON, cardIcon, queueName, useModeIcon } from './util'
 
 const cx = (...c) => c.filter(Boolean).join(' ')
 
 // A white valorant-api icon drawn in the current text color
-export function MaskIcon({ src, size = '1em', width, className, style, title }) {
-  const mask = { WebkitMaskImage: `url(${src})`, maskImage: `url(${src})`, WebkitMaskSize: 'contain', maskSize: 'contain', WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat', WebkitMaskPosition: 'center', maskPosition: 'center' }
-  return <span role='img' aria-label={title} title={title} className={cx('inline-block shrink-0 bg-current', className)} style={{ width: width ?? size, height: size, ...mask, ...style }} />
+export function MaskIcon(props) {
+  
+    const mask = () => ({ WebkitMaskImage: `url(${props.src})`, maskImage: `url(${props.src})`, WebkitMaskSize: 'contain', maskSize: 'contain', WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat', WebkitMaskPosition: 'center', maskPosition: 'center' })
+    return (<span role='img' aria-label={props.title} title={props.title} class={cx('inline-block shrink-0 bg-current', props["class"])} style={st({ width: props.width ?? (props.size ?? '1em'), height: (props.size ?? '1em'), ...mask(), ...props.style })} />)
+  
 }
 
 // game mode icon for a queue id
-export function ModeIcon({ queue, size = 16, className }) {
-  const src = useModeIcon(queue)
-  return src ? <MaskIcon src={src} size={size} className={className} title={queueName(queue)} /> : null
+export function ModeIcon(props) {
+  const srcA = useModeIcon(() => props.queue)
+  return <Show when={srcA()}><MaskIcon src={srcA()} size={(props.size ?? 16)} class={props["class"]} title={queueName(props.queue)} /></Show>
 }
 
 // gun silhouette, drawn wider than its box so it lines up with square icons
-export function GunIcon({ size = 16, className }) {
-  const n = typeof size === 'number' ? size : 16
-  return <MaskIcon src={GUN_ICON} size={n} width={n * 1.6} className={className} style={{ margin: `0 ${-n * 0.3}px` }} />
+export function GunIcon(props) {
+  
+    const n = () => (typeof (props.size ?? 16) === 'number' ? (props.size ?? 16) : 16)
+    return (<MaskIcon src={GUN_ICON} size={n()} width={n() * 1.6} class={props["class"]} style={st({ margin: `0 ${-n() * 0.3}px` })} />)
+  
 }
 
-export function RankIcon({ tier, size = 28, className }) {
-  const tiers = useTiers()
-  const t = tiers?.[tier || 0]
-  const src = t?.smallIcon || tiers?.[0]?.smallIcon
-  if (!src) return <div className={cx('shrink-0 rounded-full bg-surface-2', className)} style={{ width: size, height: size }} />
-  return <img decoding='async' src={src} alt={t?.tierName || 'Unranked'} title={t?.tierName || 'Unranked'} width={size} height={size} className={cx('shrink-0 object-contain', !tier && 'opacity-50', className)} />
+export function RankIcon(props) {
+  const tiersA = useTiers()
+  
+    const t = () => (tiersA()?.[props.tier || 0])
+    const src = () => (t()?.smallIcon || tiersA()?.[0]?.smallIcon)
+    
+    return (<Show when={!(!src())} fallback={<div class={cx('shrink-0 rounded-full bg-surface-2', props["class"])} style={st({ width: (props.size ?? 28), height: (props.size ?? 28) })} />}><img decoding='async' src={src()} alt={t()?.tierName || 'Unranked'} title={t()?.tierName || 'Unranked'} width={(props.size ?? 28)} height={(props.size ?? 28)} class={cx('shrink-0 object-contain', !props.tier && 'opacity-50', props["class"])} /></Show>)
+  
 }
 
 // player card art; falls back to the name's capitalized initial when there is no card
-export function PlayerCard({ id, name, size = 40, className }) {
-  const src = cardIcon(id)
-  const initial = name ? [...name.trim()][0]?.toUpperCase() : null
+export function PlayerCard(props) {
+  
+    const src = () => (cardIcon(props.id))
+    const initial = () => (props.name ? [...props.name.trim()][0]?.toUpperCase() : null)
+    return (<div class={cx('shrink-0 overflow-hidden rounded-[12px] bg-surface-2 border border-line flex items-center justify-center', props["class"])} style={st({ width: (props.size ?? 40), height: (props.size ?? 40) })}>
+      {src() ? <img decoding='async' src={src()} alt='' class='w-full h-full object-cover' loading='lazy' />
+        : initial() && <span class='font-display font-bold text-muted' style={st({ fontSize: (props.size ?? 40) * 0.42 })}>{initial()}</span>}
+    </div>)
+  
+}
+
+export function AgentIcon(props) {
   return (
-    <div className={cx('shrink-0 overflow-hidden rounded-[12px] bg-surface-2 border border-line flex items-center justify-center', className)} style={{ width: size, height: size }}>
-      {src ? <img decoding='async' src={src} alt='' className='w-full h-full object-cover' loading='lazy' />
-        : initial && <span className='font-display font-bold text-muted' style={{ fontSize: size * 0.42 }}>{initial}</span>}
+    <div class={cx('shrink-0 overflow-hidden rounded-xl bg-surface-2 border border-line flex items-center justify-center text-muted text-xs', !(props.locked ?? true) && 'opacity-60', props["class"])} style={st({ width: (props.size ?? 40), height: (props.size ?? 40) })}>
+      {props.agent?.icon ? <img decoding='async' src={props.agent.icon} alt={props.agent.name} title={props.agent.name} class='w-full h-full object-cover' /> : '?'}
     </div>
   )
 }
 
-export function AgentIcon({ agent, size = 40, locked = true, className }) {
-  return (
-    <div className={cx('shrink-0 overflow-hidden rounded-xl bg-surface-2 border border-line flex items-center justify-center text-muted text-xs', !locked && 'opacity-60', className)} style={{ width: size, height: size }}>
-      {agent?.icon ? <img decoding='async' src={agent.icon} alt={agent.name} title={agent.name} className='w-full h-full object-cover' /> : '?'}
-    </div>
-  )
-}
-
-export function StatusDot({ state, className }) {
-  const color = state === 'ingame' ? 'bg-good' : state === 'queue' || state === 'pregame' ? 'bg-warn' : state === 'menus' ? 'bg-accent' : state === 'away' ? 'bg-muted' : 'bg-line'
-  return <span className={cx('inline-block w-2 h-2 rounded-full', color, (state === 'queue' || state === 'ingame') && 'anim-pulse', className)} />
+export function StatusDot(props) {
+  
+    const color = () => (props.state === 'ingame' ? 'bg-good' : props.state === 'queue' || props.state === 'pregame' ? 'bg-warn' : props.state === 'menus' ? 'bg-accent' : props.state === 'away' ? 'bg-muted' : 'bg-line')
+    return (<span class={cx('inline-block w-2 h-2 rounded-full', color(), (props.state === 'queue' || props.state === 'ingame') && 'anim-pulse', props["class"])} />)
+  
 }
 
 // tier color as '#rrggbb'
+// tier is an accessor; returns an accessor
 export function useRankColor(tier) {
   const tiers = useTiers()
-  const c = tier > 0 && tiers?.[tier]?.color
-  return c ? `#${c.slice(0, 6)}` : null
+  return createMemo(() => {
+    const t = tier()
+    const c = t > 0 && tiers()?.[t]?.color
+    return c ? `#${c.slice(0, 6)}` : null
+  })
 }
 
 // rank icon sitting on a soft glow in its own tier color
-export function RankGlow({ tier, size = 34, className }) {
-  const color = useRankColor(tier)
+export function RankGlow(props) {
+  const colorA = useRankColor(() => props.tier)
   return (
-    <span className={cx('relative inline-grid place-items-center shrink-0', className)} style={{ width: size, height: size }}>
-      {color && <span className='absolute -inset-2 rounded-full opacity-60 pointer-events-none' style={{ background: `radial-gradient(closest-side, ${color}66, transparent)` }} />}
-      <RankIcon tier={tier} size={size} className='relative' />
+    <span class={cx('relative inline-grid place-items-center shrink-0', props["class"])} style={st({ width: (props.size ?? 34), height: (props.size ?? 34) })}>
+      {colorA() && <span class='absolute -inset-2 rounded-full opacity-60 pointer-events-none' style={st({ background: `radial-gradient(closest-side, ${colorA()}66, transparent)` })} />}
+      <RankIcon tier={props.tier} size={(props.size ?? 34)} class='relative' />
     </span>
   )
 }

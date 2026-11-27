@@ -1,5 +1,5 @@
 // languages
-import { useEffect, useState } from 'react'
+import { createSignal, onCleanup } from 'solid-js'
 
 export const LANGS = [
   ['en', 'English'], ['zh', '简体中文'], ['ru', 'Русский'], ['hi', 'हिन्दी'], ['ja', '日本語'],
@@ -98,8 +98,10 @@ export function initLang() {
   if (saved && saved !== 'en') setLang(saved, false).catch(() => { })
 }
 
+// [lang accessor, setLang]
 export function useLang() {
-  const [code, setCode] = useState(lang)
-  useEffect(() => { subs.add(setCode); setCode(lang); return () => { subs.delete(setCode) } }, [])
+  const [code, setCode] = createSignal(lang)
+  subs.add(setCode)
+  onCleanup(() => subs.delete(setCode))
   return [code, setLang]
 }
