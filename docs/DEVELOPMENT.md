@@ -80,7 +80,7 @@ useEvent('settings:changed', s => setSettings(s))
 
 The UI is SolidJS: components run once and only the DOM that reads a value updates. Polled data is reconciled into a
 store (list items matched by `opts.key`, default `id`), so rows keep their state across polls. Pass a `key` that every
-item has and that is unique; without one, items are matched by position and row state stays with a position when the
+item has, that is unique, and that stays the same for a record across polls; without one, items are matched by position and row state stays with a position when the
 list reorders. Render lists with
 `<For>`, and read props inside JSX or accessors rather than destructuring them.
 
